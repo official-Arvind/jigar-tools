@@ -57,4 +57,4 @@ If you have root, go to **Magisk Manager > Superuser > Shell** and set **Mount N
 3. **Confirm**: The script will install your apps first, then push your files back home.
 
 ---
-**Created with raw energy and zero sugar-coating for Arvind Ji. 🚀**
+**Created with raw energy and zero sugar-coating by Arvind Ji. 🚀**
