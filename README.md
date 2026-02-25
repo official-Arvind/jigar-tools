@@ -1,4 +1,4 @@
-# <p align="center"><img src="logo.png" width="128" height="128"><br>Jigar Tools: God Mode Suite</p>
+# <p align="center"><img src="logo.ico" width="128" height="128"><br>Jigar Tools: God Mode Suite</p>
 > **The world's most aggressive, high-performance Android management utilities. Built for power users, by Arvind Ji.**
 
 ---
