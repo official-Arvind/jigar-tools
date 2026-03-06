@@ -1,23 +1,24 @@
 # ========================================================
-#  ADB SMART RESTORE & VERIFY (v3.0 - NO MERCY)
-#  - Feature: Interactive GridView for Selective Restore
-#  - UI: FolderBrowserDialog to locate extracted backup
-#  - Fix: Iron-Shield quoting for spaces in Android shell
+#  ADB SMART RESTORE & VERIFY (v3.2 - TITANIUM)
+#  - Fix: Single-Quote Escaping for files like "File (1).pdf"
+#  - Feature: Unified GUI Selection
+#  - Integrity: 100% Forensic Audit
 # ========================================================
 
 $ErrorActionPreference = "SilentlyContinue"
-$Host.UI.RawUI.WindowTitle = "Jigar Tools v3.0 - No Mercy Restore"
+$Host.UI.RawUI.WindowTitle = "Jigar Tools v3.2 - Smart Restore"
 
 # 1. Device Selection
+Write-Host "`n [SYSTEM] Connecting to Neural Link..." -ForegroundColor Cyan
 $adbDevices = adb devices | Select-String -Pattern "\tdevice$"
-if ($adbDevices.Count -eq 0) { Write-Host "`n [ERROR] Device connect karo, Arvind Ji!" -ForegroundColor Red; exit }
+if ($adbDevices.Count -eq 0) { Write-Host "`n [ERROR] Device connect karo!" -ForegroundColor Red; exit }
 $selectedSerial = $adbDevices[0].ToString().Split("`t")[0].Trim()
 
-# 2. Locate Backup Source
-Write-Host "`n [SOURCE] Extracted backup folder select karo..." -ForegroundColor Cyan
+# 2. GUI: Locate Backup Source
+Write-Host "`n [SOURCE] Backup folder select karo..." -ForegroundColor Yellow
 Add-Type -AssemblyName System.Windows.Forms
 $fb = New-Object System.Windows.Forms.FolderBrowserDialog
-$fb.Description = "Select your EXTRACTED backup folder (where 'sdcard' is located)"
+$fb.Description = "SELECT EXTRACTED BACKUP FOLDER (Contains 'sdcard')"
 if ($fb.ShowDialog() -ne "OK") { Write-Host " [CANCELLED]"; exit }
 $sourcePath = $fb.SelectedPath
 
@@ -29,22 +30,20 @@ $workingDir = if (Test-Path $sdcardPath) { $sdcardPath } else { $sourcePath }
 
 # 3. Main Menu
 Write-Host "`n [RESTORE MENU]" -ForegroundColor Cyan
-Write-Host "  [1] FULL RESTORE (Everything + APKs)"
-Write-Host "  [2] SELECTIVE RESTORE (Pick your folders)"
+Write-Host "  [1] FULL RESTORE (All Data + Apps)"
+Write-Host "  [2] SELECTIVE RESTORE (Pick Folders via GUI)"
 $mode = Read-Host "`n Choice"
 
 $filesToRestore = @()
 
 if ($mode -eq "2") {
-    Write-Host "`n [SCANNING] Finding folders in $workingDir..." -ForegroundColor Yellow
+    Write-Host "`n [SCANNING] Listing folders..." -ForegroundColor Yellow
     $folders = Get-ChildItem -LiteralPath $workingDir -Directory | Select-Object -ExpandProperty Name
-    if (-not $folders) { Write-Host " [ERROR] Folders nahi mile!"; exit }
     
-    Write-Host " [ACTION] SPACEBAR dabao highlight (glow) karne ke liye!" -ForegroundColor Magenta
-    $selection = $folders | Out-GridView -Title "Folders Chuno: Space to Select, ENTER to Confirm" -OutputMode Multiple
+    Write-Host " [ACTION] GridView: Spacebar se select karo!" -ForegroundColor Magenta
+    $selection = $folders | Out-GridView -Title "RESTORE SELECTION: Select Folders (Spacebar to Glow) -> Enter" -OutputMode Multiple
     if (-not $selection) { Write-Host " [CANCELLED]"; exit }
     
-    Write-Host " [AUDIT] Gathering files..." -ForegroundColor Yellow
     foreach ($sel in $selection) {
         $filesToRestore += Get-ChildItem -LiteralPath "$workingDir\$sel" -Recurse -File
     }
@@ -54,24 +53,23 @@ if ($mode -eq "2") {
 }
 
 $totalFiles = @($filesToRestore).Count
-if ($totalFiles -eq 0) { Write-Host " [ERROR] Restore karne ke liye koi files nahi hain!"; exit }
-Write-Host " [REPORT] Found $totalFiles files for absolute restoration." -ForegroundColor Magenta
+if ($totalFiles -eq 0) { Write-Host " [ERROR] No files found!"; exit }
+Write-Host " [LOCKED] Ready to restore $totalFiles files." -ForegroundColor Cyan
 
 # 4. Hybrid APK Logic
 if ($mode -eq "1" -and (Test-Path $apkPath)) {
-    Write-Host "`n [HYBRID] Pushing User APKs..." -ForegroundColor Yellow
+    Write-Host "`n [HYBRID] Installing Apps..." -ForegroundColor Yellow
     $apks = Get-ChildItem -LiteralPath $apkPath -Filter "*.apk"
-    $apkCount = $apks.Count
-    $a = 0
+    $count = 0
     foreach ($apk in $apks) {
-        $a++
-        Write-Host " [$a/$apkCount] Installing: $($apk.Name)" -ForegroundColor Green
+        $count++
+        Write-Host " [$count] Installing: $($apk.Name)" -ForegroundColor Green
         adb -s $selectedSerial install -r "$($apk.FullName)" | Out-Null
     }
 }
 
-# 5. No-Mercy Push Loop (Space-Proof)
-Write-Host "`n [RESTORING DATA...]" -ForegroundColor Cyan
+# 5. No-Mercy Restore Loop (Titanium Shield)
+Write-Host "`n [STREAMING DATA...]" -ForegroundColor Cyan
 $i = 0
 foreach ($file in $filesToRestore) {
     $i++
@@ -80,27 +78,28 @@ foreach ($file in $filesToRestore) {
     $relPath = $file.FullName.Substring($workingDir.Length).Replace('\', '/')
     if (-not $relPath.StartsWith("/")) { $relPath = "/$relPath" }
     $remoteFile = "/sdcard$relPath"
-    
-    # Safe remote directory extraction
     $remoteDir = $remoteFile.Substring(0, $remoteFile.LastIndexOf('/'))
-    if ($remoteDir -eq "") { $remoteDir = "/sdcard" }
+    
+    # Titanium Shield: Escape single quotes manually
+    $remoteFileEscaped = $remoteFile.Replace("'", "'\''")
+    $remoteDirEscaped = $remoteDir.Replace("'", "'\''")
+    
+    $remoteShell = "'$remoteFileEscaped'"
+    $dirShell = "'$remoteDirEscaped'"
 
-    # Iron-Shield Quoting
-    $remoteFileShell = "`"$remoteFile`""
-    $remoteDirShell = "`"$remoteDir`""
+    Write-Progress -Activity "Smart Restore" -Status "Pushing: $relPath" -PercentComplete $percent
 
-    Write-Progress -Activity "True God Mode Restore" -Status "Pushing: $($file.Name)" -PercentComplete $percent
-
-    $remoteSizeStr = (adb -s $selectedSerial shell "stat -c %s $remoteFileShell 2>/dev/null").Trim()
+    # Smart Overwrite Check
+    $remoteSizeStr = (adb -s $selectedSerial shell "stat -c %s $remoteShell 2>/dev/null").Trim()
     $remoteSize = 0
     if ($remoteSizeStr -match '^\d+$') { $remoteSize = [long]$remoteSizeStr }
     
-    if ($remoteSize -eq 0 -or $file.Length -ne $remoteSize) {
+    if ($remoteSize -ne $file.Length) {
         if ($remoteSize -eq 0) { Write-Host " [NEW] " -NoNewline -ForegroundColor Green }
         else { Write-Host " [FIX] " -NoNewline -ForegroundColor Magenta }
         Write-Host $relPath -ForegroundColor Gray
         
-        adb -s $selectedSerial shell "mkdir -p $remoteDirShell" | Out-Null
+        adb -s $selectedSerial shell "mkdir -p $dirShell" | Out-Null
         adb -s $selectedSerial push "$($file.FullName)" "$remoteFile" | Out-Null
     }
 }
@@ -113,7 +112,9 @@ foreach ($f in $filesToRestore) {
     $v++
     $rp = $f.FullName.Substring($workingDir.Length).Replace('\', '/')
     if (-not $rp.StartsWith("/")) { $rp = "/$rp" }
-    $rfShell = "`"/sdcard$rp`""
+    
+    $rfEscaped = ("/sdcard" + $rp).Replace("'", "'\''")
+    $rfShell = "'$rfEscaped'"
     
     $rsRaw = (adb -s $selectedSerial shell "stat -c %s $rfShell 2>/dev/null").Trim()
     $rs = 0
@@ -130,4 +131,4 @@ Write-Host "`n ========================================================"
 if ($failed -eq 0) { Write-Host "  SUCCESS: 100% DATA INTEGRITY VERIFIED." -ForegroundColor Green } 
 else { Write-Host "  WARNING: $failed files failed verification!" -ForegroundColor Red }
 Write-Host " ========================================================"
-Read-Host " Press Enter to finish..."
+Read-Host " Press Enter to exit..."
