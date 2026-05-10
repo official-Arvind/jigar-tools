@@ -7,10 +7,12 @@
 
 * **??? Iron-Shield Quoting**: Fixed the "Space-in-Path" bug using triple-quote shielding. Folders like 'Jee Papers' now backup flawlessly.
 * **?? Dynamic Size Audit**: The engine now calculates the exact size of *only* selected folders before starting.
-* **?? Legal Shield**: Integrated 'LICENSE.md' with a Limited Use License to protect the "Nitro-Raw" methodology.
+* **?? Legal Shield**: Integrated 'LICENSE.md' with a Limited Use License to protect the "Titan" methodology.
 * **?? Native Verification**: Replaced legacy CMD pipes with native PowerShell 'Measure-Object' logic for 100% stability.
 * **? Async Experience**: Implemented "Stream-First" logic. Extract immediately while verification runs in background.
 * **?? Community Core**: Added 'CONTRIBUTING.md' and professional GitHub badges.
+* **?? Unified Naming**: Renamed fullbackup.ps1 to JigarSmartSync.ps1 and ADB_SmartRestore.ps1 to JigarSmartRestore.ps1 for consistency.
+* **?? 3-Stage Fallback Engine**: Integrated "Absolute Velocity (THE TITAN ENGINE)" with 12x parallel threads and virtual drive routing.
 
 ---
 

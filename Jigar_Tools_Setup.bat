@@ -29,7 +29,7 @@ echo        JIGAR TOOLS - INITIAL SYSTEM AUDIT
 echo ========================================================
 
 echo [AUDIT] Checking Directory Content...
-if not exist "fullbackup.ps1" echo [FAIL] Run this from the tools folder! && pause && exit
+if not exist "JigarSmartSync.ps1" echo [FAIL] Run this from the tools folder! && pause && exit
 echo   [OK] Scripts detected.
 
 echo [AUDIT] Checking Assets...
@@ -59,8 +59,8 @@ cls
 echo ========================================================
 echo        JIGAR TOOLS - MASTER CONTROL CENTER
 echo ========================================================
-echo  [1] NITRO BACKUP (Full Hybrid or Selective)
-echo  [2] NO-MERCY RESTORE (100%% Integrity + Auto APKs)
+echo  [1] JIGARSYNC BACKUP (Full Hybrid or Selective)
+echo  [2] JIGAR SMART RESTORE (100%% Integrity + GUI)
 echo  [3] PARANOID CHECK (Hidden File Audit)
 echo  [4] EXIT
 echo ========================================================
@@ -73,12 +73,12 @@ if "%choice%"=="4" exit
 goto :Menu
 
 :Backup
-powershell -NoProfile -ExecutionPolicy Bypass -File "fullbackup.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "JigarSmartSync.ps1"
 pause
 goto :Menu
 
 :Restore
-powershell -NoProfile -ExecutionPolicy Bypass -File "ADB_SmartRestore.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "JigarSmartRestore.ps1"
 pause
 goto :Menu
 

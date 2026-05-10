@@ -15,20 +15,26 @@
 
 ## 🛠️ The Arsenal
 
-### 1. 🚀 `fullbackup.ps1` (v18.3 Nitro Raw)
-**The "Final Boss" of Backup Utilities**
-* **Nitro Speed**: Forced high-buffer, uncompressed binary pipe for maximum throughput.
-* **Zero-Space Hybrid**: Maps and backups all User APKs using **Symlink Pointers**. No extra phone storage required.
-* **Self-Aware Intelligence**: Auto-detects **Root (su)** and **BusyBox NDK** to unlock maximum system access.
-* **Absolute Pathing**: Clean structure without the redundant `.` folder clones.
-* **Verified Integrity**: Automatically cross-checks file counts between phone and PC after streaming.
+### 1. 🚀 `JigarSmartSync.ps1` (v38.2 Titan Engine)
+**The Smart Backup Syncer**
+* **12x Parallel Threads**: Massive parallel throughput for ultra-fast file transfers from Android to PC.
+* **3-Stage Fallback**: Defeats ADB path bugs with intelligent routing and virtual drive mapping.
+* **Smart Routing**: Bypasses Virtual Drive for root files, avoids system-level path conflicts.
+* **Delta Sync**: Intelligent file comparison - only pulls new or modified files, skipping what's already backed up.
+* **Ignore Rules**: Respect custom ignore patterns from `directory-ignore-list.ini` to skip unwanted folders.
+* **Auto Indexing**: Rapid scanning and mapping of Android storage before sync begins.
+* **Size Verification**: Validates file integrity between device and PC storage.
 
-### 2. ⚡ `ADB_SmartRestore.ps1` (v2.1 No-Mercy)
-**The Intelligent Surgeon**
-* **100% Integrity Audit**: No sampling shortcuts; every single byte is verified against the phone's storage.
-* **Hybrid Auto-Installer**: Automatically detects the `BACKUP_TEMP_APKS` folder and bulk-installs your apps.
-* **Surgical Precision**: Compares file sizes and only pushes what is missing or corrupt.
-* **Path Awareness**: Correctly maps extracted `sdcard/` paths back to the device.
+### 2. ⚡ `JigarSmartRestore.ps1` (v38.2 Titan Restore)
+**The Surgical Restore Tool - Mirror of Backup Power**
+* **12x Parallel Threads**: Lightning-fast restore from PC to phone with massive parallel throughput.
+* **3-Stage Fallback**: Same 3-stage fallback as backup - defeats ADB path bugs on restore.
+* **Delta Restore**: Intelligent comparison - only pushes files missing or different on device.
+* **Full Folder Restore**: Automatically scans backup folder and restores entire directory structure to `/sdcard/`.
+* **Ignore Rules**: Respects `directory-ignore-list.ini` to skip unwanted folders during restore.
+* **Auto Indexing**: Fast scanning and mapping of both backup and device storage before starting.
+* **100% Integrity Check**: Validates file sizes before pushing to ensure data integrity.
+* **Smart Path Handling**: Correctly handles paths with spaces and special characters flawlessly.
 
 ### 3. 🛡️ `paranoid.ps1`
 **The Truth Seeker**
