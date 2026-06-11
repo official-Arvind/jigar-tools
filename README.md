@@ -27,7 +27,7 @@
 <br/><br/>
 
 > **The world's most aggressive, high-performance Android backup & restore suite.**
-> Built for power users who refuse to wait. Free forever.
+> Engineered for power users who refuse to wait. Free forever.
 
 </div>
 
@@ -39,12 +39,12 @@
 
 ## ⚡ What Is This?
 
-Jigar Tools is a **Windows-native** toolkit that syncs your Android phone to your PC at **absurd speed** — using 12 parallel ADB threads, a 3-stage fallback engine, and a WinForms GUI that lets you pick exactly what to back up or restore. No cloud. No subscriptions. No nonsense.
+Jigar Tools is a **Windows-native toolkit** designed to sync your Android device to your PC at **absolute maximum velocity**. It leverages a 12-thread parallel ADB architecture, a robust 3-stage fallback engine, and an elegant WinForms GUI that grants you surgical precision over what to back up or restore. No cloud dependencies. No subscriptions. Pure performance.
 
 ```
-First backup  (50 GB)  →  5–10 minutes   @ 80–150 MB/s
-Delta sync    ( 5 GB)  →  < 2 minutes    @ 120–180 MB/s  
-Full restore  (50 GB)  →  8–15 minutes   @ 60–120 MB/s
+Initial Backup  (50 GB)  →  5–10 minutes   @ 80–150 MB/s
+Delta Sync      ( 5 GB)  →  < 2 minutes    @ 120–180 MB/s  
+Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 ```
 
 ---
@@ -56,31 +56,31 @@ Full restore  (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 <td width="50%" valign="top">
 
 ### 🚀 `JigarSmartSync.ps1`
-**Titan Backup Engine v39.1**
+**Titan Backup Engine**
 
-- ⚡ **12x parallel ADB threads**
-- 🔁 **3-stage fallback** — defeats every ADB bug
-- 📁 **Dynamic folder naming** `DeviceName_YYYY-MM-DD_HH-mm-ss`
-- 💾 **Location memory** — remembers last base path
-- 🌲 **Interactive EXCLUDE tree** — pick what to skip
-- 🔄 **Delta sync** — only new / modified files
-- 📝 **Full session transcript** saved to `Logs\`
-- ⛔ **Graceful Ctrl+C** — cleans ADB temp files safely
+- ⚡ **12x Parallel ADB Threads** — Maximize USB bandwidth.
+- 🔁 **3-Stage Fallback** — Circumvents all known ADB path limitations.
+- 📁 **Dynamic Snapshot Naming** — `DeviceName_YYYY-MM-DD_HH-mm-ss`.
+- 💾 **Location Memory** — Automatically recalls your previous backup destination.
+- 🌲 **Interactive EXCLUDE Menu** — Exclude specific folders/files via an intuitive UI.
+- 🔄 **Delta Sync** — Intelligently transfers only modified or new files.
+- 📝 **Persistent Logging** — Comprehensive transcripts saved to `Logs\`.
+- ⛔ **Graceful Abortion** — Safely cleans ADB temporary files on `Ctrl+C`.
 
 </td>
 <td width="50%" valign="top">
 
 ### ⚡ `JigarSmartRestore.ps1`
-**Titan Restore Engine v39.1**
+**Titan Restore Engine**
 
-- ⚡ **12x parallel ADB push threads**
-- 🔁 **3-stage fallback** on push side
-- 🗂️ **Smart snapshot picker** — numbered menu, newest first
-- 🌲 **Interactive INCLUDE tree** — pick exactly what to restore
-- 🔄 **Delta restore** — skips files already on device
-- 💾 **Location memory** — reads `settings.json`
-- 📝 **Full session transcript** saved to `Logs\`
-- ⛔ **Graceful Ctrl+C** — never leaves orphaned temp files
+- ⚡ **12x Parallel ADB Push Threads** — Lightning-fast data restoration.
+- 🔁 **3-Stage Fallback** — Bulletproof injection into the Android filesystem.
+- 🗂️ **Smart Snapshot Picker** — Automatically lists available backups, newest first.
+- 🌲 **Interactive INCLUDE Menu** — Surgically select exact files/folders to restore.
+- 🔄 **Delta Restore** — Bypasses identical files already present on the device.
+- 💾 **Location Memory** — Pre-loads snapshots based on your `settings.json`.
+- 📝 **Persistent Logging** — Detailed operational logs preserved in `Logs\`.
+- ⛔ **Graceful Abortion** — Halts cleanly without leaving orphaned temp files.
 
 </td>
 </tr>
@@ -88,26 +88,26 @@ Full restore  (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 <td width="50%" valign="top">
 
 ### ⚙️ `Jigar_Tools_Setup.bat`
-**Master Control Center v5.0**
+**Master Control Center**
 
-| # | Option |
+| Option | Action |
 |---|---|
-| 1 | JigarSync Backup |
-| 2 | Smart Restore |
-| 3 | Device Status |
-| 4 | Check for Updates |
-| 5 | Exit + Kill ADB |
+| `[1]` | Execute JigarSync Backup |
+| `[2]` | Execute Smart Restore |
+| `[3]` | View Device Connection Status |
+| `[4]` | Check GitHub for Updates |
+| `[5]` | Clean Exit & Terminate ADB Server |
 
 </td>
 <td width="50%" valign="top">
 
 ### 🗑️ `Jigar_Tools_Uninstall.bat`
-**Clean Uninstaller v1.0**
+**Clean System Uninstaller**
 
-- Removes tool dir from System PATH
-- Deletes Desktop shortcut
-- Stops ADB server daemon
-- Optionally wipes all backup data & logs
+- Strips the tool directory from your System `PATH`.
+- Removes the Desktop shortcut cleanly.
+- Halts the background ADB server daemon.
+- Offers optional total wipe of all local backup data and logs.
 
 </td>
 </tr>
@@ -119,245 +119,245 @@ Full restore  (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 
 ### Step 1 — Download
 
-Grab the latest release ZIP from the **[Releases page](https://github.com/official-Arvind/jigar-tools/releases/latest)** and extract it anywhere.
+Acquire the latest release ZIP from the **[Releases page](https://github.com/official-Arvind/jigar-tools/releases/latest)** and extract the contents anywhere on your system.
 
-### Step 2 — Setup (One time only)
-
-```
-Right-click  Jigar_Tools_Setup.bat  →  Run as Administrator
-```
-
-The launcher will automatically:
-- ✅ Verify PowerShell 5.1+
-- ✅ Register tools to System PATH permanently
-- ✅ Create a **"Jigar Tools"** shortcut on your Desktop
-- ✅ Create `settings.json` and `.version` on first run
-- ✅ Enter the God Mode Menu
-
-### Step 3 — Connect Your Phone
+### Step 2 — Initial Setup
 
 ```
-1.  Plug in via USB
-2.  On phone → tap  ALLOW  for USB Debugging
-3.  Set connection mode to  File Transfer
-4.  Keep screen UNLOCKED during all operations
+Right-click on Jigar_Tools_Setup.bat → Run as Administrator
 ```
 
-### Step 4 — Pick Your Weapon
+The God Mode Launcher will autonomously:
+- ✅ Validate PowerShell 5.1+ compatibility.
+- ✅ Inject the tools directory into your System `PATH` permanently.
+- ✅ Generate a **"Jigar Tools"** shortcut on your Desktop.
+- ✅ Initialize core configuration files (`settings.json` and `.version`).
+- ✅ Boot directly into the Master Control Menu.
+
+### Step 3 — Device Connection
 
 ```
-[1] JigarSync Backup   →  Phone to PC  (backup)
-[2] Smart Restore      →  PC to Phone  (restore)
-[3] Device Status      →  Check ADB connection
-[4] Check for Updates  →  GitHub auto-updater
-[5] Exit               →  Clean shutdown + ADB kill
+1.  Connect your Android device via USB.
+2.  On the device → tap ALLOW for USB Debugging authorization.
+3.  Set the USB connection mode to File Transfer.
+4.  Keep the screen UNLOCKED throughout the operation.
+```
+
+### Step 4 — Engage
+
+```
+[1] JigarSync Backup   →  Pull data: Phone to PC
+[2] Smart Restore      →  Push data: PC to Phone
+[3] Device Status      →  Verify active ADB connections
+[4] Check for Updates  →  Trigger the GitHub auto-updater
+[5] Exit               →  Clean shutdown + ADB process termination
 ```
 
 ---
 
 ## 🌲 Interactive Selection Menus
 
-Both tools open an **optional dark-themed WinForms TreeView GUI** after scanning — giving you full granular control before any transfer begins.
+Both core scripts launch an **optional, dark-themed WinForms TreeView GUI** post-scan—granting you absolute, granular control over the data payload before a single byte is transferred.
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-**🔴 Sync — EXCLUDE Menu**
+**🔴 Sync — EXCLUDE Interface**
 
-- All items start **unchecked** (back up everything)
-- Check items to **skip** them
-- Checking a folder skips everything inside
-- Uncheck a child to rescue it from an excluded parent
-- Click **"Skip"** to bypass and back up everything
+- All nodes begin **unchecked** (Full Backup default).
+- Check nodes to explicitly **skip** them.
+- Checking a directory recursively skips its entire contents.
+- Uncheck a nested child to rescue it from a skipped parent.
+- Click **"Skip"** to bypass the menu and execute a full mirror.
 
 </td>
 <td width="50%" valign="top">
 
-**🟢 Restore — INCLUDE Menu**
+**🟢 Restore — INCLUDE Interface**
 
-- All items start **unchecked** (nothing restores by default)
-- Check exactly what you want **pushed to the phone**
-- Partial selections work at any nesting depth
-- Click **"Restore All"** to bypass and restore everything
+- All nodes begin **unchecked** (Zero Restore default).
+- Check exact nodes you want **pushed back to the device**.
+- Precise partial selections are fully supported at any depth.
+- Click **"Restore All"** to bypass the menu and restore the entire snapshot.
 
 </td>
 </tr>
 </table>
 
-**Most-Specific-Ancestor Rule** — if `DCIM` is checked but `DCIM/Camera` is unchecked, the deeper node wins. Partial selections always behave correctly, no matter how deep the tree goes.
+**Most-Specific-Ancestor Logic** — If `/sdcard/DCIM` is excluded, but `/sdcard/DCIM/Camera` is explicitly included, the deeper instruction takes precedence. Complex selection matrices are handled flawlessly.
 
-**Lazy Loading** — the tree opens instantly even with 50,000+ files. Folders only load their children when expanded.
-
----
-
-## 🔄 Auto-Updater
-
-```
-[4] CHECK FOR UPDATES  →  Checks github.com/official-Arvind/jigar-tools
-
-Flow:
-  1.  Reads local .version file
-  2.  Queries GitHub releases API
-  3.  Compares versions
-  4.  If newer: shows what changed → asks Y/N
-  5.  Downloads ZIP → extracts → copies new files
-  6.  PRESERVES: settings.json  •  Logs\  •  your config
-  7.  Writes new version → relaunches automatically
-```
+**Asynchronous Lazy Loading** — The GUI renders instantly, even when parsing 50,000+ files. Subdirectories are populated dynamically only upon expansion.
 
 ---
 
-## 🔧 Configuration
+## 🔄 Intelligent Auto-Updater
 
-> All config files are **auto-generated at runtime**. You don't need to create anything manually.
+```
+[4] CHECK FOR UPDATES  →  Pings github.com/official-Arvind/jigar-tools
 
-| File | Created By | Purpose |
+Update Sequence:
+  1.  Parses local .version manifest.
+  2.  Queries the GitHub Releases API for the latest tag.
+  3.  Executes a version comparison.
+  4.  If an update exists: displays the changelog → prompts Y/N.
+  5.  Downloads release payload → extracts → overwrites core binaries.
+  6.  PRESERVES: settings.json, Logs\, and your local configurations.
+  7.  Updates local manifest → relaunches automatically.
+```
+
+---
+
+## 🔧 Configuration Architecture
+
+> Core configuration files are **auto-generated dynamically at runtime**. Manual intervention is not required.
+
+| Artifact | Generated By | Function |
 |---|---|---|
-| `settings.json` | JigarSmartSync / Restore | Remembers last backup base location |
-| `.version` | Jigar_Tools_Setup.bat | Tracks installed version for auto-updater |
-| `Logs\` | Both PS scripts | Full session transcripts |
-| `directory-ignore-list.ini` | JigarSmartSync on first run | Paths to always skip during backup |
+| `settings.json` | Titan Engine (Sync/Restore) | Persists your preferred base backup directory. |
+| `.version` | Master Control Center | Tracks the active build for the Auto-Updater. |
+| `Logs\` | Titan Engine (Sync/Restore) | Archives comprehensive operation transcripts. |
+| `directory-ignore-list.ini` | Titan Engine (Initial Sync) | Defines static paths to bypass during scans. |
 
-**Editing `directory-ignore-list.ini`** — add Android paths to permanently skip:
+**Modifying `directory-ignore-list.ini`** — Append absolute Android paths to permanently exclude them from operations:
 
 ```ini
-# One path per line. Lines starting with # are ignored.
-/sdcard/Android/data       # App cache — huge, regenerates automatically
-/sdcard/Android/obb        # Game OBB files
-/sdcard/Telegram           # Media re-downloads from app
-/sdcard/DCIM/.thumbnails   # Thumbnail cache
+# One path per line. Lines prefixed with # are ignored.
+/sdcard/Android/data       # Volatile application cache
+/sdcard/Android/obb        # Heavy game assets
+/sdcard/Telegram           # Media re-downloaded natively by the app
+/sdcard/DCIM/.thumbnails   # Disposable thumbnail cache
 ```
 
 ---
 
-## ⚠️ Troubleshooting
+## ⚠️ Troubleshooting Protocol
 
 <details>
-<summary><b>🔴 "No device found"</b></summary>
+<summary><b>🔴 "No device found" / Connection Failure</b></summary>
 <br/>
 
-- Check USB cable is properly connected
-- Enable USB Debugging: `Settings → Developer Options → USB Debugging`
-- Tap **ALLOW** when the permission dialog appears on your phone
-- Set phone to **File Transfer** mode (not Charging Only)
-- Try a different USB port
-- Restart ADB: use option `[5] Exit` to kill the daemon, then relaunch
+- Verify physical USB connection integrity.
+- Ensure **USB Debugging** is active: `Settings → Developer Options → USB Debugging`.
+- Acknowledge the RSA fingerprint prompt on the device (tap **ALLOW**).
+- Confirm the USB mode is set to **File Transfer** (MTP), not Charging Only.
+- Attempt a different physical USB port or cable.
+- Execute option `[5] Exit` to terminate the ADB daemon, then restart the toolkit.
 
 </details>
 
 <details>
-<summary><b>🟡 Permission denied / Read-only files</b></summary>
+<summary><b>🟡 Permission Denied / Read-Only Errors</b></summary>
 <br/>
 
-This is **completely normal** for system-protected files. The tool automatically skips them and continues. Your personal files (photos, documents, downloads) will always back up without issues. For full system access, root via Magisk with **Global Mount Namespace**.
+This is **expected behavior** for protected system directories. The Titan Engine automatically logs these and proceeds without interruption. Your personal payload (media, documents, downloads) will sync flawlessly. For absolute system access, root your device via Magisk and enforce a **Global Mount Namespace**.
 
 </details>
 
 <details>
-<summary><b>🟡 Slow transfer speed</b></summary>
+<summary><b>🟡 Sub-Optimal Transfer Velocity</b></summary>
 <br/>
 
-- Use a **USB 3.0+ cable** (USB 2.0 is the most common bottleneck)
-- Connect directly to PC — not through a USB hub
-- Disable **Windows Defender real-time scanning** for the backup folder during transfer
-- Turn off **battery saver mode** on the phone
-- Keep the phone screen **on and unlocked**
+- Ensure you are utilizing a **certified USB 3.0+ cable** (USB 2.0 is the primary bottleneck).
+- Connect directly to the motherboard; bypass external USB hubs.
+- Temporarily disable **Windows Defender Real-Time Protection** for your target backup directory.
+- Disable battery saver modes on the Android device.
+- Ensure the device screen remains **active and unlocked**.
 
 </details>
 
 <details>
-<summary><b>🟡 Backup interrupted mid-way</b></summary>
+<summary><b>🟡 Operation Interrupted Mid-Transfer</b></summary>
 <br/>
 
-Just **re-run the backup**. Delta sync means only unfinished files will be retransferred. Already completed files are detected by size comparison and skipped automatically.
+Simply **re-initiate the operation**. The Delta Sync engine will automatically calculate file hashes and sizes, bypassing already transferred data and seamlessly resuming from the point of failure.
 
 </details>
 
 <details>
-<summary><b>🔵 PowerShell execution policy error</b></summary>
+<summary><b>🔵 PowerShell Execution Policy Restrictions</b></summary>
 <br/>
 
-Re-run `Jigar_Tools_Setup.bat` as Administrator. The launcher explicitly passes `-ExecutionPolicy Bypass` to every PowerShell call, so this should never appear under normal conditions.
+Execute `Jigar_Tools_Setup.bat` with Administrator privileges. The Master Control Center natively bypasses execution policies via `-ExecutionPolicy Bypass`, neutralizing this error under normal conditions.
 
 </details>
 
 ---
 
-## 📊 Performance
+## 📊 Performance Matrix
 
-| Scenario | Speed | Time |
+| Operation Profile | Bandwidth | Expected Duration |
 |---|---|---|
-| First full backup (50 GB) | 80–150 MB/s | 5–10 min |
-| Delta sync (5 GB new files) | 120–180 MB/s | ~2 min |
-| Full restore (50 GB) | 60–120 MB/s | 8–15 min |
-| Selective restore (chosen folders) | 120–180 MB/s | Depends on selection |
+| Initial Full Sync (50 GB) | 80–150 MB/s | 5–10 min |
+| Delta Sync (5 GB modified) | 120–180 MB/s | ~2 min |
+| Full Snapshot Restore (50 GB) | 60–120 MB/s | 8–15 min |
+| Surgical Restore (Targeted) | 120–180 MB/s | Variable based on payload |
 
-*Actual speeds depend on USB cable generation, phone flash storage speed, PC disk I/O, and system load.*
+*Real-world throughput is contingent upon USB cable specifications, NAND flash write speeds, host PC disk I/O, and ambient system overhead.*
 
 ---
 
-## 📋 Requirements
+## 📋 System Prerequisites
 
-| Requirement | Details |
+| Prerequisite | Specification |
 |---|---|
-| **OS** | Windows 10 / Windows 11 |
-| **PowerShell** | 5.1+ (pre-installed on Win 10/11) |
-| **ADB** | Auto-detected from PATH or `bin\adb.exe` in the tools folder |
-| **USB Debugging** | Must be enabled on the Android device |
-| **Root** | Optional — enables 3rd-stage fallback for system files |
+| **Host OS** | Windows 10 / Windows 11 |
+| **Environment** | PowerShell 5.1+ (Native to Windows 10/11) |
+| **ADB Binary** | Auto-detected globally or executed locally via `bin\adb.exe` |
+| **Device State** | USB Debugging authorized and active |
+| **Root Access** | Optional — unlocks the 3rd-stage system fallback |
 
-**For rooted devices:** Set Mount Namespace Mode to **Global** in Magisk Manager → Superuser → Shell. This enables the APatch Global Mount fallback and gives the engine full `/sdcard` access in the root namespace.
+**For Rooted Hardware:** Enforce the Mount Namespace Mode to **Global** via Magisk Manager → Superuser → Shell. This activates the APatch Global Mount fallback, granting the Titan Engine absolute `/sdcard` dominance within the root namespace.
 
 ---
 
-## 🤝 Contributing
+## 🤝 Join the Builder Crew
 
-This project is built by the community, for the community. Every contributor gets their name in this repo **permanently**.
+Jigar Tools is forged by the community. Every validated contribution permanently etches your name into this repository.
 
 ```bash
-# 1. Fork this repo
-# 2. Create your branch
-git checkout -b feature/YourAmazingFeature
+# 1. Fork the repository
+# 2. Spin up a feature branch
+git checkout -b feature/QuantumOptimization
 
-# 3. Commit
-git commit -m "✨ Add YourAmazingFeature"
+# 3. Commit your enhancements
+git commit -m "✨ Implement Quantum Optimization"
 
-# 4. Push
-git push origin feature/YourAmazingFeature
+# 4. Push to origin
+git push origin feature/QuantumOptimization
 
-# 5. Open a Pull Request — Arvind Ji reviews all PRs personally
+# 5. Open a PR — Arvind Ji personally reviews all submissions.
 ```
 
-See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
+Consult the [CONTRIBUTING.md](docs/CONTRIBUTING.md) manifesto for advanced guidelines.
 
 ---
 
-## 💰 Support
+## 💰 Fuel the Project
 
-If Jigar Tools saved your data or your sanity, a small chai contribution goes a long way:
+If Jigar Tools salvaged your data or optimized your workflow, consider fueling further development:
 
 > **UPI ID: `arvindji@fam`**
-> *(GPay / PhonePe / Paytm / any UPI app)*
+> *(Compatible with GPay, PhonePe, Paytm, and all UPI clients)*
 
 ---
 
-## 📜 License — FriendlySource v1.0
+## 📜 FriendlySource License v1.0
 
-Jigar Tools is **free** and will stay that way.
+Jigar Tools is **free** and will permanently remain so.
 
-- ✅ Use it personally — no restrictions
-- ✅ Use it in your **free** app — with credit + link to this repo
-- ✅ Contribute and get your name in this project
-- 🚫 **Don't sell it.** That's the only rule.
+- ✅ **Deploy it** for personal operations without restriction.
+- ✅ **Integrate it** into your **free** software (attribution and repo link required).
+- ✅ **Contribute** and elevate the project.
+- 🚫 **Do not monetize or sell this codebase.** That is the only non-negotiable rule.
 
-Full terms → [LICENSE.md](LICENSE.md)
+Review the complete manifesto → [LICENSE.md](LICENSE.md)
 
 ---
 
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:24243e,50:302b63,100:0f0c29&height=140&section=footer&text=Made%20with%20raw%20energy%20by%20Arvind%20Ji&fontSize=18&fontColor=ffffff&fontAlignY=65&animation=fadeIn" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:24243e,50:302b63,100:0f0c29&height=140&section=footer&text=Engineered%20with%20raw%20energy%20by%20Arvind%20Ji&fontSize=18&fontColor=ffffff&fontAlignY=65&animation=fadeIn" width="100%"/>
 
 **© 2026 Arvind Ji · [GitHub](https://github.com/official-Arvind) · [Official Repo](https://github.com/official-Arvind/jigar-tools)**
 
