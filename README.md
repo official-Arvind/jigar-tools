@@ -20,7 +20,7 @@
   <img src="https://img.shields.io/github/contributors/official-Arvind/jigar-tools?style=for-the-badge&logo=handshake&logoColor=white&color=22c55e" alt="Contributors"/>
 </a>
 &nbsp;
-<a href="docs/LICENSE.md">
+<a href="LICENSE.md">
   <img src="https://img.shields.io/badge/License-FriendlySource-orange?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License"/>
 </a>
 
@@ -351,7 +351,7 @@ Jigar Tools is **free** and will stay that way.
 - ✅ Contribute and get your name in this project
 - 🚫 **Don't sell it.** That's the only rule.
 
-Full terms → [LICENSE.md](docs/LICENSE.md)
+Full terms → [LICENSE.md](LICENSE.md)
 
 ---
 
