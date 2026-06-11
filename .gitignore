@@ -1,0 +1,31 @@
+# ================================================================
+#  JIGAR TOOLS — .gitignore
+#  All files below are AUTO-GENERATED at runtime by the scripts.
+#  They should NEVER be committed to the repository.
+# ================================================================
+
+# --- Runtime config (created by Setup.bat & PS scripts) --------
+settings.json
+.version
+
+# --- Operation logs (created by Start-Transcript) ---------------
+Logs/
+*.log
+*.txt
+
+# --- Backup output folders (DeviceName_YYYY-MM-DD_HH-mm-ss) ----
+*_????-??-??_*/
+Smart_Backup/
+
+# --- Ignore list (user-local, auto-created if missing) ----------
+directory-ignore-list.ini
+
+# --- Windows / system junk -------------------------------------
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# --- Temp / update artifacts -----------------------------------
+*.zip
+*.tmp
+jigar_update*/
