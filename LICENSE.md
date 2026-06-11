@@ -1,21 +1,69 @@
-# Jigar Tools Limited Use License
-**Copyright (c) 2026 Arvind Ji (official-Arvind)**
+# Jigar Tools — Free & Open License (FriendlySource v1.0)
 
-### 1. PERMISSION FOR USE
-Individual users are granted a non-exclusive, non-transferable license to use, execute, and modify these scripts for **personal, non-commercial purposes only**.
+**Copyright © 2026 Arvind Ji ([@official-Arvind](https://github.com/official-Arvind))**
 
-### 2. PROHIBITED ACTIONS (THE "GOD MODE" LOCK)
-* **No Unauthorized Redistribution**: You are strictly forbidden from redistributing, bundling, or packaging these scripts (or any modified version of them) into any other software, toolkit, installer, or service without express written permission from the author.
-* **No Commercial Exploitation**: You may not use this software for any commercial gain, paid services, or profit-generating activities without a prior commercial license agreement.
-* **No Derivative Works for Distribution**: You may modify the code for your own use, but you cannot publish those modifications as a separate product or part of a larger project without authorization.
+Hey! Welcome to Jigar Tools. This project is free, made with love, and meant to stay that way. Read this once — it's short and written like a human being wrote it.
 
-### 3. REQUESTS & PERMISSIONS
-If you wish to integrate Jigar Tools into your own project, distribute it as part of a toolkit, or use it for commercial services, you must obtain permission through one of the following:
-* **Direct Request**: Contact the author via GitHub ([official-Arvind](https://github.com/official-Arvind)).
-* **Commercial Agreement**: Permissions may be granted upon payment or specific mutual agreement at the author's discretion.
+---
 
-### 4. OWNERSHIP
-All intellectual property rights, logic, and unique "Nitro-Raw" backup methodologies remain the sole property of Arvind Ji (official-Arvind).
+## ✅ What You CAN Do (Go Wild)
 
-### 5. NO WARRANTY
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY.
+- **Use it personally** — back up your own phone, your family's phone, your friend's phone. Go nuts.
+- **Contribute** — fork it, improve it, fix bugs, add features. Send a PR. Get your name in the contributors list. You're part of this now.
+- **Learn from it** — study the code, use the techniques, get smarter. That's the whole point.
+- **Use it in your own app or project** — embed it, build on top of it, integrate it into your tool. Totally fine, with the two simple rules below.
+- **Share it** — tell people about it, link to it, recommend it. The more the merrier.
+
+---
+
+## ⚠️ Two Simple Rules (That's It)
+
+### Rule 1 — Keep It Free
+If you use this code in your app or project, **your app must be free**. No paid downloads, no subscriptions, no "premium tier" that includes this code. Open source is made for people, by people — it should stay free. Don't be the person who sells someone else's free work to unsuspecting people. That's just not cool.
+
+### Rule 2 — Give Credit
+If you use this code anywhere, you must:
+1. Clearly state that this code was created by **Arvind Ji**.
+2. Include a link to the official repository:
+   **https://github.com/official-Arvind/jigar-tools**
+
+That's it. Two rules. Not complicated.
+
+---
+
+## 🚫 The One Thing That Will Make Arvind Ji Unhappy
+
+**Do not sell this.** Do not take this code, slap a price tag on it, and sell it to people who don't know it was free. That's the only thing this license truly forbids. Everything else is fair game if you follow the two rules above.
+
+---
+
+## 🤝 Contributors
+
+Everyone who contributes to this project gets their name in the repository forever. You are a co-builder of something real. Arvind Ji appreciates every PR, every bug report, every idea. Be friends. Collaborate. Make it better together.
+
+---
+
+## 📋 Summary (Plain English)
+
+| Action | Allowed? |
+|---|---|
+| Use for personal backup | ✅ Yes |
+| Use in a free app or project | ✅ Yes (with credit + link) |
+| Contribute and get credited | ✅ Yes, please! |
+| Share and recommend | ✅ Yes |
+| Modify for your own use | ✅ Yes |
+| Use in a **paid** app or product | 🚫 No |
+| Sell this code | 🚫 No |
+| Distribute without credit | 🚫 No |
+
+---
+
+## ⚡ No Warranty
+
+This software is provided as-is. Arvind Ji is not responsible if something goes wrong. Back up your backups. Test before you trust. Common sense applies.
+
+---
+
+*This is the FriendlySource License — not quite MIT, not quite GPL, just vibes and mutual respect.*
+
+**© 2026 Arvind Ji — Made free, meant to stay free. 🚀**

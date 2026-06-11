@@ -1,22 +1,346 @@
 #Requires -Version 5.1
 # ================================================================
-#  JIGAR TOOLS v38.2 - ABSOLUTE VELOCITY (RESTORE - TITAN ENGINE)
+#  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (RESTORE - TITAN ENGINE)
+#  NEW in v39.1:
+#  - Interactive INCLUDE Sub-Menu (TreeView GUI with lazy loading)
+#  - Granular folder/subfolder/file selection for partial restores
+#  - Most-specific-ancestor filter logic for partial selections
+#  ────────────────────────────────────────────────────────────
+#  From v39.0:
+#  - Smart Numbered Backup Menu (reads saved location)
+#  - Location Memory (settings.json)
+#  - Persistent Logging (Logs\ folder)
+#  - Graceful Ctrl+C Cancellation with ADB Temp Cleanup
 #  - 3-Stage Fallback: Unconditionally defeats all ADB path bugs
-#  - Smart Routing: Bypasses Virtual Drive for Root files
 #  - 12x Parallel Push: Restores files PC→Phone at massive speed
-#  - Formatting-Proof: Double-spaced and hardcoded semicolons
 # ================================================================
 
+# ================================================================
+#  INTERACTIVE SELECTION ENGINE  (shared helper functions)
+#  - Build-JgrPathIndex    : flat path list → nested hashtable
+#  - Add-JgrTreeChildren   : lazy-populate a TreeView node
+#  - Set-JgrCheckedDeep    : propagate checked state to children
+#  - Get-JgrNodeStates     : harvest path→bool map from live tree
+#  - Show-JigarIncludeMenu : full WinForms GUI (INCLUDE mode)
+#  - Test-JgrIncluded      : most-specific-ancestor lookup
+# ================================================================
+Add-Type -AssemblyName System.Windows.Forms;
+Add-Type -AssemblyName System.Drawing;
+
+$script:JgrPlaceholder    = '__JGR_PH__';
+$script:SuppressTreeCheck = $false;
+
+function Build-JgrPathIndex {
+    param([string[]] $Paths)
+    $idx = [System.Collections.Generic.Dictionary[string,
+        [System.Collections.Generic.SortedSet[string]]]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase);
+    foreach ($p in $Paths) {
+        $rel   = $p -replace '^\.\./', '' -replace '^\./', '';
+        $parts = $rel.Split('/');
+        for ($d = 0; $d -lt $parts.Count; $d++) {
+            $pk = if ($d -eq 0) { '' } else { ($parts[0..($d-1)]) -join '/' };
+            if (-not $idx.ContainsKey($pk)) {
+                $idx[$pk] = [System.Collections.Generic.SortedSet[string]]::new(
+                    [System.StringComparer]::OrdinalIgnoreCase);
+            }
+            [void]$idx[$pk].Add($parts[$d]);
+        }
+    }
+    return $idx;
+}
+
+function Add-JgrTreeChildren {
+    param(
+        [System.Windows.Forms.TreeNode] $Parent,
+        [object]  $Index,
+        [string]  $ParentPath,
+        [bool]    $Checked
+    )
+    $Parent.Nodes.Clear();
+    if (-not $Index.ContainsKey($ParentPath)) { return };
+    foreach ($child in $Index[$ParentPath]) {
+        $childPath = if ($ParentPath -eq '') { $child } else { "$ParentPath/$child" };
+        $tn        = [System.Windows.Forms.TreeNode]::new($child);
+        $tn.Tag    = $childPath;
+        $tn.Checked = $Checked;
+        $isFolder  = $Index.ContainsKey($childPath);
+        if ($isFolder) {
+            $tn.NodeFont  = [System.Drawing.Font]::new('Segoe UI', 9,
+                [System.Drawing.FontStyle]::Bold);
+            [void]$tn.Nodes.Add([System.Windows.Forms.TreeNode]::new($script:JgrPlaceholder));
+        } else {
+            $tn.ForeColor = [System.Drawing.Color]::FromArgb(160, 255, 200);
+        }
+        [void]$Parent.Nodes.Add($tn);
+    }
+}
+
+function Set-JgrCheckedDeep {
+    param([System.Windows.Forms.TreeNode] $Node, [bool] $State)
+    $Node.Checked = $State;
+    foreach ($child in $Node.Nodes) {
+        if ($child.Text -ne $script:JgrPlaceholder) {
+            Set-JgrCheckedDeep -Node $child -State $State;
+        }
+    }
+}
+
+function Get-JgrNodeStates {
+    param(
+        [System.Windows.Forms.TreeNodeCollection] $Nodes,
+        [hashtable] $States
+    )
+    foreach ($n in $Nodes) {
+        if ($n.Text -eq $script:JgrPlaceholder) { continue };
+        $States[$n.Tag.ToString()] = $n.Checked;
+        Get-JgrNodeStates -Nodes $n.Nodes -States $States;
+    }
+}
+
+function Test-JgrIncluded {
+    # Returns $true if the file should be INCLUDED (most-specific ancestor wins)
+    # Default is $false so that nothing is included unless explicitly checked.
+    param([string] $RelPath, [hashtable] $NodeStates)
+    $path  = $RelPath -replace '^\./', '';
+    $parts = $path.Split('/');
+    $best  = $false;   # default: NOT included
+    for ($d = 1; $d -le $parts.Count; $d++) {
+        $ancestor = ($parts[0..($d-1)]) -join '/';
+        if ($NodeStates.ContainsKey($ancestor)) { $best = $NodeStates[$ancestor] };
+    }
+    return $best;
+}
+
+function Show-JigarIncludeMenu {
+    param(
+        [string]   $FormTitle,
+        [string[]] $FilePaths
+    )
+
+    $pathIndex = Build-JgrPathIndex -Paths $FilePaths;
+
+    # ── Form ──────────────────────────────────────────────────────
+    $form = [System.Windows.Forms.Form]::new();
+    $form.Text          = $FormTitle;
+    $form.Size          = [System.Drawing.Size]::new(800, 700);
+    $form.MinimumSize   = [System.Drawing.Size]::new(580, 500);
+    $form.StartPosition = 'CenterScreen';
+    $form.BackColor     = [System.Drawing.Color]::FromArgb(14, 22, 18);
+    $form.ForeColor     = [System.Drawing.Color]::FromArgb(220, 240, 220);
+
+    # ── Top instruction banner ─────────────────────────────────────
+    $pnlTop = [System.Windows.Forms.Panel]::new();
+    $pnlTop.Dock      = 'Top';
+    $pnlTop.Height    = 62;
+    $pnlTop.BackColor = [System.Drawing.Color]::FromArgb(14, 28, 14);
+    $pnlTop.Padding   = [System.Windows.Forms.Padding]::new(12, 8, 12, 4);
+
+    $lblTitle = [System.Windows.Forms.Label]::new();
+    $lblTitle.Text      = '  ✅  SELECT FOLDERS / FILES TO INCLUDE IN RESTORE';
+    $lblTitle.ForeColor = [System.Drawing.Color]::FromArgb(80, 230, 130);
+    $lblTitle.Font      = [System.Drawing.Font]::new('Segoe UI', 10,
+        [System.Drawing.FontStyle]::Bold);
+    $lblTitle.Dock      = 'Top';
+    $lblTitle.Height    = 26;
+
+    $lblSub = [System.Windows.Forms.Label]::new();
+    $lblSub.Text      = '  Only CHECKED items will be restored. Press “Restore All” to skip this filter.';
+    $lblSub.ForeColor = [System.Drawing.Color]::FromArgb(100, 180, 120);
+    $lblSub.Font      = [System.Drawing.Font]::new('Segoe UI', 8);
+    $lblSub.Dock      = 'Top';
+    $lblSub.Height    = 20;
+
+    $pnlTop.Controls.Add($lblSub);
+    $pnlTop.Controls.Add($lblTitle);
+
+    # ── Status strip ─────────────────────────────────────────────
+    $status = [System.Windows.Forms.ToolStripStatusLabel]::new();
+    $status.Text      = '0 item(s) selected for restore';
+    $status.ForeColor = [System.Drawing.Color]::FromArgb(100, 220, 160);
+    $statusBar = [System.Windows.Forms.StatusStrip]::new();
+    $statusBar.BackColor = [System.Drawing.Color]::FromArgb(10, 18, 12);
+    [void]$statusBar.Items.Add($status);
+
+    # ── TreeView ─────────────────────────────────────────────────
+    $tv = [System.Windows.Forms.TreeView]::new();
+    $tv.CheckBoxes  = $true;
+    $tv.Dock        = 'Fill';
+    $tv.Font        = [System.Drawing.Font]::new('Segoe UI', 9);
+    $tv.BackColor   = [System.Drawing.Color]::FromArgb(18, 28, 22);
+    $tv.ForeColor   = [System.Drawing.Color]::FromArgb(200, 235, 210);
+    $tv.BorderStyle = 'None';
+    $tv.Scrollable  = $true;
+
+    # ── Bottom panel ─────────────────────────────────────────────
+    $pnlBot = [System.Windows.Forms.Panel]::new();
+    $pnlBot.Dock      = 'Bottom';
+    $pnlBot.Height    = 54;
+    $pnlBot.BackColor = [System.Drawing.Color]::FromArgb(10, 18, 12);
+    $pnlBot.Padding   = [System.Windows.Forms.Padding]::new(10, 10, 10, 0);
+
+    $mkBtn = {
+        param([string]$T, [int]$X, [string]$BG6)
+        $b = [System.Windows.Forms.Button]::new();
+        $b.Text      = $T;
+        $b.Size      = [System.Drawing.Size]::new(100, 34);
+        $b.Location  = [System.Drawing.Point]::new($X, 10);
+        $b.FlatStyle = 'Flat';
+        $b.BackColor = [System.Drawing.ColorTranslator]::FromHtml($BG6);
+        $b.ForeColor = [System.Drawing.Color]::White;
+        $b.Font      = [System.Drawing.Font]::new('Segoe UI', 8);
+        $b.FlatAppearance.BorderSize = 0;
+        return $b;
+    }
+
+    $btnAll      = & $mkBtn '✓ Select All'  10  '#1a5c2e';
+    $btnNone     = & $mkBtn '✗ Clear All'   115 '#3a3a1a';
+    $btnExpand   = & $mkBtn '⊞ Expand All'  220 '#1a2d5c';
+    $btnCollapse = & $mkBtn '⊟ Collapse'    325 '#2e2e40';
+
+    $btnProceed = [System.Windows.Forms.Button]::new();
+    $btnProceed.Text      = '▶  Restore Selected';
+    $btnProceed.Size      = [System.Drawing.Size]::new(140, 34);
+    $btnProceed.FlatStyle = 'Flat';
+    $btnProceed.BackColor = [System.Drawing.Color]::FromArgb(20, 140, 60);
+    $btnProceed.ForeColor = [System.Drawing.Color]::White;
+    $btnProceed.Font      = [System.Drawing.Font]::new('Segoe UI', 9,
+        [System.Drawing.FontStyle]::Bold);
+    $btnProceed.FlatAppearance.BorderSize = 0;
+    $btnProceed.Anchor      = 'Bottom, Right';
+    $btnProceed.DialogResult = 'OK';
+
+    $btnSkip = [System.Windows.Forms.Button]::new();
+    $btnSkip.Text      = 'Restore All (Skip)';
+    $btnSkip.Size      = [System.Drawing.Size]::new(140, 34);
+    $btnSkip.FlatStyle = 'Flat';
+    $btnSkip.BackColor = [System.Drawing.Color]::FromArgb(50, 65, 50);
+    $btnSkip.ForeColor = [System.Drawing.Color]::White;
+    $btnSkip.Font      = [System.Drawing.Font]::new('Segoe UI', 9);
+    $btnSkip.FlatAppearance.BorderSize = 0;
+    $btnSkip.Anchor       = 'Bottom, Right';
+    $btnSkip.DialogResult = 'Cancel';
+
+    $form.add_Resize({
+        $btnProceed.Location = [System.Drawing.Point]::new($pnlBot.Width - 155, 10);
+        $btnSkip.Location    = [System.Drawing.Point]::new($pnlBot.Width - 300, 10);
+    })
+    $btnProceed.Location = [System.Drawing.Point]::new(630, 10);
+    $btnSkip.Location    = [System.Drawing.Point]::new(485, 10);
+
+    $pnlBot.Controls.AddRange(@($btnAll, $btnNone, $btnExpand, $btnCollapse,
+                                 $btnProceed, $btnSkip));
+    $form.AcceptButton = $btnProceed;
+    $form.CancelButton = $btnSkip;
+
+    # ── Populate root nodes ───────────────────────────────────────
+    $tv.BeginUpdate();
+    if ($pathIndex.ContainsKey('')) {
+        foreach ($child in $pathIndex['']) {
+            $tn       = [System.Windows.Forms.TreeNode]::new($child);
+            $tn.Tag   = $child;
+            $tn.Checked = $false;
+            $isFolder   = $pathIndex.ContainsKey($child);
+            if ($isFolder) {
+                $tn.NodeFont = [System.Drawing.Font]::new('Segoe UI', 9,
+                    [System.Drawing.FontStyle]::Bold);
+                [void]$tn.Nodes.Add(
+                    [System.Windows.Forms.TreeNode]::new($script:JgrPlaceholder));
+            } else {
+                $tn.ForeColor = [System.Drawing.Color]::FromArgb(160, 255, 200);
+            }
+            [void]$tv.Nodes.Add($tn);
+        }
+    }
+    $tv.EndUpdate();
+
+    # ── Helper: refresh status bar count ─────────────────────────
+    $updateStatus = {
+        $st = @{};
+        Get-JgrNodeStates -Nodes $tv.Nodes -States $st;
+        $c = ($st.Values | Where-Object { $_ -eq $true }).Count;
+        $status.Text = "$c item(s) selected for restore";
+    };
+
+    # ── Events ────────────────────────────────────────────────────
+    $tv.add_BeforeExpand({
+        param($s, $e)
+        $node = $e.Node;
+        if ($node.Nodes.Count -eq 1 -and
+            $node.Nodes[0].Text -eq $script:JgrPlaceholder) {
+            $s.BeginUpdate();
+            Add-JgrTreeChildren -Parent $node -Index $pathIndex `
+                -ParentPath $node.Tag.ToString() -Checked $node.Checked;
+            $s.EndUpdate();
+        }
+    });
+
+    $tv.add_AfterCheck({
+        param($s, $e)
+        if ($script:SuppressTreeCheck) { return };
+        $script:SuppressTreeCheck = $true;
+        Set-JgrCheckedDeep -Node $e.Node -State $e.Node.Checked;
+        $script:SuppressTreeCheck = $false;
+        & $updateStatus;
+    });
+
+    $btnAll.add_Click({
+        $script:SuppressTreeCheck = $true;
+        $tv.BeginUpdate();
+        foreach ($n in $tv.Nodes) { Set-JgrCheckedDeep -Node $n -State $true };
+        $tv.EndUpdate();
+        $script:SuppressTreeCheck = $false;
+        & $updateStatus;
+    });
+
+    $btnNone.add_Click({
+        $script:SuppressTreeCheck = $true;
+        $tv.BeginUpdate();
+        foreach ($n in $tv.Nodes) { Set-JgrCheckedDeep -Node $n -State $false };
+        $tv.EndUpdate();
+        $script:SuppressTreeCheck = $false;
+        & $updateStatus;
+    });
+
+    $btnExpand.add_Click({ $tv.ExpandAll() });
+    $btnCollapse.add_Click({ $tv.CollapseAll() });
+
+    $form.Controls.Add($tv);
+    $form.Controls.Add($pnlTop);
+    $form.Controls.Add($pnlBot);
+    $form.Controls.Add($statusBar);
+
+    $dlgResult  = $form.ShowDialog();
+    $nodeStates = @{};
+    if ($dlgResult -eq 'OK') {
+        Get-JgrNodeStates -Nodes $tv.Nodes -States $nodeStates;
+    }
+    $form.Dispose();
+    if ($dlgResult -ne 'OK') { return $null };  # null = restore all
+    return $nodeStates;
+}
+
 & chcp 65001 | Out-Null;
-[Console]::OutputEncoding =[System.Text.Encoding]::UTF8;
-[Console]::InputEncoding = [System.Text.Encoding]::UTF8;
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
+[Console]::InputEncoding  = [System.Text.Encoding]::UTF8;
 $ProgressPreference = 'Continue';
-$Host.UI.RawUI.WindowTitle = 'Jigar Tools v38.2 - Titan Restore';
-$ErrorActionPreference = 'SilentlyContinue';[System.Environment]::SetEnvironmentVariable("LC_ALL", "C.UTF-8");
+$Host.UI.RawUI.WindowTitle = 'Jigar Tools v39.0 - Titan Restore';
+$ErrorActionPreference = 'SilentlyContinue';
+[System.Environment]::SetEnvironmentVariable("LC_ALL", "C.UTF-8");
+
+# ----------------------------------------------------------------
+#  LOGGING INIT
+# ----------------------------------------------------------------
+$LogsDir = Join-Path $PSScriptRoot "Logs";
+if (-not (Test-Path $LogsDir)) { New-Item -ItemType Directory -Force -Path $LogsDir | Out-Null };
+$LogTimestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss";
+$LogFile = Join-Path $LogsDir "RestoreLog_$LogTimestamp.txt";
+Start-Transcript -Path $LogFile -Append | Out-Null;
 
 Write-Host "`n ==============================================================" -ForegroundColor Cyan;
-Write-Host "   JIGAR SMART RESTORE (12x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
+Write-Host "   JIGAR SMART RESTORE v39.0  (12x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
 Write-Host " ==============================================================" -ForegroundColor Cyan;
+Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 
 # ----------------------------------------------------------------
 #  0. AUTO-CLEANUP ORPHANED VIRTUAL DRIVES
@@ -24,15 +348,15 @@ Write-Host " ==============================================================" -Fo
 $substOut = & subst;
 if ($substOut) {
     foreach ($line in $substOut) {
-        if ($line -match "^([A-Z]:)\\: => (.*Smart_Backup.*)$") {
-            $drv = $Matches[1];
+        if ($line -match "^([A-Z]:\\): => (.*(Smart_Backup|_202\d-\d\d-\d\d_).*)$") {
+            $drv = $Matches[1].TrimEnd('\');
             & subst $drv /D | Out-Null;
         }
     }
 }
 
 # ----------------------------------------------------------------
-#  1. PROVISION ADB 
+#  1. PROVISION ADB
 # ----------------------------------------------------------------
 $toolDir = Join-Path $PSScriptRoot "bin";
 if (-not (Test-Path $toolDir)) { New-Item -ItemType Directory -Force -Path $toolDir | Out-Null };
@@ -40,7 +364,7 @@ $adbExe = Join-Path $toolDir "adb.exe";
 
 if (-not (Test-Path $adbExe)) {
     Write-Host "`n[SYSTEM] Downloading Official ADB Drivers..." -ForegroundColor Yellow;
-    $url = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip";
+    $url     = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip";
     $zipPath = Join-Path $toolDir "tools.zip";
     Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing;
     Expand-Archive -Path $zipPath -DestinationPath $toolDir -Force;
@@ -54,6 +378,7 @@ Start-Sleep -Seconds 2;
 $devices = (& $adbExe devices 2>$null) | Select-String -Pattern '\tdevice$';
 if (-not $devices -or $devices.Count -eq 0) {
     Write-Host "`n[ERROR] No device found. Plug in phone and enable USB Debugging." -ForegroundColor Red;
+    Stop-Transcript | Out-Null;
     Read-Host "Press Enter to exit...";
     exit;
 }
@@ -61,16 +386,96 @@ $serial = ($devices[0].ToString().Split("`t")[0]).Trim();
 Write-Host "[SYSTEM] Device Connected & Verified!" -ForegroundColor Green;
 
 # ----------------------------------------------------------------
-#  2. BACKUP SOURCE SELECTION
+#  FEATURE 5: GRACEFUL CTRL+C CANCELLATION HANDLER
 # ----------------------------------------------------------------
-Write-Host "`n[SOURCE] Select Backup Folder..." -ForegroundColor Yellow;
+$global:JigarAbort = $false;
+
+$cancelHandler = [System.ConsoleCancelEventHandler]{
+    param($sender, $e)
+    $e.Cancel = $true;
+    $global:JigarAbort = $true;
+    Write-Host "`n`n[ABORT] Ctrl+C detected. Finishing current batch safely..." -ForegroundColor Red;
+};
+[System.Console]::add_CancelKeyPress($cancelHandler);
+
+# ----------------------------------------------------------------
+#  2. BACKUP SOURCE SELECTION (Feature 2 + 4: Smart Numbered Menu)
+# ----------------------------------------------------------------
 Add-Type -AssemblyName System.Windows.Forms;
-$fb = New-Object System.Windows.Forms.FolderBrowserDialog;
-if ($fb.ShowDialog() -ne "OK") { exit };
-$restoreRoot = $fb.SelectedPath;
+
+$SettingsFile = Join-Path $PSScriptRoot "settings.json";
+$Settings = @{ LastBackupLocation = "" };
+if (Test-Path $SettingsFile) {
+    try { $Settings = Get-Content $SettingsFile -Raw | ConvertFrom-Json -AsHashtable; } catch {};
+}
+
+$savedBase = $Settings.LastBackupLocation;
+$restoreRoot = $null;
+
+# Try to list available backup folders from saved location
+if ($savedBase -and (Test-Path $savedBase)) {
+    $backupFolders = Get-ChildItem -Path $savedBase -Directory |
+        Sort-Object Name -Descending;
+
+    if ($backupFolders.Count -gt 0) {
+        Write-Host "`n[RESTORE] Available backups in: $savedBase" -ForegroundColor Yellow;
+        Write-Host "  -------------------------------------------------------" -ForegroundColor DarkGray;
+
+        $idx = 1;
+        foreach ($folder in $backupFolders) {
+            # Color-code by age: newer folders are brighter
+            $color = if ($idx -le 3) { "Green" } elseif ($idx -le 7) { "Cyan" } else { "DarkGray" };
+            Write-Host "  [$idx] $($folder.Name)" -ForegroundColor $color;
+            $idx++;
+        }
+        $browseIdx = $idx;
+        Write-Host "  [$browseIdx] Browse for another folder..." -ForegroundColor White;
+        Write-Host "  -------------------------------------------------------" -ForegroundColor DarkGray;
+
+        $choice = $null;
+        while ($true) {
+            $raw = Read-Host "`n  Type a number and press Enter";
+            if ($raw -match '^\d+$') {
+                $choiceNum = [int]$raw;
+                if ($choiceNum -ge 1 -and $choiceNum -lt $browseIdx) {
+                    $restoreRoot = $backupFolders[$choiceNum - 1].FullName;
+                    Write-Host "`n[RESTORE] Selected: $restoreRoot" -ForegroundColor Green;
+                    break;
+                } elseif ($choiceNum -eq $browseIdx) {
+                    # Fall through to FolderBrowserDialog below
+                    break;
+                }
+            }
+            Write-Host "  [!] Invalid choice. Enter a number between 1 and $browseIdx." -ForegroundColor Red;
+        }
+    }
+}
+
+# Fallback: FolderBrowserDialog if no folders found or user chose Browse
+if (-not $restoreRoot) {
+    Write-Host "`n[SOURCE] Select Backup Folder..." -ForegroundColor Yellow;
+    $fb = New-Object System.Windows.Forms.FolderBrowserDialog;
+    $fb.Description = "Select Backup Folder to Restore From";
+    $fb.ShowNewFolderButton = $false;
+    if ($savedBase -and (Test-Path $savedBase)) { $fb.SelectedPath = $savedBase };
+    if ($fb.ShowDialog() -ne "OK") {
+        Write-Host "[ABORT] No folder selected. Exiting." -ForegroundColor Red;
+        Stop-Transcript | Out-Null;
+        exit;
+    }
+    $restoreRoot = $fb.SelectedPath;
+
+    # If user browsed, try to detect if they picked a base or a specific backup
+    # Save the parent as the base location for next time
+    $newBase = Split-Path $restoreRoot -Parent;
+    $Settings.LastBackupLocation = $newBase;
+    $Settings | ConvertTo-Json | Set-Content -Path $SettingsFile -Encoding UTF8;
+    Write-Host "[CONFIG] Saved new base location: $newBase" -ForegroundColor DarkGray;
+}
 
 if (-not (Test-Path $restoreRoot)) {
     Write-Host "[ERROR] Backup folder not found!" -ForegroundColor Red;
+    Stop-Transcript | Out-Null;
     Read-Host "Press Enter to exit...";
     exit;
 }
@@ -87,8 +492,8 @@ if (Test-Path $iniPath) {
     foreach ($line in $lines) {
         $line = $line.Trim();
         if ($line -match "^#" -or $line -eq "") { continue };
-        $clean = $line -replace '^/?sdcard/', './';
-        $clean = $clean -replace '/$', '';
+        $clean   = $line -replace '^/?sdcard/', './';
+        $clean   = $clean -replace '/$', '';
         $escaped = [Regex]::Escape($clean);
         $IgnorePatterns += "^$escaped/";
         $IgnorePatterns += "^$escaped$";
@@ -104,7 +509,7 @@ $BackupFiles = @{};
 
 Get-ChildItem -Path $restoreRoot -File -Recurse | ForEach-Object {
     $relPath = $_.FullName.Substring($restoreRoot.Length + 1) -replace '\\', '/';
-    $relPath = "./" + $relPath;
+    $relPath  = "./" + $relPath;
     $BackupFiles[$relPath] = $_.Length;
 }
 Write-Host "[SCAN] Found $($BackupFiles.Count) total files in backup." -ForegroundColor Green;
@@ -112,24 +517,24 @@ Write-Host "[SCAN] Found $($BackupFiles.Count) total files in backup." -Foregrou
 Write-Host "[SCAN] Mapping Android Device Storage... (Please Wait)" -ForegroundColor Yellow;
 $AndroidFiles = @{};
 
-$cmd = "cd /sdcard && find . -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+$cmd      = "cd /sdcard && find . -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
 $procInfo = New-Object System.Diagnostics.ProcessStartInfo;
-$procInfo.FileName = $adbExe;
+$procInfo.FileName  = $adbExe;
 $procInfo.Arguments = "-s $serial shell `"$cmd`"";
 $procInfo.RedirectStandardOutput = $true;
 $procInfo.UseShellExecute = $false;
-$procInfo.StandardOutputEncoding =[System.Text.Encoding]::UTF8;
+$procInfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8;
 $procInfo.CreateNoWindow = $true;
 
-$proc =[System.Diagnostics.Process]::Start($procInfo);
+$proc   = [System.Diagnostics.Process]::Start($procInfo);
 $output = $proc.StandardOutput.ReadToEnd() -split "`n";
 $proc.WaitForExit();
 
 foreach ($line in $output) {
     $line = $line.Trim();
-    $idx = $line.IndexOf('|');
+    $idx  = $line.IndexOf('|');
     if ($idx -gt 0) {
-        $sz = [long]$line.Substring(0, $idx);
+        $sz   = [long]$line.Substring(0, $idx);
         $file = $line.Substring($idx + 1);
         if ($file.StartsWith("./")) { $AndroidFiles[$file] = $sz };
     }
@@ -137,17 +542,49 @@ foreach ($line in $output) {
 Write-Host "[SCAN] Found $($AndroidFiles.Count) files currently on Android.`n" -ForegroundColor Green;
 
 # ----------------------------------------------------------------
-#  5. CALCULATE DELTA (RESPECTING IGNORE LIST)
+#  4.5  INTERACTIVE INCLUDE SUB-MENU
+# ----------------------------------------------------------------
+Write-Host "[FILTER] Restore only specific folders/files from this backup?" -ForegroundColor Yellow;
+Write-Host "         (Opens a selection picker — press N to restore everything)" -ForegroundColor DarkGray;
+$filterChoice = Read-Host "         Launch include menu? [Y/N]";
+$IncludeNodeStates = $null;
+$IncludeActive     = $false;
+if ($filterChoice.Trim().ToUpper() -eq 'Y') {
+    Write-Host "[FILTER] Building backup file tree for selection..." -ForegroundColor DarkCyan;
+    $IncludeNodeStates = Show-JigarIncludeMenu `
+        -FormTitle 'JigarSmartRestore  –  Select Items to INCLUDE in Restore' `
+        -FilePaths ($BackupFiles.Keys | Sort-Object);
+    if ($null -eq $IncludeNodeStates) {
+        Write-Host "[FILTER] Skipped — restoring everything." -ForegroundColor DarkGray;
+    } else {
+        $incCount = ($IncludeNodeStates.Values | Where-Object { $_ -eq $true }).Count;
+        if ($incCount -eq 0) {
+            Write-Host "[WARNING] No items selected — restoring everything instead." -ForegroundColor DarkYellow;
+        } else {
+            $IncludeActive = $true;
+            Write-Host "[FILTER] $incCount item(s) selected for restore." -ForegroundColor Green;
+        }
+    }
+}
+
+# ----------------------------------------------------------------
+#  5. CALCULATE DELTA (RESPECTING IGNORE LIST + INTERACTIVE FILTER)
 # ----------------------------------------------------------------
 $ToPush = @();
 foreach ($key in $BackupFiles.Keys) {
     $backupSize = $BackupFiles[$key];
-    
+
+    # Static ignore patterns (.ini rules)
     $skip = $false;
     foreach ($pattern in $IgnorePatterns) {
         if ($key -match $pattern) { $skip = $true; break };
     }
     if ($skip) { continue };
+
+    # Interactive inclusion filter (most-specific-ancestor rule)
+    if ($IncludeActive) {
+        if (-not (Test-JgrIncluded -RelPath $key -NodeStates $IncludeNodeStates)) { continue };
+    }
 
     if (-not $AndroidFiles.ContainsKey($key) -or $AndroidFiles[$key] -ne $backupSize) {
         $ToPush += $key;
@@ -157,8 +594,9 @@ foreach ($key in $BackupFiles.Keys) {
 $totalFiles = $ToPush.Count;
 if ($totalFiles -eq 0) {
     Write-Host "==============================================================" -ForegroundColor Green;
-    Write-Host " YOUR PHONE IS 100% IN SYNC. NO NEW FILES TO RESTORE." -ForegroundColor Green;
+    Write-Host " YOUR PHONE IS 100% IN SYNC. NO NEW FILES TO RESTORE."          -ForegroundColor Green;
     Write-Host "==============================================================`n" -ForegroundColor Green;
+    Stop-Transcript | Out-Null;
     Read-Host "Press Enter to exit...";
     exit;
 }
@@ -169,106 +607,109 @@ Write-Host "[RESTORE] Queued $totalFiles missing or modified files for push." -F
 # ----------------------------------------------------------------
 Write-Host "[RESTORE] Pre-allocating directory trees on device..." -ForegroundColor DarkGray;
 foreach ($file in $ToPush) {
-    $cleanPath = $file.Substring(2);
+    $cleanPath  = $file.Substring(2);
     $remotePath = "/sdcard/$cleanPath";
-    $remoteDir = $remotePath.Substring(0, $remotePath.LastIndexOf('/'));
-    
+    $remoteDir  = $remotePath.Substring(0, $remotePath.LastIndexOf('/'));
+
     $mkdirCmd = "mkdir -p `"$remoteDir`"";
     & $adbExe -s $serial shell $mkdirCmd | Out-Null;
 }
 
 Write-Host "[RESTORE] Engaging 12x Parallel Titan Streams...`n" -ForegroundColor Yellow;
 
-$MaxThreads = 12;
+$MaxThreads   = 12;
 $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 
 $ScriptBlock = {
     param($adbExe, $serial, $src, $dest)
-    
+
     # ---------------------------------------------------
     # ATTEMPT 1: Standard Push
     # ---------------------------------------------------
     $pInfo = New-Object System.Diagnostics.ProcessStartInfo;
-    $pInfo.FileName = $adbExe;
+    $pInfo.FileName  = $adbExe;
     $pInfo.Arguments = "-s `"$serial`" push `"$src`" `"$dest`"";
     $pInfo.UseShellExecute = $false;
-    $pInfo.CreateNoWindow = $true;
+    $pInfo.CreateNoWindow  = $true;
     $p = [System.Diagnostics.Process]::Start($pInfo);
     $p.WaitForExit();
-    
+
     if ($p.ExitCode -eq 0) { return 0; }
 
     # ---------------------------------------------------
-    # ATTEMPT 2: Temp Push Via /data/local/tmp (Bypasses ADB Drive Bugs)
+    # ATTEMPT 2: Temp Push Via /data/local/tmp
     # ---------------------------------------------------
-    $uuid = [guid]::NewGuid().ToString().Substring(0,8);
+    $uuid       = [guid]::NewGuid().ToString().Substring(0, 8);
     $androidTmp = "/data/local/tmp/jgr_$uuid";
-    
+
     $pInfo2 = New-Object System.Diagnostics.ProcessStartInfo;
-    $pInfo2.FileName = $adbExe;
+    $pInfo2.FileName  = $adbExe;
     $pInfo2.Arguments = "-s `"$serial`" push `"$src`" `"$androidTmp`"";
     $pInfo2.UseShellExecute = $false;
-    $pInfo2.CreateNoWindow = $true;
+    $pInfo2.CreateNoWindow  = $true;
     $p2 = [System.Diagnostics.Process]::Start($pInfo2);
     $p2.WaitForExit();
-    
+
     if ($p2.ExitCode -eq 0) {
-        $mvCmd = "mv `"$androidTmp`" `"$dest`"";
+        $mvCmd   = "mv `"$androidTmp`" `"$dest`"";
         $pMvInfo = New-Object System.Diagnostics.ProcessStartInfo;
-        $pMvInfo.FileName = $adbExe;
+        $pMvInfo.FileName  = $adbExe;
         $pMvInfo.Arguments = "-s `"$serial`" shell `"$mvCmd`"";
         $pMvInfo.UseShellExecute = $false;
-        $pMvInfo.CreateNoWindow = $true;
+        $pMvInfo.CreateNoWindow  = $true;
         $pMv = [System.Diagnostics.Process]::Start($pMvInfo);
         $pMv.WaitForExit();
-        
+
         if ($pMv.ExitCode -eq 0) { return 0; }
     }
 
     # ---------------------------------------------------
     # ATTEMPT 3: Root Global Mount Fallback (APatch/Magisk)
     # ---------------------------------------------------
-    $suArgs = "-s `"$serial`" shell `"su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'`"";
+    $suArgs  = "-s `"$serial`" shell `"su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'`"";
     $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
-    $pSuInfo.FileName = $adbExe;
+    $pSuInfo.FileName  = $adbExe;
     $pSuInfo.Arguments = $suArgs;
     $pSuInfo.UseShellExecute = $false;
-    $pSuInfo.CreateNoWindow = $true;
-    $pSu =[System.Diagnostics.Process]::Start($pSuInfo);
+    $pSuInfo.CreateNoWindow  = $true;
+    $pSu = [System.Diagnostics.Process]::Start($pSuInfo);
     $pSu.WaitForExit();
-    
+
     if ($pSu.ExitCode -eq 0) {
         $pRmInfo = New-Object System.Diagnostics.ProcessStartInfo;
-        $pRmInfo.FileName = $adbExe;
+        $pRmInfo.FileName  = $adbExe;
         $pRmInfo.Arguments = "-s `"$serial`" shell `"rm \`"$androidTmp\`" 2>/dev/null`"";
         $pRmInfo.UseShellExecute = $false;
-        $pRmInfo.CreateNoWindow = $true;
+        $pRmInfo.CreateNoWindow  = $true;
         $pRm = [System.Diagnostics.Process]::Start($pRmInfo);
         $pRm.WaitForExit();
-        
+
         return 0;
     }
 
     return 1; # Absolute Failure
 }
 
-$ActiveJobs = @();
-$failedFiles = @();
-$completedCount = 0;
+$ActiveJobs     = @();
+$failedFiles    = @();
+$completedCount  = 0;
 
 foreach ($file in $ToPush) {
+    # --- Check Abort Flag ---
+    if ($global:JigarAbort) { break };
+
     $cleanPath = $file.Substring(2);
-    $src = Join-Path $restoreRoot $cleanPath;
+    $src  = Join-Path $restoreRoot $cleanPath;
     $dest = "/sdcard/$cleanPath";
 
     $PSInstance = [powershell]::Create().AddScript($ScriptBlock).AddArgument($adbExe).AddArgument($serial).AddArgument($src).AddArgument($dest);
     $PSInstance.RunspacePool = $RunspacePool;
-    
+
     $ActiveJobs += [PSCustomObject]@{
-        PS = $PSInstance
+        PS    = $PSInstance
         Async = $PSInstance.BeginInvoke()
-        File = $cleanPath
+        File  = $cleanPath
     };
 
     while ($ActiveJobs.Count -ge ($MaxThreads * 2)) {
@@ -280,14 +721,17 @@ foreach ($file in $ToPush) {
             $completedCount++;
         }
         $ActiveJobs = $ActiveJobs | Where-Object { -not $_.Async.IsCompleted };
-        
+
         if ($done.Count -eq 0) { Start-Sleep -Milliseconds 50 };
         if ($completedCount % 5 -eq 0) {
             Write-Progress -Activity "12x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
         }
+
+        if ($global:JigarAbort) { break };
     }
 }
 
+# Drain remaining jobs
 while ($ActiveJobs.Count -gt 0) {
     $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
     foreach ($d in $done) {
@@ -299,8 +743,26 @@ while ($ActiveJobs.Count -gt 0) {
     $ActiveJobs = $ActiveJobs | Where-Object { -not $_.Async.IsCompleted };
     if ($done.Count -eq 0) { Start-Sleep -Milliseconds 100 };
     Write-Progress -Activity "12x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
+    if ($global:JigarAbort -and $ActiveJobs.Count -eq 0) { break };
 }
 Write-Progress -Activity "12x Multi-Threaded Titan Push" -Completed;
+
+# ----------------------------------------------------------------
+#  GRACEFUL ABORT CLEANUP (Feature 5)
+# ----------------------------------------------------------------
+if ($global:JigarAbort) {
+    Write-Host "`n[ABORT] Closing runspace pool..." -ForegroundColor Red;
+    $RunspacePool.Close();
+    $RunspacePool.Dispose();
+
+    Write-Host "[ABORT] Cleaning up abandoned ADB temp files (jgr_*)..." -ForegroundColor Yellow;
+    & $adbExe -s $serial shell "rm /data/local/tmp/jgr_* 2>/dev/null" | Out-Null;
+
+    Write-Host "`n[DONE] Process aborted safely. Temp files cleaned up." -ForegroundColor Green;
+    Stop-Transcript | Out-Null;
+    Read-Host "`nPress Enter to exit...";
+    exit;
+}
 
 $RunspacePool.Close();
 $RunspacePool.Dispose();
@@ -322,4 +784,6 @@ if ($failedFiles.Count -gt 0) {
     Write-Host "`n[SUCCESS] 100% of files restored flawlessly!" -ForegroundColor Green;
 }
 
+Write-Host "`n[LOG] Transcript saved to: $LogFile" -ForegroundColor DarkGray;
+Stop-Transcript | Out-Null;
 Read-Host "`nPress Enter to exit...";
