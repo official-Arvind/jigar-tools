@@ -349,7 +349,7 @@ Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 $substOut = & subst;
 if ($substOut) {
     foreach ($line in $substOut) {
-        if ($line -match "^([A-Z]:\\): => (.*(Smart_Backup|_202\d-\d\d-\d\d_).*)$") {
+        if ($line -match "^([A-Z]:\\): => (.*(Smart_Backup|_\d{4}-\d\d-\d\d_).*)$") {
             $drv = $Matches[1].TrimEnd('\');
             & subst $drv /D | Out-Null;
         }
@@ -600,6 +600,7 @@ Write-Host "[SYNC] Queued $totalFiles missing or modified files for download." -
 #  6. THE 12x TITAN PULL ENGINE (SMART PATHING + 3-STAGE FALLBACK)
 # ----------------------------------------------------------------
 Write-Host "[SYNC] Pre-allocating directory trees natively..." -ForegroundColor DarkGray;
+$uniqueDirs = @{}
 foreach ($file in $ToPull) {
     $cleanPath  = $file.Substring(2);
     $safeWinPath = $cleanPath -replace '[<>:"|?*]', '_' -replace '/', '\';
@@ -611,8 +612,11 @@ foreach ($file in $ToPull) {
     }
 
     $destFolder = [System.IO.Path]::GetDirectoryName($dest);
-    if (-not [System.IO.Directory]::Exists($destFolder)) {
-        [System.IO.Directory]::CreateDirectory($destFolder) | Out-Null;
+    $uniqueDirs[$destFolder] = $true;
+}
+foreach ($folder in $uniqueDirs.Keys) {
+    if (-not [System.IO.Directory]::Exists($folder)) {
+        [System.IO.Directory]::CreateDirectory($folder) | Out-Null;
     }
 }
 

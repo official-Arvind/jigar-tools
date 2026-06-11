@@ -348,7 +348,7 @@ Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 $substOut = & subst;
 if ($substOut) {
     foreach ($line in $substOut) {
-        if ($line -match "^([A-Z]:\\): => (.*(Smart_Backup|_202\d-\d\d-\d\d_).*)$") {
+        if ($line -match "^([A-Z]:\\): => (.*(Smart_Backup|_\d{4}-\d\d-\d\d_).*)$") {
             $drv = $Matches[1].TrimEnd('\');
             & subst $drv /D | Out-Null;
         }
@@ -606,13 +606,15 @@ Write-Host "[RESTORE] Queued $totalFiles missing or modified files for push." -F
 #  6. THE 12x TITAN PUSH ENGINE (SMART PATHING + 3-STAGE FALLBACK)
 # ----------------------------------------------------------------
 Write-Host "[RESTORE] Pre-allocating directory trees on device..." -ForegroundColor DarkGray;
+$uniqueDirs = @{}
 foreach ($file in $ToPush) {
     $cleanPath  = $file.Substring(2);
     $remotePath = "/sdcard/$cleanPath";
     $remoteDir  = $remotePath.Substring(0, $remotePath.LastIndexOf('/'));
-
-    $mkdirCmd = "mkdir -p `"$remoteDir`"";
-    & $adbExe -s $serial shell $mkdirCmd | Out-Null;
+    $uniqueDirs[$remoteDir] = $true;
+}
+foreach ($dir in $uniqueDirs.Keys) {
+    & $adbExe -s $serial shell "mkdir -p `"$dir`"" | Out-Null;
 }
 
 Write-Host "[RESTORE] Engaging 12x Parallel Titan Streams...`n" -ForegroundColor Yellow;
