@@ -1,12 +1,15 @@
 @echo off
 setlocal enabledelayedexpansion
 :: ========================================================
-::  JIGAR TOOLS - UNINSTALLER (v1.0)
+::  JIGAR TOOLS - UNINSTALLER (v2.0)
 ::  Does the exact opposite of Jigar_Tools_Setup.bat:
 ::  1. Verifies / requests Administrator privileges
 ::  2. Removes tool dir from System PATH
 ::  3. Deletes the Desktop shortcut
-::  4. Optionally wipes backup data + logs
+::  4. Stops ADB server
+::  5. Optionally wipes Logs + settings
+::  6. Optionally wipes the BACKUPS folder (wherever it is)
+::  7. Self-deletes the entire Jigar Tools install folder
 :: ========================================================
 
 :: ---- 1. ADMIN ELEVATION CHECK -------------------------
@@ -21,14 +24,24 @@ set "TOOLS_DIR=%CD%"
 for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`) do set "REAL_DESKTOP=%%I"
 set "SHORTCUT=%REAL_DESKTOP%\Jigar Tools.lnk"
 
+:: Read backup location from settings.json if it exists
+set "BACKUPS_DIR="
+if exist "%TOOLS_DIR%\settings.json" (
+    for /f "usebackq delims=" %%B in (`powershell -NoProfile -Command "try { $s=(Get-Content '%TOOLS_DIR%\settings.json' | ConvertFrom-Json); if($s.BackupRoot){$s.BackupRoot} } catch {}"`) do set "BACKUPS_DIR=%%B"
+)
+:: Fallback: check common backup location on Desktop
+if not defined BACKUPS_DIR (
+    if exist "%REAL_DESKTOP%\BACKUPS" set "BACKUPS_DIR=%REAL_DESKTOP%\BACKUPS"
+)
+
 cls
 echo.
 echo  ============================================================
-echo      JIGAR TOOLS  ^|  UNINSTALLER v1.0
+echo      JIGAR TOOLS  ^|  UNINSTALLER v2.0
 echo  ============================================================
 echo.
 echo   This will PERMANENTLY remove Jigar Tools from your system.
-echo   Your Android backup data will be handled separately.
+echo   Your backup data choices will be asked separately.
 echo.
 echo  ============================================================
 echo.
@@ -95,76 +108,141 @@ if exist "%ADB_EXE%" (
 
 echo.
 echo  ============================================================
-echo   STEP 4 ^|  Backup Data and Logs
+echo   STEP 4 ^|  Logs and Settings
 echo  ============================================================
 echo.
-echo   The following data folders exist in this directory:
-echo.
 
-set "HAS_DATA=0"
-if exist "%TOOLS_DIR%\Logs"  (echo     Logs\     - operation transcripts   & set "HAS_DATA=1")
+set "HAS_LOCAL=0"
+if exist "%TOOLS_DIR%\Logs"         (echo     Logs\          - operation transcripts  & set "HAS_LOCAL=1")
+if exist "%TOOLS_DIR%\settings.json" (echo     settings.json  - saved preferences      & set "HAS_LOCAL=1")
+if exist "%TOOLS_DIR%\.version"      (echo     .version       - version tracking file   & set "HAS_LOCAL=1")
 
-:: Check for any dynamic backup folders (DeviceName_YYYY-MM-DD pattern)
-set "BACKUP_COUNT=0"
-for /d %%D in ("%TOOLS_DIR%\*_????-??-??_*") do (
-    echo     %%~nxD\  - backup snapshot
-    set /a BACKUP_COUNT+=1
-    set "HAS_DATA=1"
-)
-:: Also check for legacy Smart_Backup folder
-if exist "%TOOLS_DIR%\Smart_Backup" (
-    echo     Smart_Backup\  - legacy backup data
-    set "HAS_DATA=1"
-)
-:: Check saved config
-if exist "%TOOLS_DIR%\settings.json" (
-    echo     settings.json  - saved preferences
-    set "HAS_DATA=1"
-)
-
-if "%HAS_DATA%"=="0" (
-    echo   [INFO] No backup data or logs found. Nothing to delete.
-    goto :Final
-)
-
-echo.
-set /p DEL_DATA=" Delete ALL of the above (Logs, backups, settings)? [Y/N]: "
-if /i "%DEL_DATA%"=="Y" (
-    echo.
-    echo   Deleting data...
-
-    if exist "%TOOLS_DIR%\Logs" (
-        rd /s /q "%TOOLS_DIR%\Logs"
-        echo   [DONE] Logs\ deleted.
-    )
-
-    for /d %%D in ("%TOOLS_DIR%\*_????-??-??_*") do (
-        rd /s /q "%%D"
-        echo   [DONE] %%~nxD\ deleted.
-    )
-
-    if exist "%TOOLS_DIR%\Smart_Backup" (
-        rd /s /q "%TOOLS_DIR%\Smart_Backup"
-        echo   [DONE] Smart_Backup\ deleted.
-    )
-
-    if exist "%TOOLS_DIR%\settings.json" (
-        del /f /q "%TOOLS_DIR%\settings.json"
-        echo   [DONE] settings.json deleted.
-    )
+if "%HAS_LOCAL%"=="0" (
+    echo   [INFO] No logs or settings found.
 ) else (
     echo.
-    echo   [SKIP] Backup data and logs preserved.
+    set /p DEL_LOCAL=" Delete logs and settings? [Y/N]: "
+    if /i "!DEL_LOCAL!"=="Y" (
+        echo.
+        if exist "%TOOLS_DIR%\Logs"          ( rd /s /q "%TOOLS_DIR%\Logs"          & echo   [DONE] Logs\ deleted. )
+        if exist "%TOOLS_DIR%\settings.json" ( del /f /q "%TOOLS_DIR%\settings.json" & echo   [DONE] settings.json deleted. )
+        if exist "%TOOLS_DIR%\.version"      ( del /f /q "%TOOLS_DIR%\.version"      & echo   [DONE] .version deleted. )
+    ) else (
+        echo.
+        echo   [SKIP] Logs and settings preserved.
+    )
 )
 
-:Final
+echo.
+echo  ============================================================
+echo   STEP 5 ^|  Android Backup Data
+echo  ============================================================
+echo.
+
+:: Show any inline backup folders (DeviceName_YYYY-MM-DD pattern)
+set "HAS_INLINE=0"
+for /d %%D in ("%TOOLS_DIR%\*_????-??-??_*") do (
+    echo     %%~nxD\  - backup snapshot (inside install folder)
+    set "HAS_INLINE=1"
+)
+if exist "%TOOLS_DIR%\Smart_Backup" (
+    echo     Smart_Backup\  - legacy backup data (inside install folder)
+    set "HAS_INLINE=1"
+)
+
+:: Show external backups folder
+if defined BACKUPS_DIR (
+    if exist "%BACKUPS_DIR%" (
+        echo     %BACKUPS_DIR%
+        echo     ^--- Your Android backup snapshots (EXTERNAL BACKUPS FOLDER)
+        set "HAS_INLINE=1"
+    )
+)
+
+if "%HAS_INLINE%"=="0" (
+    echo   [INFO] No backup data found anywhere. Nothing to delete.
+    goto :SelfDelete
+)
+
+echo.
+echo  ============================================================
+echo   WARNING: Deleting backups is PERMANENT and UNRECOVERABLE!
+echo  ============================================================
+echo.
+
+:: Ask about inline backups
+set "HAS_ASKABLE=0"
+for /d %%D in ("%TOOLS_DIR%\*_????-??-??_*") do set "HAS_ASKABLE=1"
+if exist "%TOOLS_DIR%\Smart_Backup" set "HAS_ASKABLE=1"
+
+if "%HAS_ASKABLE%"=="1" (
+    set /p DEL_INLINE=" Delete backup snapshots inside the install folder? [Y/N]: "
+    if /i "!DEL_INLINE!"=="Y" (
+        echo.
+        for /d %%D in ("%TOOLS_DIR%\*_????-??-??_*") do (
+            rd /s /q "%%D"
+            echo   [DONE] %%~nxD\ deleted.
+        )
+        if exist "%TOOLS_DIR%\Smart_Backup" (
+            rd /s /q "%TOOLS_DIR%\Smart_Backup"
+            echo   [DONE] Smart_Backup\ deleted.
+        )
+    ) else (
+        echo   [SKIP] Inline backup snapshots preserved.
+    )
+)
+
+:: Ask about external BACKUPS folder
+if defined BACKUPS_DIR (
+    if exist "%BACKUPS_DIR%" (
+        echo.
+        echo   External backups folder found at:
+        echo   %BACKUPS_DIR%
+        echo.
+        set /p DEL_EXT=" Delete the entire BACKUPS folder (all your Android snapshots)? [Y/N]: "
+        if /i "!DEL_EXT!"=="Y" (
+            echo.
+            echo   Deleting %BACKUPS_DIR% ...
+            rd /s /q "%BACKUPS_DIR%"
+            echo   [DONE] Backups folder deleted.
+        ) else (
+            echo   [SKIP] Backups folder preserved at: %BACKUPS_DIR%
+        )
+    )
+)
+
+:SelfDelete
+echo.
+echo  ============================================================
+echo   STEP 6 ^|  Self-Delete Install Folder
+echo  ============================================================
+echo.
+echo   Install folder: %TOOLS_DIR%
+echo.
+set /p DEL_SELF=" Delete the entire Jigar Tools install folder? [Y/N]: "
+if /i "%DEL_SELF%"=="Y" (
+    echo.
+    echo   [INFO] Scheduling self-deletion and exiting...
+    echo.
+    echo  ============================================================
+    echo.
+    echo   [SUCCESS]  Jigar Tools has been completely removed.
+    echo              The install folder will be deleted now.
+    echo.
+    echo  ============================================================
+    echo.
+    :: Use cmd /c start to launch a delayed delete after this process exits
+    start "" /b cmd /c "ping 127.0.0.1 -n 3 >nul & rd /s /q \"%TOOLS_DIR%\""
+    exit /b 0
+) else (
+    echo.
+    echo   [SKIP] Install folder preserved. You can delete it manually.
+)
+
 echo.
 echo  ============================================================
 echo.
 echo   [SUCCESS]  Jigar Tools has been cleanly uninstalled.
-echo.
-echo   The script files in this folder are still present.
-echo   You may delete this folder manually if you wish.
 echo.
 echo  ============================================================
 echo.
