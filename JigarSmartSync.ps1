@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 # ================================================================
 #  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (THE TITAN ENGINE)
 #  NEW in v39.1:
@@ -397,13 +397,13 @@ function Update-JigarHtmlLog {
 }
 
 function Get-JigarHtmlTemplate {
-    return @"
+    return @'
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigar Tools — Sync Control Center</title>
+    <title>Jigar Tools &#8212; Sync Control Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -418,11 +418,7 @@ function Get-JigarHtmlTemplate {
             --border-color: #24324f;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -432,10 +428,7 @@ function Get-JigarHtmlTemplate {
             padding: 2rem;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         header {
             display: flex;
@@ -454,11 +447,7 @@ function Get-JigarHtmlTemplate {
             -webkit-text-fill-color: transparent;
         }
 
-        .brand p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
+        .brand p { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem; }
 
         .badge-live {
             background-color: rgba(123, 97, 255, 0.1);
@@ -485,13 +474,13 @@ function Get-JigarHtmlTemplate {
             border-radius: 12px;
             padding: 1.5rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         .stat-card:hover {
             transform: translateY(-2px);
             border-color: var(--accent-color);
-            box-shadow: 0 10px 15px -3px rgba(123, 97, 255, 0.1), 0 4px 6px -2px rgba(123, 97, 255, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(123,97,255,0.1);
         }
 
         .stat-card h3 {
@@ -503,24 +492,15 @@ function Get-JigarHtmlTemplate {
             margin-bottom: 0.5rem;
         }
 
-        .stat-card .value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .stat-card .desc {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
+        .stat-card .value { font-size: 1.75rem; font-weight: 700; color: var(--text-main); }
+        .stat-card .desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
 
         .history-section {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         .section-header {
@@ -530,34 +510,12 @@ function Get-JigarHtmlTemplate {
             margin-bottom: 1.5rem;
         }
 
-        .section-header h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
+        .section-header h2 { font-size: 1.25rem; font-weight: 600; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.875rem;
-        }
-
-        tr:hover td {
-            background-color: rgba(255, 255, 255, 0.02);
-        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { color: var(--text-secondary); font-size: 0.875rem; font-weight: 500; padding: 1rem; border-bottom: 1px solid var(--border-color); }
+        td { padding: 1rem; border-bottom: 1px solid var(--border-color); font-size: 0.875rem; }
+        tr:hover td { background-color: rgba(255,255,255,0.02); }
 
         .status-badge {
             display: inline-flex;
@@ -568,15 +526,8 @@ function Get-JigarHtmlTemplate {
             font-weight: 600;
         }
 
-        .status-badge.success {
-            background-color: rgba(0, 230, 118, 0.1);
-            color: var(--accent-success);
-        }
-
-        .status-badge.aborted {
-            background-color: rgba(255, 23, 68, 0.1);
-            color: var(--accent-danger);
-        }
+        .status-badge.success { background-color: rgba(0,230,118,0.1); color: var(--accent-success); }
+        .status-badge.aborted { background-color: rgba(255,23,68,0.1); color: var(--accent-danger); }
 
         .btn-details {
             background: none;
@@ -589,34 +540,23 @@ function Get-JigarHtmlTemplate {
             transition: all 0.2s ease;
         }
 
-        .btn-details:hover {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-        }
-
-        .details-row {
-            display: none;
-        }
+        .btn-details:hover { background-color: var(--accent-color); border-color: var(--accent-color); }
+        .details-row { display: none; }
 
         .details-content {
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(0,0,0,0.2);
             padding: 1.5rem;
             border-radius: 8px;
             margin: 0.5rem 0;
             border: 1px dashed var(--border-color);
         }
 
-        .details-title {
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--text-main);
-        }
+        .details-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-main); }
 
         .file-list {
-            max-height: 250px;
+            max-height: 300px;
             overflow-y: auto;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Courier New', monospace;
             font-size: 0.75rem;
             color: var(--text-secondary);
             list-style: none;
@@ -626,36 +566,18 @@ function Get-JigarHtmlTemplate {
         .file-list li {
             display: flex;
             justify-content: space-between;
-            padding: 0.25rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .file-list li:last-child {
-            border-bottom: none;
-        }
+        .file-list li:last-child { border-bottom: none; }
 
-        .file-list::-webkit-scrollbar {
-            width: 6px;
-        }
+        .file-list::-webkit-scrollbar { width: 6px; }
+        .file-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .file-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        .file-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        .file-list::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.1);
-        }
-
-        .file-list::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-        }
-
-        .file-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-        }
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); }
     </style>
 </head>
 <body>
@@ -713,47 +635,42 @@ function Get-JigarHtmlTemplate {
     <script>
         /* JGR_DATA_START */const SYNC_HISTORY = [];/* JGR_DATA_END */
 
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        function formatBytes(b) {
+            if (b === 0) return '0 Bytes';
+            const k = 1024, s = ['Bytes','KB','MB','GB','TB'];
+            const i = Math.floor(Math.log(b) / Math.log(k));
+            return parseFloat((b / Math.pow(k, i)).toFixed(2)) + ' ' + s[i];
         }
 
-        function parseSize(sizeStr) {
-            if (!sizeStr) return 0;
-            const parts = sizeStr.trim().split(/\s+/);
-            const val = parseFloat(parts[0]);
-            const unit = parts[1] ? parts[1].toUpperCase() : '';
-            if (unit === 'GB') return val * 1024 * 1024 * 1024;
-            if (unit === 'MB') return val * 1024 * 1024;
-            if (unit === 'KB') return val * 1024;
-            return val;
+        function parseSize(s) {
+            if (!s) return 0;
+            const p = s.trim().split(/\s+/);
+            const v = parseFloat(p[0]);
+            const u = p[1] ? p[1].toUpperCase() : '';
+            if (u === 'GB') return v * 1073741824;
+            if (u === 'MB') return v * 1048576;
+            if (u === 'KB') return v * 1024;
+            return v;
         }
 
         function toggleDetails(index) {
-            const row = document.getElementById(`details-${index}`);
-            if (row.style.display === 'table-row') {
-                row.style.display = 'none';
-            } else {
-                row.style.display = 'table-row';
-            }
+            const row = document.getElementById('details-' + index);
+            if (!row) return;
+            row.style.display = row.style.display === 'table-row' ? 'none' : 'table-row';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const body = document.getElementById('ledger-body');
-            
+        document.addEventListener('DOMContentLoaded', function() {
+            var body = document.getElementById('ledger-body');
+
             if (!SYNC_HISTORY || SYNC_HISTORY.length === 0) {
                 document.getElementById('ledger-container').innerHTML = '<div class="empty-state">No synchronization events recorded yet. Perform a backup to initialize this ledger.</div>';
                 return;
             }
 
-            // Stats calculation
-            const uniqueDevices = new Set();
-            let totalTransferredBytes = 0;
-            
-            SYNC_HISTORY.forEach(entry => {
+            var uniqueDevices = new Set();
+            var totalTransferredBytes = 0;
+
+            SYNC_HISTORY.forEach(function(entry) {
                 uniqueDevices.add(entry.device);
                 totalTransferredBytes += parseSize(entry.totalSize);
             });
@@ -763,53 +680,48 @@ function Get-JigarHtmlTemplate {
             document.getElementById('total-actions').innerText = SYNC_HISTORY.length;
             document.getElementById('total-transferred').innerText = formatBytes(totalTransferredBytes);
 
-            // Render table
             body.innerHTML = '';
-            SYNC_HISTORY.forEach((entry, idx) => {
-                const tr = document.createElement('tr');
-                const badgeClass = entry.status.toLowerCase() === 'success' ? 'success' : 'aborted';
-                
-                tr.innerHTML = `
-                    <td>${entry.timestamp}</td>
-                    <td><strong>${entry.device}</strong></td>
-                    <td><span class="status-badge ${badgeClass}">${entry.status}</span></td>
-                    <td>${entry.filesCount} file(s)</td>
-                    <td>${entry.totalSize}</td>
-                    <td><button class="btn-details" onclick="toggleDetails(${idx})">Inspect</button></td>
-                `;
+            SYNC_HISTORY.forEach(function(entry, idx) {
+                var badgeClass = entry.status && entry.status.toLowerCase() === 'success' ? 'success' : 'aborted';
+
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + entry.timestamp + '</td>' +
+                    '<td><strong>' + (entry.device || '-') + '</strong></td>' +
+                    '<td><span class="status-badge ' + badgeClass + '">' + (entry.status || '-') + '</span></td>' +
+                    '<td>' + (entry.filesCount || 0) + ' file(s)</td>' +
+                    '<td>' + (entry.totalSize || '0 Bytes') + '</td>' +
+                    '<td><button class="btn-details" onclick="toggleDetails(' + idx + ')">Inspect</button></td>';
                 body.appendChild(tr);
 
-                // Detail Row
-                const detailTr = document.createElement('tr');
-                detailTr.id = `details-${idx}`;
+                var detailTr = document.createElement('tr');
+                detailTr.id = 'details-' + idx;
                 detailTr.className = 'details-row';
-                
-                let fileListItems = '';
+
+                var fileListItems = '';
                 if (entry.filesList && entry.filesList.length > 0) {
-                    fileListItems = entry.filesList.map(f => `<li><span>${f.name}</span><span>${f.size}</span></li>`).join('');
+                    entry.filesList.forEach(function(f) {
+                        fileListItems += '<li><span>' + f.name + '</span><span>' + f.size + '</span></li>';
+                    });
                 } else {
                     fileListItems = '<li><span>No files transferred (Already in sync)</span><span>-</span></li>';
                 }
 
-                detailTr.innerHTML = `
-                    <td colspan="6">
-                        <div class="details-content">
-                            <div class="details-title">Transferred Files & Folders Log</div>
-                            <ul class="file-list">
-                                ${fileListItems}
-                            </ul>
-                        </div>
-                    </td>
-                `;
+                detailTr.innerHTML =
+                    '<td colspan="6">' +
+                        '<div class="details-content">' +
+                            '<div class="details-title">Transferred Files &amp; Folders Log</div>' +
+                            '<ul class="file-list">' + fileListItems + '</ul>' +
+                        '</div>' +
+                    '</td>';
                 body.appendChild(detailTr);
             });
         });
     </script>
 </body>
 </html>
-"@
+'@
 }
-
 & chcp 65001 | Out-Null;
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8;
