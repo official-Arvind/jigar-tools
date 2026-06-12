@@ -614,7 +614,8 @@ foreach ($file in $ToPush) {
     $uniqueDirs[$remoteDir] = $true;
 }
 foreach ($dir in $uniqueDirs.Keys) {
-    & $adbExe -s $serial shell "mkdir -p `"$dir`"" | Out-Null;
+    $escapedDir = $dir -replace "'", "'\''"
+    & $adbExe -s $serial shell "mkdir -p '$escapedDir'" | Out-Null;
 }
 
 Write-Host "[RESTORE] Engaging 12x Parallel Titan Streams...`n" -ForegroundColor Yellow;
@@ -657,6 +658,7 @@ $ScriptBlock = {
     # ---------------------------------------------------
     $uuid       = [guid]::NewGuid().ToString().Substring(0, 8);
     $androidTmp = "/data/local/tmp/jgr_$uuid";
+    $escapedDest = $dest -replace "'", "'\''";
 
     try {
         $pInfo2 = New-Object System.Diagnostics.ProcessStartInfo;
@@ -667,7 +669,7 @@ $ScriptBlock = {
         $exitCode2 = Invoke-ProcessSafe $pInfo2;
 
         if ($exitCode2 -eq 0) {
-            $mvCmd   = "mv `"$androidTmp`" `"$dest`"";
+            $mvCmd   = "mv '$androidTmp' '$escapedDest'";
             $pMvInfo = New-Object System.Diagnostics.ProcessStartInfo;
             $pMvInfo.FileName  = $adbExe;
             $pMvInfo.Arguments = "-s `"$serial`" shell `"$mvCmd`"";
@@ -680,10 +682,10 @@ $ScriptBlock = {
             # ---------------------------------------------------
             # ATTEMPT 3: Root Global Mount Fallback (APatch/Magisk)
             # ---------------------------------------------------
-            $suArgs  = "-s `"$serial`" shell `"su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'`"";
+            $suCmd   = "su -c `"cat '$androidTmp' > '$escapedDest'`"";
             $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
             $pSuInfo.FileName  = $adbExe;
-            $pSuInfo.Arguments = $suArgs;
+            $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmd`"";
             $pSuInfo.UseShellExecute = $false;
             $pSuInfo.CreateNoWindow  = $true;
             $exitCodeSu = Invoke-ProcessSafe $pSuInfo;
@@ -695,7 +697,7 @@ $ScriptBlock = {
     } finally {
         $pRmInfo = New-Object System.Diagnostics.ProcessStartInfo;
         $pRmInfo.FileName  = $adbExe;
-        $pRmInfo.Arguments = "-s `"$serial`" shell `"rm \`"$androidTmp\`" 2>/dev/null`"";
+        $pRmInfo.Arguments = "-s `"$serial`" shell `"rm '$androidTmp' 2>/dev/null`"";
         $pRmInfo.UseShellExecute = $false;
         $pRmInfo.CreateNoWindow  = $true;
         Invoke-ProcessSafe $pRmInfo | Out-Null;
@@ -800,3 +802,4 @@ if ($failedFiles.Count -gt 0) {
 Write-Host "`n[LOG] Transcript saved to: $LogFile" -ForegroundColor DarkGray;
 Stop-Transcript | Out-Null;
 Read-Host "`nPress Enter to exit...";
+

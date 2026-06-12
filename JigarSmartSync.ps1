@@ -680,12 +680,13 @@ $ScriptBlock = {
     $uuid       = [guid]::NewGuid().ToString().Substring(0, 8);
     $androidTmp = "/data/local/tmp/jgr_$uuid";
     $rootSrc    = $src -replace "^/sdcard", "/data/media/0";
+    $escapedRootSrc = $rootSrc -replace "'", "'\''";
 
     try {
-        $suArgs = "-s `"$serial`" shell `"su -c 'cp \`"$rootSrc\`" \`"$androidTmp\`" && chmod 777 \`"$androidTmp\`"'`"";
+        $suCmd  = "su -c `"cp '$escapedRootSrc' '$androidTmp' && chmod 777 '$androidTmp'`"";
         $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
         $pSuInfo.FileName  = $adbExe;
-        $pSuInfo.Arguments = $suArgs;
+        $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmd`"";
         $pSuInfo.UseShellExecute = $false;
         $pSuInfo.CreateNoWindow  = $true;
         $exitCodeSu = Invoke-ProcessSafe $pSuInfo;
@@ -705,7 +706,7 @@ $ScriptBlock = {
     } finally {
         $pRmInfo = New-Object System.Diagnostics.ProcessStartInfo;
         $pRmInfo.FileName  = $adbExe;
-        $pRmInfo.Arguments = "-s `"$serial`" shell `"rm \`"$androidTmp\`" 2>/dev/null`"";
+        $pRmInfo.Arguments = "-s `"$serial`" shell `"rm '$androidTmp' 2>/dev/null`"";
         $pRmInfo.UseShellExecute = $false;
         $pRmInfo.CreateNoWindow  = $true;
         Invoke-ProcessSafe $pRmInfo | Out-Null;
@@ -817,3 +818,4 @@ if ($failedFiles.Count -gt 0) {
 Write-Host "`n[LOG] Transcript saved to: $LogFile" -ForegroundColor DarkGray;
 Stop-Transcript | Out-Null;
 Read-Host "`nPress Enter to exit...";
+
