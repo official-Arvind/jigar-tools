@@ -1003,7 +1003,7 @@ if (Test-Path $iniPath) {
 Write-Host "[SCAN] Mapping Android Storage... (Please Wait)" -ForegroundColor Yellow;
 $AndroidFiles = @{};
 
-$cmd      = "cd /sdcard && find . -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+$cmd      = "cd /sdcard && find . -type f -printf '%s|%p\n' 2>/dev/null";
 $procInfo = New-Object System.Diagnostics.ProcessStartInfo;
 $procInfo.FileName  = $adbExe;
 $procInfo.Arguments = "-s $serial shell `"$cmd`"";
@@ -1015,6 +1015,15 @@ $procInfo.CreateNoWindow = $true;
 $proc   = [System.Diagnostics.Process]::Start($procInfo);
 $output = $proc.StandardOutput.ReadToEnd() -split "`n";
 $proc.WaitForExit();
+
+# Fallback: if output is empty, try the traditional -exec stat method
+if (-not $output -or $output.Count -eq 0 -or ($output.Count -eq 1 -and $output[0].Trim() -eq "")) {
+    $cmd = "cd /sdcard && find . -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+    $procInfo.Arguments = "-s $serial shell `"$cmd`"";
+    $proc   = [System.Diagnostics.Process]::Start($procInfo);
+    $output = $proc.StandardOutput.ReadToEnd() -split "`n";
+    $proc.WaitForExit();
+}
 
 foreach ($line in $output) {
     $line = $line.Trim();
@@ -1045,9 +1054,19 @@ $filterChoice = Read-Host "         Launch exclude menu? [Y/N]";
 $ExcludeNodeStates = $null;
 if ($filterChoice.Trim().ToUpper() -eq 'Y') {
     Write-Host "[FILTER] Building Android file tree for selection..." -ForegroundColor DarkCyan;
+    
+    $MenuFiles = [System.Collections.Generic.List[string]]::new();
+    foreach ($key in $AndroidFiles.Keys) {
+        $skip = $false;
+        foreach ($pattern in $IgnorePatterns) {
+            if ($key -match $pattern) { $skip = $true; break };
+        }
+        if (-not $skip) { [void]$MenuFiles.Add($key) }
+    }
+
     $ExcludeNodeStates = Show-JigarExcludeMenu `
         -FormTitle 'JigarSmartSync  -  Select Items to EXCLUDE from Backup' `
-        -FilePaths ($AndroidFiles.Keys | Sort-Object);
+        -FilePaths ($MenuFiles | Sort-Object);
     if ($null -eq $ExcludeNodeStates) {
         Write-Host "[FILTER] Skipped - backing up everything." -ForegroundColor DarkGray;
     } else {
