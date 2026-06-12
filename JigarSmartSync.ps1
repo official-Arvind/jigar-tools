@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 # ================================================================
 #  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (THE TITAN ENGINE)
 #  NEW in v39.1:
@@ -321,6 +321,495 @@ function Show-JigarExcludeMenu {
     return $nodeStates;
 }
 
+# ================================================================
+#  HTML BACKUP LOG GENERATION HELPERS
+# ================================================================
+function Update-JigarHtmlLog {
+    param(
+        [string] $BaseDir,
+        [string] $Device,
+        [object] $SyncedFiles,
+        [bool]   $IsAbort
+    )
+
+    $LogHtml = Join-Path $BaseDir "Backup_Log.html"
+    
+    # 1. Format file list for JSON
+    $filesJsonList = [System.Collections.Generic.List[psobject]]::new()
+    $totalBytes = 0
+    foreach ($f in $SyncedFiles) {
+        $totalBytes += $f.size
+        
+        $sizeStr = if ($f.size -ge 1GB) { "{0:N2} GB" -f ($f.size / 1GB) }
+                   elseif ($f.size -ge 1MB) { "{0:N2} MB" -f ($f.size / 1MB) }
+                   elseif ($f.size -ge 1KB) { "{0:N2} KB" -f ($f.size / 1KB) }
+                   else { "$($f.size) Bytes" }
+                   
+        $filesJsonList.Add(@{
+            name = $f.name
+            size = $sizeStr
+        })
+    }
+    
+    $totalSizeStr = if ($totalBytes -ge 1GB) { "{0:N2} GB" -f ($totalBytes / 1GB) }
+                    elseif ($totalBytes -ge 1MB) { "{0:N2} MB" -f ($totalBytes / 1MB) }
+                    elseif ($totalBytes -ge 1KB) { "{0:N2} KB" -f ($totalBytes / 1KB) }
+                    else { "$totalBytes Bytes" }
+
+    $statusStr = if ($IsAbort) { "Aborted" } else { "Success" }
+    
+    $newEntry = @{
+        device     = $Device
+        timestamp  = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        filesCount = $SyncedFiles.Count
+        totalSize  = $totalSizeStr
+        status     = $statusStr
+        filesList  = $filesJsonList
+    }
+
+    # 2. Read existing log or create default HTML
+    $htmlContent = $null
+    if (Test-Path $LogHtml) {
+        $htmlContent = Get-Content -Path $LogHtml -Raw -Encoding UTF8
+    }
+
+    $history = [System.Collections.ArrayList]::new()
+    if ($htmlContent -and $htmlContent -match '(?s)/\* JGR_DATA_START \*/const SYNC_HISTORY = (.*?);/\* JGR_DATA_END \*/') {
+        try {
+            $parsed = ConvertFrom-Json $Matches[1]
+            if ($parsed) { $history = [System.Collections.ArrayList]::new([object[]]$parsed) }
+        } catch {}
+    }
+
+    [void]$history.Insert(0, $newEntry)
+    
+    if ($history.Count -gt 50) {
+        $history = $history[0..49]
+    }
+
+    $newJson = ConvertTo-Json -InputObject $history -Depth 5 -Compress
+    
+    # 3. Generate HTML content
+    $template = Get-JigarHtmlTemplate
+    $updatedHtml = $template -replace '(?s)/\* JGR_DATA_START \*/const SYNC_HISTORY = (.*?);/\* JGR_DATA_END \*/', "/* JGR_DATA_START */const SYNC_HISTORY = $newJson;/* JGR_DATA_END */"
+
+    $updatedHtml | Set-Content -Path $LogHtml -Encoding UTF8
+}
+
+function Get-JigarHtmlTemplate {
+    return @"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigar Tools — Sync Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151d30;
+            --accent-color: #7b61ff;
+            --accent-success: #00e676;
+            --accent-warning: #ffb300;
+            --accent-danger: #ff1744;
+            --text-main: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: #24324f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        .brand h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7b61ff 0%, #00e5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .badge-live {
+            background-color: rgba(123, 97, 255, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 15px -3px rgba(123, 97, 255, 0.1), 0 4px 6px -2px rgba(123, 97, 255, 0.05);
+        }
+
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-card .desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .history-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.success {
+            background-color: rgba(0, 230, 118, 0.1);
+            color: var(--accent-success);
+        }
+
+        .status-badge.aborted {
+            background-color: rgba(255, 23, 68, 0.1);
+            color: var(--accent-danger);
+        }
+
+        .btn-details {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-details:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .details-row {
+            display: none;
+        }
+
+        .details-content {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            border: 1px dashed var(--border-color);
+        }
+
+        .details-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .file-list {
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            list-style: none;
+            padding-right: 0.5rem;
+        }
+
+        .file-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .file-list li:last-child {
+            border-bottom: none;
+        }
+
+        .file-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .file-list::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .file-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+
+        .file-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <h1>Jigar Tools</h1>
+                <p>Universal Device Synchronization Ledger</p>
+            </div>
+            <div class="badge-live">Live Log</div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Devices Monitored</h3>
+                <div class="value" id="devices-count">0</div>
+                <div class="desc" id="devices-list">None registered</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Sync Actions</h3>
+                <div class="value" id="total-actions">0</div>
+                <div class="desc">Active sync operations</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Transferred</h3>
+                <div class="value" id="total-transferred">0 Bytes</div>
+                <div class="desc">Bandwidth optimized via Delta Sync</div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="section-header">
+                <h2>Activity Ledger</h2>
+            </div>
+            <div id="ledger-container">
+                <table id="ledger-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Device</th>
+                            <th>Status</th>
+                            <th>Files Synced</th>
+                            <th>Payload Size</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledger-body">
+                        <!-- Content generated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* JGR_DATA_START */const SYNC_HISTORY = [];/* JGR_DATA_END */
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function parseSize(sizeStr) {
+            if (!sizeStr) return 0;
+            const parts = sizeStr.trim().split(/\s+/);
+            const val = parseFloat(parts[0]);
+            const unit = parts[1] ? parts[1].toUpperCase() : '';
+            if (unit === 'GB') return val * 1024 * 1024 * 1024;
+            if (unit === 'MB') return val * 1024 * 1024;
+            if (unit === 'KB') return val * 1024;
+            return val;
+        }
+
+        function toggleDetails(index) {
+            const row = document.getElementById(`details-${index}`);
+            if (row.style.display === 'table-row') {
+                row.style.display = 'none';
+            } else {
+                row.style.display = 'table-row';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.getElementById('ledger-body');
+            
+            if (!SYNC_HISTORY || SYNC_HISTORY.length === 0) {
+                document.getElementById('ledger-container').innerHTML = '<div class="empty-state">No synchronization events recorded yet. Perform a backup to initialize this ledger.</div>';
+                return;
+            }
+
+            // Stats calculation
+            const uniqueDevices = new Set();
+            let totalTransferredBytes = 0;
+            
+            SYNC_HISTORY.forEach(entry => {
+                uniqueDevices.add(entry.device);
+                totalTransferredBytes += parseSize(entry.totalSize);
+            });
+
+            document.getElementById('devices-count').innerText = uniqueDevices.size;
+            document.getElementById('devices-list').innerText = Array.from(uniqueDevices).join(', ');
+            document.getElementById('total-actions').innerText = SYNC_HISTORY.length;
+            document.getElementById('total-transferred').innerText = formatBytes(totalTransferredBytes);
+
+            // Render table
+            body.innerHTML = '';
+            SYNC_HISTORY.forEach((entry, idx) => {
+                const tr = document.createElement('tr');
+                const badgeClass = entry.status.toLowerCase() === 'success' ? 'success' : 'aborted';
+                
+                tr.innerHTML = `
+                    <td>${entry.timestamp}</td>
+                    <td><strong>${entry.device}</strong></td>
+                    <td><span class="status-badge ${badgeClass}">${entry.status}</span></td>
+                    <td>${entry.filesCount} file(s)</td>
+                    <td>${entry.totalSize}</td>
+                    <td><button class="btn-details" onclick="toggleDetails(${idx})">Inspect</button></td>
+                `;
+                body.appendChild(tr);
+
+                // Detail Row
+                const detailTr = document.createElement('tr');
+                detailTr.id = `details-${idx}`;
+                detailTr.className = 'details-row';
+                
+                let fileListItems = '';
+                if (entry.filesList && entry.filesList.length > 0) {
+                    fileListItems = entry.filesList.map(f => `<li><span>${f.name}</span><span>${f.size}</span></li>`).join('');
+                } else {
+                    fileListItems = '<li><span>No files transferred (Already in sync)</span><span>-</span></li>';
+                }
+
+                detailTr.innerHTML = `
+                    <td colspan="6">
+                        <div class="details-content">
+                            <div class="details-title">Transferred Files & Folders Log</div>
+                            <ul class="file-list">
+                                ${fileListItems}
+                            </ul>
+                        </div>
+                    </td>
+                `;
+                body.appendChild(detailTr);
+            });
+        });
+    </script>
+</body>
+</html>
+"@
+}
+
 & chcp 65001 | Out-Null;
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8;
@@ -346,12 +835,21 @@ Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 # ----------------------------------------------------------------
 #  0. AUTO-CLEANUP ORPHANED VIRTUAL DRIVES
 # ----------------------------------------------------------------
+$SettingsFile = Join-Path $PSScriptRoot "settings.json";
+$savedBase = "";
+if (Test-Path $SettingsFile) {
+    try { $parsed = Get-Content $SettingsFile -Raw | ConvertFrom-Json; if ($parsed.LastBackupLocation) { $savedBase = $parsed.LastBackupLocation } } catch {};
+}
+
 $substOut = & subst;
 if ($substOut) {
     foreach ($line in $substOut) {
-        if ($line -match "^([A-Z]:\\): => (.*(Smart_Backup|_\d{4}-\d\d-\d\d_).*)$") {
+        if ($line -match "^([A-Z]:\\): => (.*)$") {
             $drv = $Matches[1].TrimEnd('\');
-            & subst $drv /D | Out-Null;
+            $targetPath = $Matches[2];
+            if (($savedBase -and $targetPath.StartsWith($savedBase)) -or $targetPath -match "Smart_Backup|_\d{4}-\d\d-\d\d_") {
+                & subst $drv /D | Out-Null;
+            }
         }
     }
 }
@@ -439,9 +937,8 @@ if (-not $baseBackupPath) {
     Write-Host "[CONFIG] Saved new location to settings.json" -ForegroundColor DarkGray;
 }
 
-# --- Build Dynamic Destination Folder ---
-$DateStamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss";
-$destFolderName = "${DeviceName}_${DateStamp}";
+# --- Build Destination Folder (Device Name only for in-place Sync) ---
+$destFolderName = $DeviceName;
 $destPath = Join-Path $baseBackupPath $destFolderName;
 if (-not (Test-Path $destPath)) { New-Item -ItemType Directory -Path $destPath -Force | Out-Null };
 
@@ -583,7 +1080,6 @@ foreach ($key in $AndroidFiles.Keys) {
         $ToPull.Add($key);
     }
 }
-
 $totalFiles = $ToPull.Count;
 if ($totalFiles -eq 0) {
     Write-Host "==============================================================" -ForegroundColor Green;
@@ -715,6 +1211,7 @@ $ScriptBlock = {
 
 $ActiveJobs    = [System.Collections.Generic.List[psobject]]::new();
 $failedFiles   = [System.Collections.Generic.List[string]]::new();
+$syncedFiles   = [System.Collections.Generic.List[psobject]]::new();
 $completedCount = 0;
 
 foreach ($file in $ToPull) {
@@ -744,7 +1241,16 @@ foreach ($file in $ToPull) {
         $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
         foreach ($d in $done) {
             $exitCode = $d.PS.EndInvoke($d.Async);
-            if ($exitCode -ne 0) { $failedFiles.Add($d.File) };
+            if ($exitCode -eq 0) {
+                $fileKey = "./" + $d.File;
+                $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
+                $syncedFiles.Add([PSCustomObject]@{
+                    name = $d.File;
+                    size = $fileSize;
+                });
+            } else {
+                $failedFiles.Add($d.File);
+            }
             $d.PS.Dispose();
             $completedCount++;
         }
@@ -764,7 +1270,16 @@ while ($ActiveJobs.Count -gt 0) {
     $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
     foreach ($d in $done) {
         $exitCode = $d.PS.EndInvoke($d.Async);
-        if ($exitCode -ne 0) { $failedFiles.Add($d.File) };
+        if ($exitCode -eq 0) {
+            $fileKey = "./" + $d.File;
+            $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
+            $syncedFiles.Add([PSCustomObject]@{
+                name = $d.File;
+                size = $fileSize;
+            });
+        } else {
+            $failedFiles.Add($d.File);
+        }
         $d.PS.Dispose();
         $completedCount++;
     }
@@ -774,6 +1289,11 @@ while ($ActiveJobs.Count -gt 0) {
     if ($global:JigarAbort -and $ActiveJobs.Count -eq 0) { break };
 }
 Write-Progress -Activity "12x Multi-Threaded Titan Pull" -Completed;
+
+# ----------------------------------------------------------------
+#  UPDATE HTML BACKUP LOG
+# ----------------------------------------------------------------
+Update-JigarHtmlLog -BaseDir $baseBackupPath -Device $DeviceName -SyncedFiles $syncedFiles -IsAbort $global:JigarAbort
 
 # ----------------------------------------------------------------
 #  GRACEFUL ABORT CLEANUP (Feature 5)
@@ -818,4 +1338,7 @@ if ($failedFiles.Count -gt 0) {
 Write-Host "`n[LOG] Transcript saved to: $LogFile" -ForegroundColor DarkGray;
 Stop-Transcript | Out-Null;
 Read-Host "`nPress Enter to exit...";
+
+
+
 

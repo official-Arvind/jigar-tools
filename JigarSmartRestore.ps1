@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 # ================================================================
 #  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (RESTORE - TITAN ENGINE)
 #  NEW in v39.1:
@@ -345,12 +345,21 @@ Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 # ----------------------------------------------------------------
 #  0. AUTO-CLEANUP ORPHANED VIRTUAL DRIVES
 # ----------------------------------------------------------------
+$SettingsFile = Join-Path $PSScriptRoot "settings.json";
+$savedBase = "";
+if (Test-Path $SettingsFile) {
+    try { $parsed = Get-Content $SettingsFile -Raw | ConvertFrom-Json; if ($parsed.LastBackupLocation) { $savedBase = $parsed.LastBackupLocation } } catch {};
+}
+
 $substOut = & subst;
 if ($substOut) {
     foreach ($line in $substOut) {
-        if ($line -match "^([A-Z]:\\): => (.*(Smart_Backup|_\d{4}-\d\d-\d\d_).*)$") {
+        if ($line -match "^([A-Z]:\\): => (.*)$") {
             $drv = $Matches[1].TrimEnd('\');
-            & subst $drv /D | Out-Null;
+            $targetPath = $Matches[2];
+            if (($savedBase -and $targetPath.StartsWith($savedBase)) -or $targetPath -match "Smart_Backup|_\d{4}-\d\d-\d\d_") {
+                & subst $drv /D | Out-Null;
+            }
         }
     }
 }
