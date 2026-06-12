@@ -1,4 +1,0 @@
-@echo off
-echo Hello
-rename test_rename2.bat test_rename2.bat.old
-echo World
