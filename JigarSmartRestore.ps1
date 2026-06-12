@@ -145,7 +145,7 @@ function Show-JigarIncludeMenu {
     $lblTitle.Height    = 26;
 
     $lblSub = [System.Windows.Forms.Label]::new();
-    $lblSub.Text      = '  Only CHECKED items will be restored. Press â€œRestore Allâ€ to skip this filter.';
+    $lblSub.Text      = '  Only CHECKED items will be restored. Press "Restore All" to skip this filter.';
     $lblSub.ForeColor = [System.Drawing.Color]::FromArgb(100, 180, 120);
     $lblSub.Font      = [System.Drawing.Font]::new('Segoe UI', 8);
     $lblSub.Dock      = 'Top';
@@ -395,6 +395,69 @@ $serial = ($devices[0].ToString().Split("`t")[0]).Trim();
 Write-Host "[SYSTEM] Device Connected & Verified!" -ForegroundColor Green;
 
 # ----------------------------------------------------------------
+#  1.5. DETECT ROOT & BUSYBOX CAPABILITIES
+# ----------------------------------------------------------------
+Write-Host "[SYSTEM] Probing device capabilities..." -ForegroundColor Yellow;
+
+$isAdbRoot = $false;
+$isSuRoot  = $false;
+$busyboxPath = $null;
+
+# 1. Check if ADB is already running as root
+$whoami = (& $adbExe -s $serial shell id 2>$null);
+if ($whoami -match "uid=0\(root\)") {
+    $isAdbRoot = $true;
+    Write-Host "[SYSTEM] Root Status: Native ADB Root active" -ForegroundColor Green;
+} else {
+    # 2. Check if su is available
+    $suTest = (& $adbExe -s $serial shell "su -c 'id'" 2>$null);
+    if ($suTest -match "uid=0\(root\)") {
+        $isSuRoot = $true;
+        Write-Host "[SYSTEM] Root Status: Root via su (APatch/Magisk/KernelSU) verified" -ForegroundColor Green;
+    } else {
+        Write-Host "[SYSTEM] Root Status: Non-Rooted Device" -ForegroundColor Yellow;
+    }
+}
+
+# 3. Detect BusyBox NDK or others
+$bbPaths = @(
+    "busybox",
+    "/data/adb/modules/busybox-ndk/system/xbin/busybox",
+    "/data/adb/modules/busybox-ndk/system/bin/busybox",
+    "/data/adb/magisk/busybox",
+    "/system/xbin/busybox",
+    "/system/bin/busybox",
+    "/sbin/busybox",
+    "/data/local/tmp/busybox"
+)
+
+foreach ($path in $bbPaths) {
+    $test = $null;
+    if ($isAdbRoot) {
+        $test = (& $adbExe -s $serial shell "$path" 2>$null);
+    } elseif ($isSuRoot) {
+        $escapedPath = $path -replace "'", "'\''";
+        $test = (& $adbExe -s $serial shell "su -c '$escapedPath'" 2>$null);
+    } else {
+        $test = (& $adbExe -s $serial shell "$path" 2>$null);
+    }
+    $testStr = if ($test) { $test -join "`n" } else { "" };
+    if ($testStr -match "BusyBox v") {
+        $busyboxPath = $path;
+        $bbVersion = "";
+        if ($testStr -match "BusyBox v[0-9.]+\S*") {
+            $bbVersion = $Matches[0];
+        }
+        Write-Host "[SYSTEM] BusyBox     : Found at '$busyboxPath' ($bbVersion)" -ForegroundColor Green;
+        break;
+    }
+}
+
+if (-not $busyboxPath) {
+    Write-Host "[SYSTEM] BusyBox     : Not found (proceeding with toybox/toolbox)" -ForegroundColor Yellow;
+}
+
+# ----------------------------------------------------------------
 #  FEATURE 5: GRACEFUL CTRL+C CANCELLATION HANDLER
 # ----------------------------------------------------------------
 $global:JigarAbort = $false;
@@ -526,10 +589,34 @@ Write-Host "[SCAN] Found $($BackupFiles.Count) total files in backup." -Foregrou
 Write-Host "[SCAN] Mapping Android Device Storage... (Please Wait)" -ForegroundColor Yellow;
 $AndroidFiles = @{};
 
-$cmd      = "cd /sdcard && find . -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+$scanTarget = "/sdcard"
+if ($isAdbRoot -or $isSuRoot) {
+    $scanTarget = "/data/media/0"
+}
+
+# Build scan commands using absolute paths (avoids cd+namespace path issues on Android FUSE mounts)
+$scanCmd = "";
+if ($isAdbRoot) {
+    $scanCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+} elseif ($isSuRoot) {
+    $scanCmd = "su -c \`"find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null\`"";
+} else {
+    $scanCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+}
+
+# Fallback: xargs variant if exec+ batching fails
+$scanFallbackCmd = "";
+if ($isAdbRoot) {
+    $scanFallbackCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
+} elseif ($isSuRoot) {
+    $scanFallbackCmd = "su -c \`"find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null\`"";
+} else {
+    $scanFallbackCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
+}
+
 $procInfo = New-Object System.Diagnostics.ProcessStartInfo;
 $procInfo.FileName  = $adbExe;
-$procInfo.Arguments = "-s $serial shell `"$cmd`"";
+$procInfo.Arguments = "-s $serial shell `"$scanCmd`"";
 $procInfo.RedirectStandardOutput = $true;
 $procInfo.UseShellExecute = $false;
 $procInfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8;
@@ -539,13 +626,32 @@ $proc   = [System.Diagnostics.Process]::Start($procInfo);
 $output = $proc.StandardOutput.ReadToEnd() -split "`n";
 $proc.WaitForExit();
 
+# Fallback: if output is empty, try the traditional -exec stat method
+if (($scanFallbackCmd) -and (-not $output -or $output.Count -eq 0 -or ($output.Count -eq 1 -and $output[0].Trim() -eq ""))) {
+    $procInfo.Arguments = "-s $serial shell `"$scanFallbackCmd`"";
+    $proc   = [System.Diagnostics.Process]::Start($procInfo);
+    $output = $proc.StandardOutput.ReadToEnd() -split "`n";
+    $proc.WaitForExit();
+}
+
 foreach ($line in $output) {
     $line = $line.Trim();
     $idx  = $line.IndexOf('|');
     if ($idx -gt 0) {
-        $sz   = [long]$line.Substring(0, $idx);
-        $file = $line.Substring($idx + 1);
-        if ($file.StartsWith("./")) { $AndroidFiles[$file] = $sz };
+        $sz  = 0;
+        if (-not [long]::TryParse($line.Substring(0, $idx), [ref]$sz)) { continue };
+        $raw = $line.Substring($idx + 1);
+        # Normalize: strip absolute scanTarget prefix → ./relative
+        if ($raw.StartsWith($scanTarget + "/")) {
+            $raw = "./" + $raw.Substring($scanTarget.Length + 1);
+        } elseif ($raw.StartsWith($scanTarget)) {
+            $raw = "./" + $raw.Substring($scanTarget.Length);
+        }
+        # Strip spurious storage/emulated/0 nesting (FUSE namespace artifact)
+        if ($raw.StartsWith("./storage/emulated/0/")) {
+            $raw = "./" + $raw.Substring("./storage/emulated/0/".Length);
+        }
+        if ($raw.StartsWith("./")) { $AndroidFiles[$raw] = $sz };
     }
 }
 Write-Host "[SCAN] Found $($AndroidFiles.Count) files currently on Android.`n" -ForegroundColor Green;
@@ -634,82 +740,114 @@ $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 
 $ScriptBlock = {
-    param($adbExe, $serial, $src, $dest)
+    param($adbExe, $serial, $src, $dest, $isAdbRoot, $isSuRoot, $busyboxPath)
 
-    function Invoke-ProcessSafe {
-        param($pInfo)
-        $pInfo.RedirectStandardOutput = $true;
-        $pInfo.RedirectStandardError = $true;
-        $p = [System.Diagnostics.Process]::Start($pInfo);
-        $outTask = $p.StandardOutput.ReadToEndAsync();
-        $errTask = $p.StandardError.ReadToEndAsync();
-        [System.Threading.Tasks.Task]::WaitAll($outTask, $errTask);
-        $p.WaitForExit();
-        $exitCode = $p.ExitCode;
-        $p.Dispose();
-        return $exitCode;
+    # ---------------------------------------------------
+    # ATTEMPT 1: Standard Push (Bypass virtual drive bugs for ADB root)
+    # ---------------------------------------------------
+    $pushDest = $dest
+    if ($isAdbRoot) {
+        $pushDest = $dest -replace "^/sdcard", "/data/media/0"
     }
 
-    # ---------------------------------------------------
-    # ATTEMPT 1: Standard Push
-    # ---------------------------------------------------
     $pInfo = New-Object System.Diagnostics.ProcessStartInfo;
-    $pInfo.FileName  = $adbExe;
-    $pInfo.Arguments = "-s `"$serial`" push `"$src`" `"$dest`"";
+    $pInfo.FileName = $adbExe;
+    $pInfo.Arguments = "-s `"$serial`" push `"$src`" `"$pushDest`"";
     $pInfo.UseShellExecute = $false;
-    $pInfo.CreateNoWindow  = $true;
-    $exitCode1 = Invoke-ProcessSafe $pInfo;
-
-    if ($exitCode1 -eq 0) { return 0; }
+    $pInfo.CreateNoWindow = $true;
+    $p = [System.Diagnostics.Process]::Start($pInfo);
+    $p.WaitForExit();
+    
+    if ($p.ExitCode -eq 0) { return 0; }
 
     # ---------------------------------------------------
     # ATTEMPT 2: Temp Push Via /data/local/tmp
     # ---------------------------------------------------
-    $uuid       = [guid]::NewGuid().ToString().Substring(0, 8);
+    $uuid = [guid]::NewGuid().ToString().Substring(0, 8);
     $androidTmp = "/data/local/tmp/jgr_$uuid";
-    $escapedDest = $dest -replace "'", "'\''";
 
-    try {
-        $pInfo2 = New-Object System.Diagnostics.ProcessStartInfo;
-        $pInfo2.FileName  = $adbExe;
-        $pInfo2.Arguments = "-s `"$serial`" push `"$src`" `"$androidTmp`"";
-        $pInfo2.UseShellExecute = $false;
-        $pInfo2.CreateNoWindow  = $true;
-        $exitCode2 = Invoke-ProcessSafe $pInfo2;
+    $pInfo2 = New-Object System.Diagnostics.ProcessStartInfo;
+    $pInfo2.FileName = $adbExe;
+    $pInfo2.Arguments = "-s `"$serial`" push `"$src`" `"$androidTmp`";";
+    $pInfo2.UseShellExecute = $false;
+    $pInfo2.CreateNoWindow = $true;
+    $p2 = [System.Diagnostics.Process]::Start($pInfo2);
+    $p2.WaitForExit();
 
-        if ($exitCode2 -eq 0) {
-            $mvCmd   = "mv '$androidTmp' '$escapedDest'";
-            $pMvInfo = New-Object System.Diagnostics.ProcessStartInfo;
-            $pMvInfo.FileName  = $adbExe;
-            $pMvInfo.Arguments = "-s `"$serial`" shell `"$mvCmd`"";
-            $pMvInfo.UseShellExecute = $false;
-            $pMvInfo.CreateNoWindow  = $true;
-            $exitCodeMv = Invoke-ProcessSafe $pMvInfo;
-
-            if ($exitCodeMv -eq 0) { return 0; }
-
-            # ---------------------------------------------------
-            # ATTEMPT 3: Root Global Mount Fallback (APatch/Magisk)
-            # ---------------------------------------------------
-            $suCmd   = "su -c `"cat '$androidTmp' > '$escapedDest'`"";
-            $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
-            $pSuInfo.FileName  = $adbExe;
-            $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmd`"";
-            $pSuInfo.UseShellExecute = $false;
-            $pSuInfo.CreateNoWindow  = $true;
-            $exitCodeSu = Invoke-ProcessSafe $pSuInfo;
-
-            if ($exitCodeSu -eq 0) {
-                return 0;
-            }
+    if ($p2.ExitCode -eq 0) {
+        $mvDest = $dest
+        if ($isAdbRoot) {
+            $mvDest = $dest -replace "^/sdcard", "/data/media/0"
         }
-    } finally {
+        
+        $pMvInfo = New-Object System.Diagnostics.ProcessStartInfo;
+        $pMvInfo.FileName = $adbExe;
+        $pMvInfo.Arguments = "-s `"$serial`" shell `"mv \`"$androidTmp\`" \`"$mvDest\`"`"";
+        $pMvInfo.UseShellExecute = $false;
+        $pMvInfo.CreateNoWindow = $true;
+        $pMv = [System.Diagnostics.Process]::Start($pMvInfo);
+        $pMv.WaitForExit();
+
+        if ($pMv.ExitCode -eq 0) {
+            return 0;
+        }
+
+        # ---------------------------------------------------
+        # ATTEMPT 3: Root Global Mount Fallback (APatch/Magisk)
+        # ---------------------------------------------------
+        if (-not $isAdbRoot -and -not $isSuRoot) {
+            $pRmInfo = New-Object System.Diagnostics.ProcessStartInfo;
+            $pRmInfo.FileName = $adbExe;
+            $pRmInfo.Arguments = "-s `"$serial`" shell `"rm \`"$androidTmp\`" 2>/dev/null`"";
+            $pRmInfo.UseShellExecute = $false;
+            $pRmInfo.CreateNoWindow = $true;
+            $pRm = [System.Diagnostics.Process]::Start($pRmInfo);
+            $pRm.WaitForExit();
+            return 1;
+        }
+
+        $rootDest = $dest -replace "^/sdcard", "/data/media/0";
+
+        # Try writing to /sdcard first via su -c (auto-handles ownership/permissions if successful)
+        $suCmd = "su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'";
+        $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
+        $pSuInfo.FileName = $adbExe;
+        $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmd`"";
+        $pSuInfo.UseShellExecute = $false;
+        $pSuInfo.CreateNoWindow = $true;
+        $pSu = [System.Diagnostics.Process]::Start($pSuInfo);
+        $pSu.WaitForExit();
+
+        if ($pSu.ExitCode -eq 0) {
+            $pRmInfo = New-Object System.Diagnostics.ProcessStartInfo;
+            $pRmInfo.FileName = $adbExe;
+            $pRmInfo.Arguments = "-s `"$serial`" shell `"rm \`"$androidTmp\`" 2>/dev/null`"";
+            $pRmInfo.UseShellExecute = $false;
+            $pRmInfo.CreateNoWindow = $true;
+            $pRm = [System.Diagnostics.Process]::Start($pRmInfo);
+            $pRm.WaitForExit();
+            return 0;
+        }
+
+        # Fallback to direct raw copy to /data/media/0 + chown/chmod
+        $suCmdRaw = "su -c 'cat \`"$androidTmp\`" > \`"$rootDest\`" && chown 1023:1023 \`"$rootDest\`" && chmod 664 \`"$rootDest\`"'";
+        $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmdRaw`"";
+        $pSuRaw = [System.Diagnostics.Process]::Start($pSuInfo);
+        $pSuRaw.WaitForExit();
+
+        $exitCode = $pSuRaw.ExitCode;
+
         $pRmInfo = New-Object System.Diagnostics.ProcessStartInfo;
-        $pRmInfo.FileName  = $adbExe;
-        $pRmInfo.Arguments = "-s `"$serial`" shell `"rm '$androidTmp' 2>/dev/null`"";
+        $pRmInfo.FileName = $adbExe;
+        $pRmInfo.Arguments = "-s `"$serial`" shell `"rm \`"$androidTmp\`" 2>/dev/null`"";
         $pRmInfo.UseShellExecute = $false;
-        $pRmInfo.CreateNoWindow  = $true;
-        Invoke-ProcessSafe $pRmInfo | Out-Null;
+        $pRmInfo.CreateNoWindow = $true;
+        $pRm = [System.Diagnostics.Process]::Start($pRmInfo);
+        $pRm.WaitForExit();
+
+        if ($exitCode -eq 0) {
+            return 0;
+        }
     }
 
     return 1; # Absolute Failure
@@ -727,7 +865,7 @@ foreach ($file in $ToPush) {
     $src  = Join-Path $restoreRoot $cleanPath;
     $dest = "/sdcard/$cleanPath";
 
-    $PSInstance = [powershell]::Create().AddScript($ScriptBlock).AddArgument($adbExe).AddArgument($serial).AddArgument($src).AddArgument($dest);
+    $PSInstance = [powershell]::Create().AddScript($ScriptBlock).AddArgument($adbExe).AddArgument($serial).AddArgument($src).AddArgument($dest).AddArgument($isAdbRoot).AddArgument($isSuRoot).AddArgument($busyboxPath);
     $PSInstance.RunspacePool = $RunspacePool;
 
     $ActiveJobs.Add([PSCustomObject]@{
