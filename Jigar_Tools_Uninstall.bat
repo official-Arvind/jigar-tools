@@ -100,7 +100,7 @@ if exist "%ADB_EXE%" (
     where adb >nul 2>&1
     if !errorLevel! equ 0 (
         adb kill-server >nul 2>&1
-        echo   [DONE] ADB server stopped (system ADB).
+        echo   [DONE] ADB server stopped (system ADB^).
     ) else (
         echo   [SKIP] ADB not found, nothing to stop.
     )
@@ -142,11 +142,11 @@ echo.
 :: Show any inline backup folders (DeviceName_YYYY-MM-DD pattern)
 set "HAS_INLINE=0"
 for /d %%D in ("%TOOLS_DIR%\*_????-??-??_*") do (
-    echo     %%~nxD\  - backup snapshot (inside install folder)
+    echo     %%~nxD\  - backup snapshot (inside install folder^)
     set "HAS_INLINE=1"
 )
 if exist "%TOOLS_DIR%\Smart_Backup" (
-    echo     Smart_Backup\  - legacy backup data (inside install folder)
+    echo     Smart_Backup\  - legacy backup data (inside install folder^)
     set "HAS_INLINE=1"
 )
 
@@ -154,7 +154,7 @@ if exist "%TOOLS_DIR%\Smart_Backup" (
 if defined BACKUPS_DIR (
     if exist "%BACKUPS_DIR%" (
         echo     %BACKUPS_DIR%
-        echo     ^--- Your Android backup snapshots (EXTERNAL BACKUPS FOLDER)
+        echo     ^--- Your Android backup snapshots (EXTERNAL BACKUPS FOLDER^)
         set "HAS_INLINE=1"
     )
 )
