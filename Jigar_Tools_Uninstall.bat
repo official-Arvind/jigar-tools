@@ -85,7 +85,7 @@ if exist "%ADB_EXE%" (
     echo   [DONE] ADB server stopped.
 ) else (
     where adb >nul 2>&1
-    if %errorLevel% equ 0 (
+    if !errorLevel! equ 0 (
         adb kill-server >nul 2>&1
         echo   [DONE] ADB server stopped (system ADB).
     ) else (
@@ -174,8 +174,8 @@ exit /b 0
 :: ---- ADMIN RELAUNCH -----------------------------------
 :Relaunch
 echo.
-echo  [!] Administrator privileges required for PATH modification.
-echo  [!] Requesting elevation...
+echo  [WARN] Administrator privileges required for PATH modification.
+echo  [WARN] Requesting elevation...
 echo.
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "Start-Process cmd -ArgumentList '/c \"%~f0\"' -Verb RunAs"

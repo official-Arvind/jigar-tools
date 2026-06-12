@@ -38,23 +38,23 @@ echo ========================================================
 echo.
 
 echo [AUDIT] Checking Directory Content...
-if not exist "JigarSmartSync.ps1"    echo [FAIL] JigarSmartSync.ps1 missing!    && pause && exit /b 1
+if not exist "JigarSmartSync.ps1"    echo [FAIL] JigarSmartSync.ps1 missing.    && pause && exit /b 1
 echo   [OK] JigarSmartSync.ps1 found.
-if not exist "JigarSmartRestore.ps1" echo [FAIL] JigarSmartRestore.ps1 missing! && pause && exit /b 1
+if not exist "JigarSmartRestore.ps1" echo [FAIL] JigarSmartRestore.ps1 missing. && pause && exit /b 1
 echo   [OK] JigarSmartRestore.ps1 found.
 
 echo.
 echo [AUDIT] Checking Assets...
-if exist "%ICON_FILE%" (echo   [OK] logo.ico found.) else (echo   [!] Warning: logo.ico missing.)
+if exist "%ICON_FILE%" (echo   [OK] logo.ico found.) else (echo   [WARN] Warning: logo.ico missing.)
 
 echo.
 echo [AUDIT] Checking PowerShell Environment...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "if ($PSVersionTable.PSVersion.Major -ge 5) { Write-Host '  [OK] PS 5.1+ Active.' } else { Write-Host '  [FAIL] PS Outdated! Minimum: PS 5.1'; exit 1 }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "if ($PSVersionTable.PSVersion.Major -ge 5) { Write-Host '  [OK] PS 5.1+ Active.' } else { Write-Host '  [FAIL] PS Outdated. Minimum: PS 5.1'; exit 1 }"
 if %errorLevel% neq 0 goto :PSError
 
 echo.
 echo [AUDIT] Checking ADB Availability...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Command adb -ErrorAction SilentlyContinue) { Write-Host '  [OK] ADB found in PATH.' } else { Write-Host '  [!] ADB not in system PATH.' }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Command adb -ErrorAction SilentlyContinue) { Write-Host '  [OK] ADB found in PATH.' } else { Write-Host '  [WARN] ADB not in system PATH.' }"
 
 echo.
 echo [+] Registering Jigar Tools to System PATH...
@@ -70,7 +70,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -COM WScr
 
 echo.
 echo ========================================================
-echo  [SUCCESS] Setup Complete!
+echo  [SUCCESS] Setup Complete.
 echo  [SUCCESS] Flower planted at: %REAL_DESKTOP%
 echo  [ACTION]  Entering the God Mode Menu...
 echo ========================================================
@@ -121,7 +121,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$adb  = if (Test-Path (Join-Path $bin 'adb.exe')) { Join-Path $bin 'adb.exe' } else { 'adb' };" ^
     "$devices = & $adb devices 2>$null | Select-String '\tdevice$';" ^
     "if ($devices.Count -eq 0) {" ^
-    "  Write-Host '[ERROR] No Android device detected!' -ForegroundColor Red;" ^
+    "  Write-Host '[ERROR] No Android device detected.' -ForegroundColor Red;" ^
     "  Write-Host '';" ^
     "  Write-Host 'TROUBLESHOOTING:' -ForegroundColor Yellow;" ^
     "  Write-Host '  1. Connect phone via USB' -ForegroundColor Gray;" ^
@@ -130,7 +130,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  Write-Host '  4. Select File Transfer mode' -ForegroundColor Gray;" ^
     "  Write-Host '  5. Keep screen UNLOCKED' -ForegroundColor Gray" ^
     "} else {" ^
-    "  Write-Host '[SUCCESS] Device(s) detected!' -ForegroundColor Green;" ^
+    "  Write-Host '[SUCCESS] Device(s) detected.' -ForegroundColor Green;" ^
     "  Write-Host '';" ^
     "  foreach ($line in $devices) {" ^
     "    $serial = $line.ToString().Split([char]9)[0].Trim();" ^
@@ -169,11 +169,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "JigarSmartRestore.ps1"
 pause
 goto :Menu
 
-:: ---- AUTO-UPDATER (Prompt 8) --------------------------
+:: ---- AUTO-UPDATER --------------------------
 :CheckUpdate
 cls
 echo ========================================================
-echo        JIGAR TOOLS  ^|  AUTO-UPDATER
+echo        JIGAR TOOLS  |  AUTO-UPDATER
 echo        Checking: github.com/official-Arvind/jigar-tools
 echo ========================================================
 echo.
@@ -181,8 +181,7 @@ echo [UPDATE] Querying GitHub API for latest release...
 echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$localVer  = (Get-Content '%VERSION_FILE%' -ErrorAction SilentlyContinue).Trim();" ^
-    "if (-not $localVer) { $localVer = 'v39.1' };" ^
+    "$localVer = 'v39.1'; $vc = Get-Content '%VERSION_FILE%' -ErrorAction SilentlyContinue; if ($vc) { $localVer = $vc.Trim() };" ^
     "$api = 'https://api.github.com/repos/official-Arvind/jigar-tools/releases/latest';" ^
     "try {" ^
     "  $rel = Invoke-RestMethod -Uri $api -UseBasicParsing -ErrorAction Stop;" ^
@@ -193,7 +192,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  Write-Host \"  Remote : $remoteVer\" -ForegroundColor Cyan;" ^
     "  Write-Host '';" ^
     "  if ($remoteVer -eq $localVer) {" ^
-    "    Write-Host '  [UP-TO-DATE] You are running the latest version!' -ForegroundColor Green;" ^
+    "    Write-Host '  [UP-TO-DATE] You are running the latest version.' -ForegroundColor Green;" ^
     "    exit 0" ^
     "  };" ^
     "  Write-Host \"  [UPDATE AVAILABLE]  $localVer  ->  $remoteVer\" -ForegroundColor Yellow;" ^
@@ -219,17 +218,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    foreach ($pat in $preservePat) { if ($name -like $pat) { $keep = $true; break } };" ^
     "    if ($keep) { Write-Host \"    [PRESERVED] $name\" -ForegroundColor DarkGray; return };" ^
     "    $dst = Join-Path $toolsDir $name;" ^
-    "    if ($_.PSIsContainer) { Copy-Item $_.FullName $dst -Recurse -Force }" ^
-    "    else { Copy-Item $_.FullName $dst -Force };" ^
+    "    if ($name -eq 'Jigar_Tools_Setup.bat') { $dst = Join-Path $toolsDir 'Jigar_Tools_Setup_New.bat' };" ^
+    "    if ($_.PSIsContainer) { " ^
+    "      if (-not (Test-Path $dst)) { New-Item -ItemType Directory -Force -Path $dst | Out-Null };" ^
+    "      Copy-Item \"$($_.FullName)\*\" $dst -Recurse -Force" ^
+    "    } else { Copy-Item $_.FullName $dst -Force };" ^
     "    Write-Host \"    [UPDATED] $name\" -ForegroundColor Gray" ^
     "  };" ^
     "  $remoteVer | Set-Content (Join-Path $toolsDir '.version') -Encoding UTF8;" ^
     "  Remove-Item $tmpZip, $tmpDir -Recurse -Force -ErrorAction SilentlyContinue;" ^
     "  Write-Host '';" ^
-    "  Write-Host \"  [4/4] Update to $remoteVer complete!\" -ForegroundColor Green;" ^
+    "  Write-Host \"  [4/4] Update to $remoteVer complete.\" -ForegroundColor Green;" ^
     "  Write-Host '        Relaunching Jigar Tools...' -ForegroundColor Cyan;" ^
     "  Start-Sleep -Seconds 2;" ^
-    "  Start-Process cmd -ArgumentList ('/c', '\"%TOOLS_DIR%\Jigar_Tools_Setup.bat\"');" ^
+    "  Start-Process cmd -ArgumentList ('/c', 'timeout /t 2 >nul & move /y \"' + $toolsDir + '\Jigar_Tools_Setup_New.bat\" \"' + $toolsDir + '\Jigar_Tools_Setup.bat\" & \"' + $toolsDir + '\Jigar_Tools_Setup.bat\"');" ^
     "  exit 99" ^
     "} catch {" ^
     "  Write-Host \"  [ERROR] Could not reach GitHub: $($_.Exception.Message)\" -ForegroundColor Red;" ^
@@ -243,12 +245,12 @@ echo.
 pause
 goto :Menu
 
-:: ---- EXIT WITH ADB CLEANUP (Prompt 9) -----------------
+:: ---- EXIT WITH ADB CLEANUP -----------------
 :Exit
 cls
 echo.
 echo ========================================================
-echo        JIGAR TOOLS  ^|  SHUTDOWN SEQUENCE
+echo        JIGAR TOOLS  |  SHUTDOWN SEQUENCE
 echo ========================================================
 echo.
 echo  [SHUTDOWN] Killing ADB server daemon...
@@ -259,7 +261,7 @@ if exist "%ADB_EXE%" (
     "%ADB_EXE%" kill-server >nul 2>&1
 ) else (
     where adb >nul 2>&1
-    if %errorLevel% equ 0 ( adb kill-server >nul 2>&1 )
+    if !errorLevel! equ 0 ( adb kill-server >nul 2>&1 )
 )
 
 :: Verify the ADB process is gone
@@ -270,8 +272,8 @@ if %errorLevel% equ 0 (
     taskkill /im adb.exe /f >nul 2>&1
     timeout /t 1 >nul
     tasklist /fi "imagename eq adb.exe" 2>nul | find /i "adb.exe" >nul
-    if %errorLevel% equ 0 (
-        echo  [!] Could not fully terminate ADB. It may restart on next use.
+    if !errorLevel! equ 0 (
+        echo  [WARN] Could not fully terminate ADB. It may restart on next use.
     ) else (
         echo  [OK] ADB server shutdown confirmed.
     )
@@ -280,7 +282,7 @@ if %errorLevel% equ 0 (
 )
 
 echo.
-echo  [DONE] Thank you for using Jigar Tools. Goodbye!
+echo  [DONE] Thank you for using Jigar Tools. Goodbye..
 echo.
 echo ========================================================
 echo.
@@ -290,7 +292,7 @@ exit /b 0
 :: ---- ERROR HANDLERS ------------------------------------
 :PSError
 echo.
-echo [FATAL] PowerShell 5.1+ is required!
+echo [FATAL] PowerShell 5.1+ is required.
 echo.
 echo Please upgrade PowerShell:
 echo https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows
@@ -300,8 +302,8 @@ exit /b 1
 
 :: ---- ADMIN RELAUNCH -----------------------------------
 :Relaunch
-echo [!] This tool requires Administrator privileges...
-echo [!] Requesting God Mode elevation...
+echo [WARN] This tool requires Administrator privileges...
+echo [WARN] Requesting God Mode elevation...
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -ArgumentList '-NoExit', '-ExecutionPolicy', 'Bypass', '-Command', \"cd -LiteralPath '%~dp0'; cmd /c '%~f0'\" -Verb RunAs"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd -ArgumentList '/c', '\"%~f0\"' -Verb RunAs"
 exit /b 0

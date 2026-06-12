@@ -137,7 +137,7 @@ function Show-JigarIncludeMenu {
     $pnlTop.Padding   = [System.Windows.Forms.Padding]::new(12, 8, 12, 4);
 
     $lblTitle = [System.Windows.Forms.Label]::new();
-    $lblTitle.Text      = '  ✅  SELECT FOLDERS / FILES TO INCLUDE IN RESTORE';
+    $lblTitle.Text      = '[INCLUDE] SELECT FOLDERS / FILES TO INCLUDE IN RESTORE';
     $lblTitle.ForeColor = [System.Drawing.Color]::FromArgb(80, 230, 130);
     $lblTitle.Font      = [System.Drawing.Font]::new('Segoe UI', 10,
         [System.Drawing.FontStyle]::Bold);
@@ -193,13 +193,13 @@ function Show-JigarIncludeMenu {
         return $b;
     }
 
-    $btnAll      = & $mkBtn '✓ Select All'  10  '#1a5c2e';
-    $btnNone     = & $mkBtn '✗ Clear All'   115 '#3a3a1a';
-    $btnExpand   = & $mkBtn '⊞ Expand All'  220 '#1a2d5c';
-    $btnCollapse = & $mkBtn '⊟ Collapse'    325 '#2e2e40';
+    $btnAll      = & $mkBtn 'Check All'  10  '#1a5c2e';
+    $btnNone     = & $mkBtn 'Clear All'   115 '#3a3a1a';
+    $btnExpand   = & $mkBtn 'Expand All'  220 '#1a2d5c';
+    $btnCollapse = & $mkBtn 'Collapse'    325 '#2e2e40';
 
     $btnProceed = [System.Windows.Forms.Button]::new();
-    $btnProceed.Text      = '▶  Restore Selected';
+    $btnProceed.Text      = 'Restore Selected';
     $btnProceed.Size      = [System.Drawing.Size]::new(140, 34);
     $btnProceed.FlatStyle = 'Flat';
     $btnProceed.BackColor = [System.Drawing.Color]::FromArgb(20, 140, 60);
@@ -406,7 +406,7 @@ Add-Type -AssemblyName System.Windows.Forms;
 $SettingsFile = Join-Path $PSScriptRoot "settings.json";
 $Settings = @{ LastBackupLocation = "" };
 if (Test-Path $SettingsFile) {
-    try { $Settings = Get-Content $SettingsFile -Raw | ConvertFrom-Json -AsHashtable; } catch {};
+    try { $parsed = Get-Content $SettingsFile -Raw | ConvertFrom-Json; if ($parsed.LastBackupLocation) { $Settings.LastBackupLocation = $parsed.LastBackupLocation } } catch {};
 }
 
 $savedBase = $Settings.LastBackupLocation;
@@ -545,21 +545,21 @@ Write-Host "[SCAN] Found $($AndroidFiles.Count) files currently on Android.`n" -
 #  4.5  INTERACTIVE INCLUDE SUB-MENU
 # ----------------------------------------------------------------
 Write-Host "[FILTER] Restore only specific folders/files from this backup?" -ForegroundColor Yellow;
-Write-Host "         (Opens a selection picker — press N to restore everything)" -ForegroundColor DarkGray;
+Write-Host "         (Opens a selection picker - press N to restore everything)" -ForegroundColor DarkGray;
 $filterChoice = Read-Host "         Launch include menu? [Y/N]";
 $IncludeNodeStates = $null;
 $IncludeActive     = $false;
 if ($filterChoice.Trim().ToUpper() -eq 'Y') {
     Write-Host "[FILTER] Building backup file tree for selection..." -ForegroundColor DarkCyan;
     $IncludeNodeStates = Show-JigarIncludeMenu `
-        -FormTitle 'JigarSmartRestore  –  Select Items to INCLUDE in Restore' `
+        -FormTitle 'JigarSmartRestore  -  Select Items to INCLUDE in Restore' `
         -FilePaths ($BackupFiles.Keys | Sort-Object);
     if ($null -eq $IncludeNodeStates) {
-        Write-Host "[FILTER] Skipped — restoring everything." -ForegroundColor DarkGray;
+        Write-Host "[FILTER] Skipped - restoring everything." -ForegroundColor DarkGray;
     } else {
         $incCount = ($IncludeNodeStates.Values | Where-Object { $_ -eq $true }).Count;
         if ($incCount -eq 0) {
-            Write-Host "[WARNING] No items selected — restoring everything instead." -ForegroundColor DarkYellow;
+            Write-Host "[WARNING] No items selected - restoring everything instead." -ForegroundColor DarkYellow;
         } else {
             $IncludeActive = $true;
             Write-Host "[FILTER] $incCount item(s) selected for restore." -ForegroundColor Green;
@@ -570,7 +570,7 @@ if ($filterChoice.Trim().ToUpper() -eq 'Y') {
 # ----------------------------------------------------------------
 #  5. CALCULATE DELTA (RESPECTING IGNORE LIST + INTERACTIVE FILTER)
 # ----------------------------------------------------------------
-$ToPush = @();
+$ToPush = [System.Collections.Generic.List[string]]::new();
 foreach ($key in $BackupFiles.Keys) {
     $backupSize = $BackupFiles[$key];
 
@@ -587,7 +587,7 @@ foreach ($key in $BackupFiles.Keys) {
     }
 
     if (-not $AndroidFiles.ContainsKey($key) -or $AndroidFiles[$key] -ne $backupSize) {
-        $ToPush += $key;
+        $ToPush.Add($key);
     }
 }
 
@@ -626,6 +626,20 @@ $RunspacePool.Open();
 $ScriptBlock = {
     param($adbExe, $serial, $src, $dest)
 
+    function Invoke-ProcessSafe {
+        param($pInfo)
+        $pInfo.RedirectStandardOutput = $true;
+        $pInfo.RedirectStandardError = $true;
+        $p = [System.Diagnostics.Process]::Start($pInfo);
+        $outTask = $p.StandardOutput.ReadToEndAsync();
+        $errTask = $p.StandardError.ReadToEndAsync();
+        [System.Threading.Tasks.Task]::WaitAll($outTask, $errTask);
+        $p.WaitForExit();
+        $exitCode = $p.ExitCode;
+        $p.Dispose();
+        return $exitCode;
+    }
+
     # ---------------------------------------------------
     # ATTEMPT 1: Standard Push
     # ---------------------------------------------------
@@ -634,10 +648,9 @@ $ScriptBlock = {
     $pInfo.Arguments = "-s `"$serial`" push `"$src`" `"$dest`"";
     $pInfo.UseShellExecute = $false;
     $pInfo.CreateNoWindow  = $true;
-    $p = [System.Diagnostics.Process]::Start($pInfo);
-    $p.WaitForExit();
+    $exitCode1 = Invoke-ProcessSafe $pInfo;
 
-    if ($p.ExitCode -eq 0) { return 0; }
+    if ($exitCode1 -eq 0) { return 0; }
 
     # ---------------------------------------------------
     # ATTEMPT 2: Temp Push Via /data/local/tmp
@@ -645,56 +658,54 @@ $ScriptBlock = {
     $uuid       = [guid]::NewGuid().ToString().Substring(0, 8);
     $androidTmp = "/data/local/tmp/jgr_$uuid";
 
-    $pInfo2 = New-Object System.Diagnostics.ProcessStartInfo;
-    $pInfo2.FileName  = $adbExe;
-    $pInfo2.Arguments = "-s `"$serial`" push `"$src`" `"$androidTmp`"";
-    $pInfo2.UseShellExecute = $false;
-    $pInfo2.CreateNoWindow  = $true;
-    $p2 = [System.Diagnostics.Process]::Start($pInfo2);
-    $p2.WaitForExit();
+    try {
+        $pInfo2 = New-Object System.Diagnostics.ProcessStartInfo;
+        $pInfo2.FileName  = $adbExe;
+        $pInfo2.Arguments = "-s `"$serial`" push `"$src`" `"$androidTmp`"";
+        $pInfo2.UseShellExecute = $false;
+        $pInfo2.CreateNoWindow  = $true;
+        $exitCode2 = Invoke-ProcessSafe $pInfo2;
 
-    if ($p2.ExitCode -eq 0) {
-        $mvCmd   = "mv `"$androidTmp`" `"$dest`"";
-        $pMvInfo = New-Object System.Diagnostics.ProcessStartInfo;
-        $pMvInfo.FileName  = $adbExe;
-        $pMvInfo.Arguments = "-s `"$serial`" shell `"$mvCmd`"";
-        $pMvInfo.UseShellExecute = $false;
-        $pMvInfo.CreateNoWindow  = $true;
-        $pMv = [System.Diagnostics.Process]::Start($pMvInfo);
-        $pMv.WaitForExit();
+        if ($exitCode2 -eq 0) {
+            $mvCmd   = "mv `"$androidTmp`" `"$dest`"";
+            $pMvInfo = New-Object System.Diagnostics.ProcessStartInfo;
+            $pMvInfo.FileName  = $adbExe;
+            $pMvInfo.Arguments = "-s `"$serial`" shell `"$mvCmd`"";
+            $pMvInfo.UseShellExecute = $false;
+            $pMvInfo.CreateNoWindow  = $true;
+            $exitCodeMv = Invoke-ProcessSafe $pMvInfo;
 
-        if ($pMv.ExitCode -eq 0) { return 0; }
-    }
+            if ($exitCodeMv -eq 0) { return 0; }
 
-    # ---------------------------------------------------
-    # ATTEMPT 3: Root Global Mount Fallback (APatch/Magisk)
-    # ---------------------------------------------------
-    $suArgs  = "-s `"$serial`" shell `"su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'`"";
-    $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
-    $pSuInfo.FileName  = $adbExe;
-    $pSuInfo.Arguments = $suArgs;
-    $pSuInfo.UseShellExecute = $false;
-    $pSuInfo.CreateNoWindow  = $true;
-    $pSu = [System.Diagnostics.Process]::Start($pSuInfo);
-    $pSu.WaitForExit();
+            # ---------------------------------------------------
+            # ATTEMPT 3: Root Global Mount Fallback (APatch/Magisk)
+            # ---------------------------------------------------
+            $suArgs  = "-s `"$serial`" shell `"su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'`"";
+            $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
+            $pSuInfo.FileName  = $adbExe;
+            $pSuInfo.Arguments = $suArgs;
+            $pSuInfo.UseShellExecute = $false;
+            $pSuInfo.CreateNoWindow  = $true;
+            $exitCodeSu = Invoke-ProcessSafe $pSuInfo;
 
-    if ($pSu.ExitCode -eq 0) {
+            if ($exitCodeSu -eq 0) {
+                return 0;
+            }
+        }
+    } finally {
         $pRmInfo = New-Object System.Diagnostics.ProcessStartInfo;
         $pRmInfo.FileName  = $adbExe;
         $pRmInfo.Arguments = "-s `"$serial`" shell `"rm \`"$androidTmp\`" 2>/dev/null`"";
         $pRmInfo.UseShellExecute = $false;
         $pRmInfo.CreateNoWindow  = $true;
-        $pRm = [System.Diagnostics.Process]::Start($pRmInfo);
-        $pRm.WaitForExit();
-
-        return 0;
+        Invoke-ProcessSafe $pRmInfo | Out-Null;
     }
 
     return 1; # Absolute Failure
 }
 
-$ActiveJobs     = @();
-$failedFiles    = @();
+$ActiveJobs     = [System.Collections.Generic.List[psobject]]::new();
+$failedFiles    = [System.Collections.Generic.List[string]]::new();
 $completedCount  = 0;
 
 foreach ($file in $ToPush) {
@@ -708,21 +719,21 @@ foreach ($file in $ToPush) {
     $PSInstance = [powershell]::Create().AddScript($ScriptBlock).AddArgument($adbExe).AddArgument($serial).AddArgument($src).AddArgument($dest);
     $PSInstance.RunspacePool = $RunspacePool;
 
-    $ActiveJobs += [PSCustomObject]@{
+    $ActiveJobs.Add([PSCustomObject]@{
         PS    = $PSInstance
         Async = $PSInstance.BeginInvoke()
         File  = $cleanPath
-    };
+    });
 
     while ($ActiveJobs.Count -ge ($MaxThreads * 2)) {
         $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
         foreach ($d in $done) {
             $exitCode = $d.PS.EndInvoke($d.Async);
-            if ($exitCode -ne 0) { $failedFiles += $d.File };
+            if ($exitCode -ne 0) { $failedFiles.Add($d.File) };
             $d.PS.Dispose();
             $completedCount++;
         }
-        $ActiveJobs = $ActiveJobs | Where-Object { -not $_.Async.IsCompleted };
+        $ActiveJobs = [System.Collections.Generic.List[psobject]]::new([psobject[]]@($ActiveJobs | Where-Object { -not $_.Async.IsCompleted }));
 
         if ($done.Count -eq 0) { Start-Sleep -Milliseconds 50 };
         if ($completedCount % 5 -eq 0) {
@@ -738,11 +749,11 @@ while ($ActiveJobs.Count -gt 0) {
     $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
     foreach ($d in $done) {
         $exitCode = $d.PS.EndInvoke($d.Async);
-        if ($exitCode -ne 0) { $failedFiles += $d.File };
+        if ($exitCode -ne 0) { $failedFiles.Add($d.File) };
         $d.PS.Dispose();
         $completedCount++;
     }
-    $ActiveJobs = $ActiveJobs | Where-Object { -not $_.Async.IsCompleted };
+    $ActiveJobs = [System.Collections.Generic.List[psobject]]::new([psobject[]]@($ActiveJobs | Where-Object { -not $_.Async.IsCompleted }));
     if ($done.Count -eq 0) { Start-Sleep -Milliseconds 100 };
     Write-Progress -Activity "12x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
     if ($global:JigarAbort -and $ActiveJobs.Count -eq 0) { break };
