@@ -627,9 +627,9 @@ foreach ($dir in $uniqueDirs.Keys) {
     & $adbExe -s $serial shell "mkdir -p '$escapedDir'" | Out-Null;
 }
 
-Write-Host "[RESTORE] Engaging 12x Parallel Titan Streams...`n" -ForegroundColor Yellow;
+Write-Host "[RESTORE] Engaging 4x Parallel Titan Streams...`n" -ForegroundColor Yellow;
 
-$MaxThreads   = 12;
+$MaxThreads   = 4;
 $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 

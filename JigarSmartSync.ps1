@@ -1135,9 +1135,9 @@ foreach ($folder in $uniqueDirs.Keys) {
     }
 }
 
-Write-Host "[SYNC] Engaging 12x Parallel Titan Streams...`n" -ForegroundColor Yellow;
+Write-Host "[SYNC] Engaging 4x Parallel Titan Streams...`n" -ForegroundColor Yellow;
 
-$MaxThreads   = 12;
+$MaxThreads   = 4;
 $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 
