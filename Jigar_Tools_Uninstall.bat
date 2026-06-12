@@ -231,8 +231,15 @@ if /i "%DEL_SELF%"=="Y" (
     echo.
     echo  ============================================================
     echo.
-    :: Use cmd /c start to launch a delayed delete after this process exits
-    start "" /b cmd /c "ping 127.0.0.1 -n 3 >nul & rd /s /q \"%TOOLS_DIR%\""
+    :: Use a temporary payload in %TEMP% so the script doesn't lock its own folder
+    (
+        echo @echo off
+        echo ping 127.0.0.1 -n 3 ^>nul
+        echo rd /s /q "%TOOLS_DIR%"
+        echo del "%%~f0"
+    ) > "%TEMP%\jigar_cleanup.bat"
+    
+    start "" /b "%TEMP%\jigar_cleanup.bat"
     exit /b 0
 ) else (
     echo.
