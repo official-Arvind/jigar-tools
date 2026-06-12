@@ -29,3 +29,18 @@ $RECYCLE.BIN/
 *.zip
 *.tmp
 jigar_update*/
+
+# --- Agent / teamwork test artifacts (must never be committed) --
+.agents/
+TestBackup/
+test_load/
+test_*/
+test*.ps1
+test*.bat
+run_*.ps1
+diff.txt
+input.txt
+PROJECT.md
+TEST_INFRA.md
+ORIGINAL_REQUEST.md
+bin/
