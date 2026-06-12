@@ -1,11 +1,11 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 # ================================================================
 #  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (THE TITAN ENGINE)
 #  NEW in v39.1:
 #  - Interactive EXCLUDE Sub-Menu (TreeView GUI with lazy loading)
 #  - Granular folder/subfolder/file exclusion at runtime
 #  - Most-specific-ancestor filter logic for partial selections
-#  ────────────────────────────────────────────────────────────
+#  ------------------------------------------------------------
 #  From v39.0:
 #  - Dynamic Folder Naming (DeviceName_Date_Time)
 #  - Location Memory (settings.json)
@@ -18,10 +18,10 @@
 
 # ================================================================
 #  INTERACTIVE SELECTION ENGINE  (shared helper functions)
-#  - Build-JgrPathIndex  : flat path list  → nested hashtable
+#  - Build-JgrPathIndex  : flat path list  â†’ nested hashtable
 #  - Add-JgrTreeChildren : lazy-populate a TreeView node
 #  - Set-JgrCheckedDeep  : propagate checked state to children
-#  - Get-JgrNodeStates   : harvest path→bool map from live tree
+#  - Get-JgrNodeStates   : harvest pathâ†’bool map from live tree
 #  - Show-JigarExcludeMenu : full WinForms GUI (EXCLUDE mode)
 #  - Test-JgrExcluded    : most-specific-ancestor lookup
 # ================================================================
@@ -120,16 +120,16 @@ function Show-JigarExcludeMenu {
 
     $pathIndex = Build-JgrPathIndex -Paths $FilePaths;
 
-    # ── Form ──────────────────────────────────────────────────────
+    # -- Form ------------------------------------------------------
     $form = [System.Windows.Forms.Form]::new();
     $form.Text          = $FormTitle;
-    $form.Size          = [System.Drawing.Size]::new(800, 700);
+    $form.Size = [System.Drawing.Size]::new(700, 550);
     $form.MinimumSize   = [System.Drawing.Size]::new(580, 500);
     $form.StartPosition = 'CenterScreen';
     $form.BackColor     = [System.Drawing.Color]::FromArgb(18, 18, 28);
     $form.ForeColor     = [System.Drawing.Color]::FromArgb(220, 220, 240);
 
-    # ── Top instruction banner ─────────────────────────────────────
+    # -- Top instruction banner -------------------------------------
     $pnlTop = [System.Windows.Forms.Panel]::new();
     $pnlTop.Dock      = 'Top';
     $pnlTop.Height    = 62;
@@ -145,7 +145,7 @@ function Show-JigarExcludeMenu {
     $lblTitle.Height    = 26;
 
     $lblSub = [System.Windows.Forms.Label]::new();
-    $lblSub.Text      = '  Checked items will be SKIPPED. Leave all unchecked to back up everything.';
+    $lblSub.Text = '  Checked items will be SKIPPED. Press ENTER to Confirm.';
     $lblSub.ForeColor = [System.Drawing.Color]::FromArgb(180, 120, 120);
     $lblSub.Font      = [System.Drawing.Font]::new('Segoe UI', 8);
     $lblSub.Dock      = 'Top';
@@ -154,7 +154,7 @@ function Show-JigarExcludeMenu {
     $pnlTop.Controls.Add($lblSub);
     $pnlTop.Controls.Add($lblTitle);
 
-    # ── Status strip ─────────────────────────────────────────────
+    # -- Status strip ---------------------------------------------
     $status = [System.Windows.Forms.ToolStripStatusLabel]::new();
     $status.Text      = '0 item(s) marked for exclusion';
     $status.ForeColor = [System.Drawing.Color]::FromArgb(200, 160, 100);
@@ -162,7 +162,7 @@ function Show-JigarExcludeMenu {
     $statusBar.BackColor = [System.Drawing.Color]::FromArgb(12, 12, 20);
     [void]$statusBar.Items.Add($status);
 
-    # ── TreeView ─────────────────────────────────────────────────
+    # -- TreeView -------------------------------------------------
     $tv = [System.Windows.Forms.TreeView]::new();
     $tv.CheckBoxes  = $true;
     $tv.Dock        = 'Fill';
@@ -172,7 +172,7 @@ function Show-JigarExcludeMenu {
     $tv.BorderStyle = 'None';
     $tv.Scrollable  = $true;
 
-    # ── Bottom panel ─────────────────────────────────────────────
+    # -- Bottom panel ---------------------------------------------
     $pnlBot = [System.Windows.Forms.Panel]::new();
     $pnlBot.Dock      = 'Bottom';
     $pnlBot.Height    = 54;
@@ -199,7 +199,7 @@ function Show-JigarExcludeMenu {
     $btnCollapse = & $mkBtn 'Collapse'    325 '#2e2e40';
 
     $btnProceed = [System.Windows.Forms.Button]::new();
-    $btnProceed.Text      = 'Proceed';
+    $btnProceed.Text = 'Confirm [ENTER]';
     $btnProceed.Size      = [System.Drawing.Size]::new(130, 34);
     $btnProceed.FlatStyle = 'Flat';
     $btnProceed.BackColor = [System.Drawing.Color]::FromArgb(0, 100, 200);
@@ -234,7 +234,7 @@ function Show-JigarExcludeMenu {
     $form.AcceptButton = $btnProceed;
     $form.CancelButton = $btnSkip;
 
-    # ── Populate root nodes ───────────────────────────────────────
+    # -- Populate root nodes ---------------------------------------
     $tv.BeginUpdate();
     if ($pathIndex.ContainsKey('')) {
         foreach ($child in $pathIndex['']) {
@@ -255,7 +255,7 @@ function Show-JigarExcludeMenu {
     }
     $tv.EndUpdate();
 
-    # ── Helper: refresh status bar count ─────────────────────────
+    # -- Helper: refresh status bar count -------------------------
     $updateStatus = {
         $st = @{};
         Get-JgrNodeStates -Nodes $tv.Nodes -States $st;
@@ -263,7 +263,7 @@ function Show-JigarExcludeMenu {
         $status.Text = "$c item(s) marked for exclusion";
     };
 
-    # ── Events ────────────────────────────────────────────────────
+    # -- Events ----------------------------------------------------
     $tv.add_BeforeExpand({
         param($s, $e)
         $node = $e.Node;
@@ -532,7 +532,7 @@ Write-Host "[SCAN] Found $($AndroidFiles.Count) total files on Android." -Foregr
 
 Write-Host "[SCAN] Mapping Local PC Backup..." -ForegroundColor Yellow;
 $LocalFiles = @{};
-Get-ChildItem -Path $destPath -File -Recurse | ForEach-Object {
+Get-ChildItem -Path $destPath -File -Recurse -Force | ForEach-Object {
     $relPath = $_.FullName.Substring($destPath.Length + 1) -replace '\\', '/';
     $relPath  = "./" + $relPath;
     $LocalFiles[$relPath] = $_.Length;

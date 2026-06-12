@@ -1,26 +1,26 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 # ================================================================
 #  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (RESTORE - TITAN ENGINE)
 #  NEW in v39.1:
 #  - Interactive INCLUDE Sub-Menu (TreeView GUI with lazy loading)
 #  - Granular folder/subfolder/file selection for partial restores
 #  - Most-specific-ancestor filter logic for partial selections
-#  ────────────────────────────────────────────────────────────
+#  ------------------------------------------------------------
 #  From v39.0:
 #  - Smart Numbered Backup Menu (reads saved location)
 #  - Location Memory (settings.json)
 #  - Persistent Logging (Logs\ folder)
 #  - Graceful Ctrl+C Cancellation with ADB Temp Cleanup
 #  - 3-Stage Fallback: Unconditionally defeats all ADB path bugs
-#  - 12x Parallel Push: Restores files PC→Phone at massive speed
+#  - 12x Parallel Push: Restores files PCâ†’Phone at massive speed
 # ================================================================
 
 # ================================================================
 #  INTERACTIVE SELECTION ENGINE  (shared helper functions)
-#  - Build-JgrPathIndex    : flat path list → nested hashtable
+#  - Build-JgrPathIndex    : flat path list â†’ nested hashtable
 #  - Add-JgrTreeChildren   : lazy-populate a TreeView node
 #  - Set-JgrCheckedDeep    : propagate checked state to children
-#  - Get-JgrNodeStates     : harvest path→bool map from live tree
+#  - Get-JgrNodeStates     : harvest pathâ†’bool map from live tree
 #  - Show-JigarIncludeMenu : full WinForms GUI (INCLUDE mode)
 #  - Test-JgrIncluded      : most-specific-ancestor lookup
 # ================================================================
@@ -120,16 +120,16 @@ function Show-JigarIncludeMenu {
 
     $pathIndex = Build-JgrPathIndex -Paths $FilePaths;
 
-    # ── Form ──────────────────────────────────────────────────────
+    # -- Form ------------------------------------------------------
     $form = [System.Windows.Forms.Form]::new();
     $form.Text          = $FormTitle;
-    $form.Size          = [System.Drawing.Size]::new(800, 700);
+    $form.Size = [System.Drawing.Size]::new(700, 550);
     $form.MinimumSize   = [System.Drawing.Size]::new(580, 500);
     $form.StartPosition = 'CenterScreen';
     $form.BackColor     = [System.Drawing.Color]::FromArgb(14, 22, 18);
     $form.ForeColor     = [System.Drawing.Color]::FromArgb(220, 240, 220);
 
-    # ── Top instruction banner ─────────────────────────────────────
+    # -- Top instruction banner -------------------------------------
     $pnlTop = [System.Windows.Forms.Panel]::new();
     $pnlTop.Dock      = 'Top';
     $pnlTop.Height    = 62;
@@ -145,7 +145,7 @@ function Show-JigarIncludeMenu {
     $lblTitle.Height    = 26;
 
     $lblSub = [System.Windows.Forms.Label]::new();
-    $lblSub.Text      = '  Only CHECKED items will be restored. Press “Restore All” to skip this filter.';
+    $lblSub.Text      = '  Only CHECKED items will be restored. Press â€œRestore Allâ€ to skip this filter.';
     $lblSub.ForeColor = [System.Drawing.Color]::FromArgb(100, 180, 120);
     $lblSub.Font      = [System.Drawing.Font]::new('Segoe UI', 8);
     $lblSub.Dock      = 'Top';
@@ -154,7 +154,7 @@ function Show-JigarIncludeMenu {
     $pnlTop.Controls.Add($lblSub);
     $pnlTop.Controls.Add($lblTitle);
 
-    # ── Status strip ─────────────────────────────────────────────
+    # -- Status strip ---------------------------------------------
     $status = [System.Windows.Forms.ToolStripStatusLabel]::new();
     $status.Text      = '0 item(s) selected for restore';
     $status.ForeColor = [System.Drawing.Color]::FromArgb(100, 220, 160);
@@ -162,7 +162,7 @@ function Show-JigarIncludeMenu {
     $statusBar.BackColor = [System.Drawing.Color]::FromArgb(10, 18, 12);
     [void]$statusBar.Items.Add($status);
 
-    # ── TreeView ─────────────────────────────────────────────────
+    # -- TreeView -------------------------------------------------
     $tv = [System.Windows.Forms.TreeView]::new();
     $tv.CheckBoxes  = $true;
     $tv.Dock        = 'Fill';
@@ -172,7 +172,7 @@ function Show-JigarIncludeMenu {
     $tv.BorderStyle = 'None';
     $tv.Scrollable  = $true;
 
-    # ── Bottom panel ─────────────────────────────────────────────
+    # -- Bottom panel ---------------------------------------------
     $pnlBot = [System.Windows.Forms.Panel]::new();
     $pnlBot.Dock      = 'Bottom';
     $pnlBot.Height    = 54;
@@ -233,7 +233,7 @@ function Show-JigarIncludeMenu {
     $form.AcceptButton = $btnProceed;
     $form.CancelButton = $btnSkip;
 
-    # ── Populate root nodes ───────────────────────────────────────
+    # -- Populate root nodes ---------------------------------------
     $tv.BeginUpdate();
     if ($pathIndex.ContainsKey('')) {
         foreach ($child in $pathIndex['']) {
@@ -254,7 +254,7 @@ function Show-JigarIncludeMenu {
     }
     $tv.EndUpdate();
 
-    # ── Helper: refresh status bar count ─────────────────────────
+    # -- Helper: refresh status bar count -------------------------
     $updateStatus = {
         $st = @{};
         Get-JgrNodeStates -Nodes $tv.Nodes -States $st;
@@ -262,7 +262,7 @@ function Show-JigarIncludeMenu {
         $status.Text = "$c item(s) selected for restore";
     };
 
-    # ── Events ────────────────────────────────────────────────────
+    # -- Events ----------------------------------------------------
     $tv.add_BeforeExpand({
         param($s, $e)
         $node = $e.Node;
@@ -507,7 +507,7 @@ if (Test-Path $iniPath) {
 Write-Host "`n[SCAN] Mapping Backup Files on PC... (Please Wait)" -ForegroundColor Yellow;
 $BackupFiles = @{};
 
-Get-ChildItem -Path $restoreRoot -File -Recurse | ForEach-Object {
+Get-ChildItem -Path $restoreRoot -File -Recurse -Force | ForEach-Object {
     $relPath = $_.FullName.Substring($restoreRoot.Length + 1) -replace '\\', '/';
     $relPath  = "./" + $relPath;
     $BackupFiles[$relPath] = $_.Length;
