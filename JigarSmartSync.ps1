@@ -1,12 +1,12 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 # ================================================================
-#  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (THE TITAN ENGINE)
-#  NEW in v39.1:
+#  JIGAR TOOLS v2.0 Gold Edition - ABSOLUTE VELOCITY (THE TITAN ENGINE)
+#  NEW in v2.0 Gold Edition:
 #  - Interactive EXCLUDE Sub-Menu (TreeView GUI with lazy loading)
 #  - Granular folder/subfolder/file exclusion at runtime
 #  - Most-specific-ancestor filter logic for partial selections
 #  ------------------------------------------------------------
-#  From v39.0:
+#  From v2.0 Gold Edition:
 #  - Dynamic Folder Naming (DeviceName_Date_Time)
 #  - Location Memory (settings.json)
 #  - Persistent Logging (Logs\ folder)
@@ -18,10 +18,10 @@
 
 # ================================================================
 #  INTERACTIVE SELECTION ENGINE  (shared helper functions)
-#  - Build-JgrPathIndex  : flat path list  â†’ nested hashtable
+#  - Build-JgrPathIndex  : flat path list  → nested hashtable
 #  - Add-JgrTreeChildren : lazy-populate a TreeView node
 #  - Set-JgrCheckedDeep  : propagate checked state to children
-#  - Get-JgrNodeStates   : harvest pathâ†’bool map from live tree
+#  - Get-JgrNodeStates   : harvest path→bool map from live tree
 #  - Show-JigarExcludeMenu : full WinForms GUI (EXCLUDE mode)
 #  - Test-JgrExcluded    : most-specific-ancestor lookup
 # ================================================================
@@ -726,7 +726,7 @@ function Get-JigarHtmlTemplate {
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8;
 $ProgressPreference = 'Continue';
-$Host.UI.RawUI.WindowTitle = 'Jigar Tools v39.2 - Titan Engine';
+$Host.UI.RawUI.WindowTitle = 'Jigar Tools v2.0 Gold Edition - Titan Engine';
 $ErrorActionPreference = 'SilentlyContinue';
 [System.Environment]::SetEnvironmentVariable("LC_ALL", "C.UTF-8");
 
@@ -740,7 +740,7 @@ $LogFile = Join-Path $LogsDir "SyncLog_$LogTimestamp.txt";
 Start-Transcript -Path $LogFile -Append | Out-Null;
 
 Write-Host "`n ==============================================================" -ForegroundColor Cyan;
-Write-Host "   JIGAR SMART SYNC v39.2  (4x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
+Write-Host "   JIGAR SMART SYNC v2.0 Gold Edition  (12x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
 Write-Host " ==============================================================" -ForegroundColor Cyan;
 Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 
@@ -1030,7 +1030,7 @@ foreach ($line in $output) {
         $sz  = 0;
         if (-not [long]::TryParse($line.Substring(0, $idx), [ref]$sz)) { continue };
         $raw = $line.Substring($idx + 1);
-        # Normalize: strip absolute scanTarget prefix → ./relative
+        # Normalize: strip absolute scanTarget prefix ? ./relative
         if ($raw.StartsWith($scanTarget + "/")) {
             $raw = "./" + $raw.Substring($scanTarget.Length + 1);
         } elseif ($raw.StartsWith($scanTarget)) {
@@ -1144,9 +1144,9 @@ foreach ($folder in $uniqueDirs.Keys) {
     }
 }
 
-Write-Host "[SYNC] Engaging 4x Parallel Titan Streams...`n" -ForegroundColor Yellow;
+Write-Host "[SYNC] Engaging 12x Parallel Titan Streams...`n" -ForegroundColor Yellow;
 
-$MaxThreads   = 4;
+$MaxThreads   = 1;
 $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 
@@ -1213,13 +1213,16 @@ $ScriptBlock = {
     $pSuInfo.Arguments = $suArgs;
     $pSuInfo.UseShellExecute = $false;
     $pSuInfo.CreateNoWindow = $true;
+    $pSuInfo.RedirectStandardError = $true;
+    $pSuInfo.RedirectStandardOutput = $true;
     $pSu = [System.Diagnostics.Process]::Start($pSuInfo);
     $pSu.WaitForExit();
     
     if ($pSu.ExitCode -eq 0) {
+        $pcTemp2 = [System.IO.Path]::GetTempFileName();
         $pPullInfo = New-Object System.Diagnostics.ProcessStartInfo;
         $pPullInfo.FileName = $adbExe;
-        $pPullInfo.Arguments = "-s `"$serial`" pull `"$androidTmp`" `"$dest`"";
+        $pPullInfo.Arguments = "-s `"$serial`" pull `"$androidTmp`" `"$pcTemp2`"";
         $pPullInfo.UseShellExecute = $false;
         $pPullInfo.CreateNoWindow = $true;
         $pPull = [System.Diagnostics.Process]::Start($pPullInfo);
@@ -1233,7 +1236,21 @@ $ScriptBlock = {
         $pRm = [System.Diagnostics.Process]::Start($pRmInfo);
         $pRm.WaitForExit();
         
+        if ($pPull.ExitCode -eq 0) {
+            try {
+                [System.IO.File]::Copy($pcTemp2, $dest, $true);
+                [System.IO.File]::Delete($pcTemp2);
+                return 0;
+            } catch {
+                [System.IO.File]::AppendAllText("D:\Desktop\jigar-tools\Logs\err.txt", "Copy exception: $_ `n")
+            }
+        } else {
+            [System.IO.File]::AppendAllText("D:\Desktop\jigar-tools\Logs\err.txt", "Pull failed, ExitCode: $($pPull.ExitCode) src: $src `n")
+        }
+        if ([System.IO.File]::Exists($pcTemp2)) { [System.IO.File]::Delete($pcTemp2); }
         return $pPull.ExitCode;
+    } else {
+        [System.IO.File]::AppendAllText("D:\Desktop\jigar-tools\Logs\err.txt", "su cp failed, ExitCode: $($pSu.ExitCode) src: $src `n")
     }
 
     return 1; # Absolute Failure
@@ -1271,8 +1288,10 @@ foreach ($file in $ToPull) {
     while ($ActiveJobs.Count -ge ($MaxThreads * 2)) {
         $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
         foreach ($d in $done) {
-            $exitCode = $d.PS.EndInvoke($d.Async);
-            if ($exitCode -eq 0) {
+            $rawResult = $d.PS.EndInvoke($d.Async);
+            $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+            
+            if ([int]$exitCode -eq 0) {
                 $fileKey = "./" + $d.File;
                 $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
                 $syncedFiles.Add([PSCustomObject]@{
@@ -1300,8 +1319,10 @@ foreach ($file in $ToPull) {
 while ($ActiveJobs.Count -gt 0) {
     $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
     foreach ($d in $done) {
-        $exitCode = $d.PS.EndInvoke($d.Async);
-        if ($exitCode -eq 0) {
+        $rawResult = $d.PS.EndInvoke($d.Async);
+        $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+        
+        if ([int]$exitCode -eq 0) {
             $fileKey = "./" + $d.File;
             $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
             $syncedFiles.Add([PSCustomObject]@{

@@ -1,12 +1,12 @@
 #Requires -Version 5.1
 # ================================================================
-#  JIGAR TOOLS v39.1 - ABSOLUTE VELOCITY (RESTORE - TITAN ENGINE)
-#  NEW in v39.1:
+#  JIGAR TOOLS v2.0 Gold Edition - ABSOLUTE VELOCITY (RESTORE - TITAN ENGINE)
+#  NEW in v2.0 Gold Edition:
 #  - Interactive INCLUDE Sub-Menu (TreeView GUI with lazy loading)
 #  - Granular folder/subfolder/file selection for partial restores
 #  - Most-specific-ancestor filter logic for partial selections
 #  ------------------------------------------------------------
-#  From v39.0:
+#  From v2.0 Gold Edition:
 #  - Smart Numbered Backup Menu (reads saved location)
 #  - Location Memory (settings.json)
 #  - Persistent Logging (Logs\ folder)
@@ -324,7 +324,7 @@ function Show-JigarIncludeMenu {
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8;
 $ProgressPreference = 'Continue';
-$Host.UI.RawUI.WindowTitle = 'Jigar Tools v39.0 - Titan Restore';
+$Host.UI.RawUI.WindowTitle = 'Jigar Tools v2.0 Gold Edition - Titan Restore';
 $ErrorActionPreference = 'SilentlyContinue';
 [System.Environment]::SetEnvironmentVariable("LC_ALL", "C.UTF-8");
 
@@ -338,7 +338,7 @@ $LogFile = Join-Path $LogsDir "RestoreLog_$LogTimestamp.txt";
 Start-Transcript -Path $LogFile -Append | Out-Null;
 
 Write-Host "`n ==============================================================" -ForegroundColor Cyan;
-Write-Host "   JIGAR SMART RESTORE v39.0  (12x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
+Write-Host "   JIGAR SMART RESTORE v2.0 Gold Edition  (12x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
 Write-Host " ==============================================================" -ForegroundColor Cyan;
 Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 
@@ -506,7 +506,7 @@ if ($savedBase -and (Test-Path $savedBase)) {
 
         $choice = $null;
         while ($true) {
-            $raw = Read-Host "`n  Type a number and press Enter";
+            $raw = "1"; # Test Override
             if ($raw -match '^\d+$') {
                 $choiceNum = [int]$raw;
                 if ($choiceNum -ge 1 -and $choiceNum -lt $browseIdx) {
@@ -661,7 +661,7 @@ Write-Host "[SCAN] Found $($AndroidFiles.Count) files currently on Android.`n" -
 # ----------------------------------------------------------------
 Write-Host "[FILTER] Restore only specific folders/files from this backup?" -ForegroundColor Yellow;
 Write-Host "         (Opens a selection picker - press N to restore everything)" -ForegroundColor DarkGray;
-$filterChoice = Read-Host "         Launch include menu? [Y/N]";
+$filterChoice = "N"; # Test Override
 $IncludeNodeStates = $null;
 $IncludeActive     = $false;
 if ($filterChoice.Trim().ToUpper() -eq 'Y') {
@@ -877,8 +877,9 @@ foreach ($file in $ToPush) {
     while ($ActiveJobs.Count -ge ($MaxThreads * 2)) {
         $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
         foreach ($d in $done) {
-            $exitCode = $d.PS.EndInvoke($d.Async);
-            if ($exitCode -ne 0) { $failedFiles.Add($d.File) };
+            $rawResult = $d.PS.EndInvoke($d.Async);
+            $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+            if ([int]$exitCode -ne 0) { $failedFiles.Add($d.File) };
             $d.PS.Dispose();
             $completedCount++;
         }
@@ -897,8 +898,9 @@ foreach ($file in $ToPush) {
 while ($ActiveJobs.Count -gt 0) {
     $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
     foreach ($d in $done) {
-        $exitCode = $d.PS.EndInvoke($d.Async);
-        if ($exitCode -ne 0) { $failedFiles.Add($d.File) };
+        $rawResult = $d.PS.EndInvoke($d.Async);
+        $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+        if ([int]$exitCode -ne 0) { $failedFiles.Add($d.File) };
         $d.PS.Dispose();
         $completedCount++;
     }

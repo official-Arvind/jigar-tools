@@ -46,3 +46,4 @@ ORIGINAL_REQUEST.md
 bin/
 src/
 dst/
+directory-ignore-list.ini
