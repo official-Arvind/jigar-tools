@@ -325,6 +325,408 @@ function Show-JigarIncludeMenu {
     return $nodeStates;
 }
 
+# ----------------------------------------------------------------
+#  HTML RESTORE JOURNAL LOGGING ENGINE
+# ----------------------------------------------------------------
+function Update-JigarHtmlLog {
+    param(
+        [string] $BaseDir,
+        [string] $Device,
+        [object] $RestoredFiles,
+        [bool]   $IsAbort
+    )
+
+    $LogHtml = Join-Path $BaseDir "Restore_Log.html"
+    
+    # 1. Format file list for JSON
+    $filesJsonList = [System.Collections.Generic.List[psobject]]::new()
+    $totalBytes = 0
+    foreach ($f in $RestoredFiles) {
+        $totalBytes += $f.size
+        
+        $sizeStr = if ($f.size -ge 1GB) { "{0:N2} GB" -f ($f.size / 1GB) }
+                   elseif ($f.size -ge 1MB) { "{0:N2} MB" -f ($f.size / 1MB) }
+                   elseif ($f.size -ge 1KB) { "{0:N2} KB" -f ($f.size / 1KB) }
+                   else { "$($f.size) Bytes" }
+                   
+        $filesJsonList.Add(@{
+            name = $f.name
+            size = $sizeStr
+        })
+    }
+    
+    $totalSizeStr = if ($totalBytes -ge 1GB) { "{0:N2} GB" -f ($totalBytes / 1GB) }
+                    elseif ($totalBytes -ge 1MB) { "{0:N2} MB" -f ($totalBytes / 1MB) }
+                    elseif ($totalBytes -ge 1KB) { "{0:N2} KB" -f ($totalBytes / 1KB) }
+                    else { "$totalBytes Bytes" }
+
+    $statusStr = if ($IsAbort) { "Aborted" } else { "Success" }
+    
+    $newEntry = @{
+        device     = $Device
+        timestamp  = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        filesCount = $RestoredFiles.Count
+        totalSize  = $totalSizeStr
+        status     = $statusStr
+        filesList  = $filesJsonList
+    }
+
+    # 2. Read existing log or create default HTML
+    $htmlContent = $null
+    if (Test-Path $LogHtml) {
+        $htmlContent = Get-Content -Path $LogHtml -Raw -Encoding UTF8
+    }
+
+    $history = [System.Collections.ArrayList]::new()
+    if ($htmlContent -and $htmlContent -match '(?s)/\* JGR_DATA_START \*/const RESTORE_HISTORY = (.*?);/\* JGR_DATA_END \*/') {
+        try {
+            $parsed = ConvertFrom-Json $Matches[1]
+            if ($parsed) { $history = [System.Collections.ArrayList]::new([object[]]$parsed) }
+        } catch {}
+    }
+
+    [void]$history.Insert(0, $newEntry)
+    
+    if ($history.Count -gt 50) {
+        $history = $history[0..49]
+    }
+
+    $newJson = ConvertTo-Json -InputObject $history -Depth 5 -Compress
+    
+    # 3. Generate HTML content
+    $template = Get-JigarHtmlTemplate
+    $updatedHtml = $template -replace '(?s)/\* JGR_DATA_START \*/const RESTORE_HISTORY = (.*?);/\* JGR_DATA_END \*/', "/* JGR_DATA_START */const RESTORE_HISTORY = $newJson;/* JGR_DATA_END */"
+
+    $updatedHtml | Set-Content -Path $LogHtml -Encoding UTF8
+}
+
+function Get-JigarHtmlTemplate {
+    return @'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigar Tools &#8212; Restore Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151d30;
+            --accent-color: #7b61ff;
+            --accent-success: #00e676;
+            --accent-warning: #ffb300;
+            --accent-danger: #ff1744;
+            --text-main: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: #24324f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        .brand h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7b61ff 0%, #00e5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand p { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem; }
+
+        .badge-live {
+            background-color: rgba(123, 97, 255, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 15px -3px rgba(123,97,255,0.1);
+        }
+
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value { font-size: 1.75rem; font-weight: 700; color: var(--text-main); }
+        .stat-card .desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+        .history-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h2 { font-size: 1.25rem; font-weight: 600; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { color: var(--text-secondary); font-size: 0.875rem; font-weight: 500; padding: 1rem; border-bottom: 1px solid var(--border-color); }
+        td { padding: 1rem; border-bottom: 1px solid var(--border-color); font-size: 0.875rem; }
+        tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.success { background-color: rgba(0,230,118,0.1); color: var(--accent-success); }
+        .status-badge.aborted { background-color: rgba(255,23,68,0.1); color: var(--accent-danger); }
+
+        .btn-details {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-details:hover { background-color: var(--accent-color); border-color: var(--accent-color); }
+        .details-row { display: none; }
+
+        .details-content {
+            background-color: rgba(0,0,0,0.2);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            border: 1px dashed var(--border-color);
+        }
+
+        .details-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-main); }
+
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            list-style: none;
+            padding-right: 0.5rem;
+        }
+
+        .file-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .file-list li:last-child { border-bottom: none; }
+
+        .file-list::-webkit-scrollbar { width: 6px; }
+        .file-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .file-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        .file-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <h1>Jigar Tools</h1>
+                <p>Universal Device Restoration Ledger</p>
+            </div>
+            <div class="badge-live">Live Log</div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Devices Restored</h3>
+                <div class="value" id="devices-count">0</div>
+                <div class="desc" id="devices-list">None registered</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Restore Actions</h3>
+                <div class="value" id="total-actions">0</div>
+                <div class="desc">Active restore operations</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Restored</h3>
+                <div class="value" id="total-transferred">0 Bytes</div>
+                <div class="desc">Bandwidth optimized via Delta Sync</div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="section-header">
+                <h2>Activity Ledger</h2>
+            </div>
+            <div id="ledger-container">
+                <table id="ledger-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Device</th>
+                            <th>Status</th>
+                            <th>Files Restored</th>
+                            <th>Payload Size</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledger-body">
+                        <!-- Content generated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* JGR_DATA_START */const RESTORE_HISTORY = [];/* JGR_DATA_END */
+
+        function formatBytes(b) {
+            if (b === 0) return '0 Bytes';
+            const k = 1024, s = ['Bytes','KB','MB','GB','TB'];
+            const i = Math.floor(Math.log(b) / Math.log(k));
+            return parseFloat((b / Math.pow(k, i)).toFixed(2)) + ' ' + s[i];
+        }
+
+        function parseSize(s) {
+            if (!s) return 0;
+            const p = s.trim().split(/\s+/);
+            const v = parseFloat(p[0]);
+            const u = p[1] ? p[1].toUpperCase() : '';
+            if (u === 'GB') return v * 1073741824;
+            if (u === 'MB') return v * 1048576;
+            if (u === 'KB') return v * 1024;
+            return v;
+        }
+
+        function toggleDetails(index) {
+            const row = document.getElementById('details-' + index);
+            if (!row) return;
+            row.style.display = row.style.display === 'table-row' ? 'none' : 'table-row';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var body = document.getElementById('ledger-body');
+
+            if (!RESTORE_HISTORY || RESTORE_HISTORY.length === 0) {
+                document.getElementById('ledger-container').innerHTML = '<div class="empty-state">No restoration events recorded yet. Perform a restore to initialize this ledger.</div>';
+                return;
+            }
+
+            var uniqueDevices = new Set();
+            var totalTransferredBytes = 0;
+
+            RESTORE_HISTORY.forEach(function(entry) {
+                uniqueDevices.add(entry.device);
+                totalTransferredBytes += parseSize(entry.totalSize);
+            });
+
+            document.getElementById('devices-count').innerText = uniqueDevices.size;
+            document.getElementById('devices-list').innerText = Array.from(uniqueDevices).join(', ');
+            document.getElementById('total-actions').innerText = RESTORE_HISTORY.length;
+            document.getElementById('total-transferred').innerText = formatBytes(totalTransferredBytes);
+
+            body.innerHTML = '';
+            RESTORE_HISTORY.forEach(function(entry, idx) {
+                var badgeClass = entry.status && entry.status.toLowerCase() === 'success' ? 'success' : 'aborted';
+
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + entry.timestamp + '</td>' +
+                    '<td><strong>' + (entry.device || '-') + '</strong></td>' +
+                    '<td><span class="status-badge ' + badgeClass + '">' + (entry.status || '-') + '</span></td>' +
+                    '<td>' + (entry.filesCount || 0) + ' file(s)</td>' +
+                    '<td>' + (entry.totalSize || '0 Bytes') + '</td>' +
+                    '<td><button class="btn-details" onclick="toggleDetails(' + idx + ')">Inspect</button></td>';
+                body.appendChild(tr);
+
+                var detailTr = document.createElement('tr');
+                detailTr.id = 'details-' + idx;
+                detailTr.className = 'details-row';
+
+                var fileListItems = '';
+                if (entry.filesList && entry.filesList.length > 0) {
+                    entry.filesList.forEach(function(f) {
+                        fileListItems += '<li><span>' + f.name + '</span><span>' + f.size + '</span></li>';
+                    });
+                } else {
+                    fileListItems = '<li><span>No files transferred (Already in sync)</span><span>-</span></li>';
+                }
+
+                detailTr.innerHTML =
+                    '<td colspan="6">' +
+                        '<div class="details-content">' +
+                            '<div class="details-title">Transferred Files &amp; Folders Log</div>' +
+                            '<ul class="file-list">' + fileListItems + '</ul>' +
+                        '</div>' +
+                    '</td>';
+                body.appendChild(detailTr);
+            });
+        });
+    </script>
+</body>
+</html>
+'@
+}
+
 & chcp 65001 | Out-Null;
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8;
@@ -398,6 +800,17 @@ if (-not $devices -or $devices.Count -eq 0) {
 }
 $serial = ($devices[0].ToString().Split("`t")[0]).Trim();
 Write-Host "[SYSTEM] Device Connected & Verified!" -ForegroundColor Green;
+
+# --- Fetch Device Name via ADB ---
+$rawModel = (& $adbExe -s $serial shell getprop ro.product.model 2>$null);
+$rawModel = $rawModel.Trim();
+# Sanitize: remove chars invalid in Windows folder names
+$DeviceName = $rawModel -replace '[<>:"/\\|?*\x00-\x1F]', '_';
+$DeviceName = $DeviceName -replace '\s+', '_';
+$DeviceName = $DeviceName.Trim('_');
+if ($DeviceName -eq "") { $DeviceName = "Android_Device" };
+
+Write-Host "[SYSTEM] Device Model : $rawModel" -ForegroundColor DarkCyan;
 
 # ----------------------------------------------------------------
 #  1.5. DETECT ROOT & BUSYBOX CAPABILITIES
@@ -742,6 +1155,14 @@ if ($totalFiles -eq 0) {
 }
 Write-Host "[RESTORE] Queued $totalFiles missing or modified files for push." -ForegroundColor Magenta;
 
+$totalBytes = 0
+foreach ($file in $ToPush) {
+    if ($BackupFiles.ContainsKey($file)) {
+        $totalBytes += $BackupFiles[$file]
+    }
+}
+$totalSizeFormatted = if ($totalBytes -ge 1GB) { "{0:N2} GB" -f ($totalBytes / 1GB) } else { "{0:N2} MB" -f ($totalBytes / 1MB) }
+
 # ----------------------------------------------------------------
 #  6. THE 20x TITAN PUSH ENGINE (SMART PATHING + 3-STAGE FALLBACK)
 # ----------------------------------------------------------------
@@ -880,7 +1301,19 @@ $ScriptBlock = {
 
 $ActiveJobs     = [System.Collections.Generic.List[psobject]]::new();
 $failedFiles    = [System.Collections.Generic.List[string]]::new();
+$restoredFiles  = [System.Collections.Generic.List[psobject]]::new();
 $completedCount  = 0;
+$completedBytes = 0;
+$restoreWatch   = [System.Diagnostics.Stopwatch]::StartNew();
+
+$UpdateProgress = {
+    $elapsed = $restoreWatch.Elapsed.TotalSeconds;
+    $speedMBs = if ($elapsed -gt 0) { ($completedBytes / 1MB) / $elapsed } else { 0 };
+    $completedSizeFormatted = if ($completedBytes -ge 1GB) { "{0:N2} GB" -f ($completedBytes / 1GB) } else { "{0:N2} MB" -f ($completedBytes / 1MB) };
+    $speedText = "{0:N2} MB/s" -f $speedMBs;
+    $statusText = "[$completedCount / $totalFiles] ($completedSizeFormatted / $totalSizeFormatted) @ $speedText";
+    Write-Progress -Activity "$MaxThreads`x Multi-Threaded Titan Push" -Status $statusText -PercentComplete (($completedCount / $totalFiles) * 100);
+};
 
 foreach ($file in $ToPush) {
     # --- Check Abort Flag ---
@@ -904,7 +1337,18 @@ foreach ($file in $ToPush) {
         foreach ($d in $done) {
             $rawResult = $d.PS.EndInvoke($d.Async);
             $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
-            if ([int]$exitCode -ne 0) { $failedFiles.Add($d.File) };
+            
+            $fileKey = "./" + $d.File;
+            $fileSize = if ($BackupFiles.ContainsKey($fileKey)) { $BackupFiles[$fileKey] } else { 0 };
+            if ([int]$exitCode -eq 0) {
+                $restoredFiles.Add([PSCustomObject]@{
+                    name = $d.File;
+                    size = $fileSize;
+                });
+                $completedBytes += $fileSize;
+            } else {
+                $failedFiles.Add($d.File);
+            }
             $d.PS.Dispose();
             $completedCount++;
         }
@@ -912,7 +1356,7 @@ foreach ($file in $ToPush) {
 
         if ($done.Count -eq 0) { Start-Sleep -Milliseconds 50 };
         if ($completedCount % 5 -eq 0) {
-            Write-Progress -Activity "20x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
+            & $UpdateProgress;
         }
 
         if ($global:JigarAbort) { break };
@@ -925,16 +1369,32 @@ while ($ActiveJobs.Count -gt 0) {
     foreach ($d in $done) {
         $rawResult = $d.PS.EndInvoke($d.Async);
         $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
-        if ([int]$exitCode -ne 0) { $failedFiles.Add($d.File) };
+        
+        $fileKey = "./" + $d.File;
+        $fileSize = if ($BackupFiles.ContainsKey($fileKey)) { $BackupFiles[$fileKey] } else { 0 };
+        if ([int]$exitCode -eq 0) {
+            $restoredFiles.Add([PSCustomObject]@{
+                name = $d.File;
+                size = $fileSize;
+            });
+            $completedBytes += $fileSize;
+        } else {
+            $failedFiles.Add($d.File);
+        }
         $d.PS.Dispose();
         $completedCount++;
     }
     $ActiveJobs = [System.Collections.Generic.List[psobject]]::new([psobject[]]@($ActiveJobs | Where-Object { -not $_.Async.IsCompleted }));
     if ($done.Count -eq 0) { Start-Sleep -Milliseconds 100 };
-    Write-Progress -Activity "20x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
-    if ($global:JigarAbort -and $ActiveJobs.Count -eq 0) { break };
+    & $UpdateProgress;
 }
-Write-Progress -Activity "20x Multi-Threaded Titan Push" -Completed;
+Write-Progress -Activity "$MaxThreads`x Multi-Threaded Titan Push" -Completed;
+
+# ----------------------------------------------------------------
+#  UPDATE HTML RESTORE LOG
+# ----------------------------------------------------------------
+$baseBackupPath = Split-Path $restoreRoot -Parent;
+Update-JigarHtmlLog -BaseDir $baseBackupPath -Device $DeviceName -RestoredFiles $restoredFiles -IsAbort $global:JigarAbort
 
 # ----------------------------------------------------------------
 #  GRACEFUL ABORT CLEANUP (Feature 5)
