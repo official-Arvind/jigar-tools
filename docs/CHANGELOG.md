@@ -15,16 +15,21 @@
 
 ---
 
-## <img src="https://img.shields.io/badge/v2.0_Gold_Edition-Current-FFD700?style=for-the-badge" align="left" alt="v2.0 Gold Edition"/> &nbsp; God Mode Unlocked
+## <img src="https://img.shields.io/badge/v2.0_Gold_Edition-Current-FFD700?style=for-the-badge" align="left" alt="v2.0 Gold Edition"/> &nbsp; God Mode Unlocked (20x Titan Upgrade)
 <br>
 
-**Release Date**: June 12, 2026
+**Release Date**: June 13, 2026
 
-### 🏆 Major Milestones & Architecture Refactor
-- **The Titan Fallback Engine**: Fully rewritten 3-stage fallback system unconditionally bypasses ADB virtual drive write errors across non-rooted devices, Magisk, KernelSU, and APatch.
-- **PowerShell Pipeline Bug Exterminated**: Fixed a deeply rooted PowerShell pipeline bug causing false-positive failure reports due to PSDataCollection evaluation issues. The script is now mathematically 100% accurate.
-- **HTML Ledger Verified**: Hardened JSON serialization ensures bulletproof, uncorruptable log generation regardless of folder/file names.
-- **Unified Codebase**: Synchronized robust Titan architecture between both Sync and Restore tools.
+### 🚀 Major Milestones & Architecture Refactor
+- **20x Parallel Titan Engine** — Upgraded both [JigarSmartSync.ps1](file:///d:/Desktop/jigar-tools/JigarSmartSync.ps1) and [JigarSmartRestore.ps1](file:///d:/Desktop/jigar-tools/JigarSmartRestore.ps1) to use exactly 20 concurrent ADB runspaces (threads), maximizing USB bandwidth and multi-core utilization.
+- **Rich Progress Bar Metrics** — Displays real-time download status, size progress (e.g. `12.50 MB / 4.20 GB`), and average transfer speed in MB/s directly in the PowerShell progress bar.
+- **Robust Phone Scanning Fix** — Replaced the buggy Toybox `find -exec stat` command (which silently truncated after 4k-6k files) with a reliable `print0 | xargs` pipeline, and made the traditional `exec` method the fallback.
+- **Non-Interactive Automation** — Added the `-NonInteractive` flag to the scripts to bypass all interactive prompts (saved backup location and exclude selection menu) for headless executions.
+- **UTF-8 Output Encoding** — Hardened standard output streams of scripts to force UTF-8 to prevent emoji-named folders (e.g. `❤️❤️`) from being corrupted into `????` on Windows filesystems.
+- **The Titan Fallback Engine** — Fully rewritten 3-stage fallback system unconditionally bypasses ADB virtual drive write errors across non-rooted devices, Magisk, KernelSU, and APatch.
+- **PowerShell Pipeline Bug Exterminated** — Fixed a deeply rooted PowerShell pipeline bug causing false-positive failure reports due to PSDataCollection evaluation issues. The script is now mathematically 100% accurate.
+- **HTML Ledger Verified** — Hardened JSON serialization ensures bulletproof, uncorruptable log generation regardless of folder/file names.
+- **Unified Codebase** — Synchronized robust Titan architecture between both Sync and Restore tools.
 
 ---
 

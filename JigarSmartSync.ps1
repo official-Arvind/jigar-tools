@@ -15,7 +15,9 @@
 #  - Smart Routing: Bypasses Virtual Drive for Root files
 #  - APatch Global Mount: Resolves /sdcard in root namespace
 # ================================================================
-
+param(
+    [switch]$NonInteractive
+)
 # ================================================================
 #  INTERACTIVE SELECTION ENGINE  (shared helper functions)
 #  - Build-JgrPathIndex  : flat path list  → nested hashtable
@@ -25,6 +27,8 @@
 #  - Show-JigarExcludeMenu : full WinForms GUI (EXCLUDE mode)
 #  - Test-JgrExcluded    : most-specific-ancestor lookup
 # ================================================================
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName System.Windows.Forms;
 Add-Type -AssemblyName System.Drawing;
 
@@ -740,7 +744,7 @@ $LogFile = Join-Path $LogsDir "SyncLog_$LogTimestamp.txt";
 Start-Transcript -Path $LogFile -Append | Out-Null;
 
 Write-Host "`n ==============================================================" -ForegroundColor Cyan;
-Write-Host "   JIGAR SMART SYNC v2.0 Gold Edition  (12x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
+Write-Host "   JIGAR SMART SYNC v2.0 Gold Edition  (20x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
 Write-Host " ==============================================================" -ForegroundColor Cyan;
 Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 
@@ -888,9 +892,14 @@ $savedPath = $Settings.LastBackupLocation;
 if ($savedPath -and (Test-Path $savedPath)) {
     Write-Host "`n[CONFIG] Previous backup location found:" -ForegroundColor Yellow;
     Write-Host "         $savedPath" -ForegroundColor White;
-    $useOld = Read-Host "         Use this location? [Y/N]";
-    if ($useOld.Trim().ToUpper() -eq "Y") {
+    if ($NonInteractive) {
+        Write-Host "         [AUTO-SELECT] Non-interactive mode active, using saved path." -ForegroundColor Green;
         $baseBackupPath = $savedPath;
+    } else {
+        $useOld = Read-Host "         Use this location? [Y/N]";
+        if ($useOld.Trim().ToUpper() -eq "Y") {
+            $baseBackupPath = $savedPath;
+        }
     }
 }
 
@@ -986,21 +995,21 @@ if ($isAdbRoot -or $isSuRoot) {
 # Build scan commands using absolute paths (avoids cd+namespace path issues on Android FUSE mounts)
 $scanCmd = "";
 if ($isAdbRoot) {
-    $scanCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+    $scanCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
 } elseif ($isSuRoot) {
-    $scanCmd = "su -c \`"find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null\`"";
+    $scanCmd = "su -c \`"find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null\`"";
 } else {
-    $scanCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+    $scanCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
 }
 
-# Fallback: xargs variant if exec+ batching fails
+# Fallback: exec+ variant if xargs batching fails
 $scanFallbackCmd = "";
 if ($isAdbRoot) {
-    $scanFallbackCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
+    $scanFallbackCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
 } elseif ($isSuRoot) {
-    $scanFallbackCmd = "su -c \`"find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null\`"";
+    $scanFallbackCmd = "su -c \`"find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null\`"";
 } else {
-    $scanFallbackCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
+    $scanFallbackCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
 }
 
 $procInfo = New-Object System.Diagnostics.ProcessStartInfo;
@@ -1059,7 +1068,12 @@ Write-Host "[SCAN] Found $($LocalFiles.Count) files currently on PC.`n" -Foregro
 # ----------------------------------------------------------------
 Write-Host "[FILTER] Customize which folders/files to EXCLUDE from this backup?" -ForegroundColor Yellow;
 Write-Host "         (Opens a folder/file picker - press N to back up everything)" -ForegroundColor DarkGray;
-$filterChoice = Read-Host "         Launch exclude menu? [Y/N]";
+$filterChoice = "N";
+if ($NonInteractive) {
+    Write-Host "         [AUTO-SKIP] Non-interactive mode active, backing up everything." -ForegroundColor Green;
+} else {
+    $filterChoice = Read-Host "         Launch exclude menu? [Y/N]";
+}
 $ExcludeNodeStates = $null;
 if ($filterChoice.Trim().ToUpper() -eq 'Y') {
     Write-Host "[FILTER] Building Android file tree for selection..." -ForegroundColor DarkCyan;
@@ -1120,8 +1134,16 @@ if ($totalFiles -eq 0) {
 }
 Write-Host "[SYNC] Queued $totalFiles missing or modified files for download." -ForegroundColor Magenta;
 
+$totalBytes = 0
+foreach ($file in $ToPull) {
+    if ($AndroidFiles.ContainsKey($file)) {
+        $totalBytes += $AndroidFiles[$file]
+    }
+}
+$totalSizeFormatted = if ($totalBytes -ge 1GB) { "{0:N2} GB" -f ($totalBytes / 1GB) } else { "{0:N2} MB" -f ($totalBytes / 1MB) }
+
 # ----------------------------------------------------------------
-#  6. THE 12x TITAN PULL ENGINE (SMART PATHING + 3-STAGE FALLBACK)
+#  6. THE MULTI-THREADED TITAN PULL ENGINE (SMART PATHING + 3-STAGE FALLBACK)
 # ----------------------------------------------------------------
 Write-Host "[SYNC] Pre-allocating directory trees natively..." -ForegroundColor DarkGray;
 $uniqueDirs = @{}
@@ -1144,9 +1166,9 @@ foreach ($folder in $uniqueDirs.Keys) {
     }
 }
 
-Write-Host "[SYNC] Engaging 12x Parallel Titan Streams...`n" -ForegroundColor Yellow;
+$MaxThreads = 20;
+Write-Host "[SYNC] Engaging $($MaxThreads)x Parallel Titan Streams...`n" -ForegroundColor Yellow;
 
-$MaxThreads   = 1;
 $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 
@@ -1260,6 +1282,17 @@ $ActiveJobs    = [System.Collections.Generic.List[psobject]]::new();
 $failedFiles   = [System.Collections.Generic.List[string]]::new();
 $syncedFiles   = [System.Collections.Generic.List[psobject]]::new();
 $completedCount = 0;
+$completedBytes = 0;
+$syncWatch      = [System.Diagnostics.Stopwatch]::StartNew();
+
+$UpdateProgress = {
+    $elapsed = $syncWatch.Elapsed.TotalSeconds;
+    $speedMBs = if ($elapsed -gt 0) { ($completedBytes / 1MB) / $elapsed } else { 0 };
+    $completedSizeFormatted = if ($completedBytes -ge 1GB) { "{0:N2} GB" -f ($completedBytes / 1GB) } else { "{0:N2} MB" -f ($completedBytes / 1MB) };
+    $speedText = "{0:N2} MB/s" -f $speedMBs;
+    $statusText = "[$completedCount / $totalFiles] ($completedSizeFormatted / $totalSizeFormatted) @ $speedText";
+    Write-Progress -Activity "$MaxThreads`x Multi-Threaded Titan Pull" -Status $statusText -PercentComplete (($completedCount / $totalFiles) * 100);
+};
 
 foreach ($file in $ToPull) {
     # --- Check Abort Flag (Feature 5) ---
@@ -1291,13 +1324,14 @@ foreach ($file in $ToPull) {
             $rawResult = $d.PS.EndInvoke($d.Async);
             $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
             
+            $fileKey = "./" + $d.File;
+            $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
             if ([int]$exitCode -eq 0) {
-                $fileKey = "./" + $d.File;
-                $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
                 $syncedFiles.Add([PSCustomObject]@{
                     name = $d.File;
                     size = $fileSize;
                 });
+                $completedBytes += $fileSize;
             } else {
                 $failedFiles.Add($d.File);
             }
@@ -1308,7 +1342,7 @@ foreach ($file in $ToPull) {
 
         if ($done.Count -eq 0) { Start-Sleep -Milliseconds 50 };
         if ($completedCount % 5 -eq 0) {
-            Write-Progress -Activity "12x Multi-Threaded Titan Pull" -Status "[$completedCount / $totalFiles] Downloaded" -PercentComplete (($completedCount / $totalFiles) * 100);
+            & $UpdateProgress;
         }
 
         if ($global:JigarAbort) { break };
@@ -1322,13 +1356,14 @@ while ($ActiveJobs.Count -gt 0) {
         $rawResult = $d.PS.EndInvoke($d.Async);
         $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
         
+        $fileKey = "./" + $d.File;
+        $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
         if ([int]$exitCode -eq 0) {
-            $fileKey = "./" + $d.File;
-            $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
             $syncedFiles.Add([PSCustomObject]@{
                 name = $d.File;
                 size = $fileSize;
             });
+            $completedBytes += $fileSize;
         } else {
             $failedFiles.Add($d.File);
         }
@@ -1337,10 +1372,10 @@ while ($ActiveJobs.Count -gt 0) {
     }
     $ActiveJobs = [System.Collections.Generic.List[psobject]]::new([psobject[]]@($ActiveJobs | Where-Object { -not $_.Async.IsCompleted }));
     if ($done.Count -eq 0) { Start-Sleep -Milliseconds 100 };
-    Write-Progress -Activity "12x Multi-Threaded Titan Pull" -Status "[$completedCount / $totalFiles] Downloaded" -PercentComplete (($completedCount / $totalFiles) * 100);
+    & $UpdateProgress;
     if ($global:JigarAbort -and $ActiveJobs.Count -eq 0) { break };
 }
-Write-Progress -Activity "12x Multi-Threaded Titan Pull" -Completed;
+Write-Progress -Activity "$MaxThreads`x Multi-Threaded Titan Pull" -Completed;
 
 # ----------------------------------------------------------------
 #  UPDATE HTML BACKUP LOG
@@ -1361,7 +1396,7 @@ if ($global:JigarAbort) {
 
     Write-Host "`n[DONE] Process aborted safely. Temp files cleaned up." -ForegroundColor Green;
     Stop-Transcript | Out-Null;
-    Read-Host "`nPress Enter to exit...";
+    if (-not $NonInteractive) { [void](Read-Host "`nPress Enter to exit...") }
     exit;
 }
 
@@ -1389,7 +1424,7 @@ if ($failedFiles.Count -gt 0) {
 
 Write-Host "`n[LOG] Transcript saved to: $LogFile" -ForegroundColor DarkGray;
 Stop-Transcript | Out-Null;
-Read-Host "`nPress Enter to exit...";
+if (-not $NonInteractive) { [void](Read-Host "`nPress Enter to exit...") }
 
 
 

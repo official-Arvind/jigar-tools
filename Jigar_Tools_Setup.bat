@@ -86,7 +86,7 @@ echo        Local Version: %LOCAL_VERSION%
 echo ========================================================
 echo.
 echo  ARSENAL:
-echo  [1] JIGARSYNC BACKUP     (12x Threads + 3-Stage Fallback)
+echo  [1] JIGARSYNC BACKUP     (20x Threads + 3-Stage Fallback)
 echo  [2] JIGAR SMART RESTORE  (Full / Selective Folder Restore)
 echo  [3] DEVICE STATUS        (Check Connection)
 echo  [4] CHECK FOR UPDATES    (GitHub Auto-Updater)

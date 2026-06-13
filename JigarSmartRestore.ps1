@@ -12,7 +12,7 @@
 #  - Persistent Logging (Logs\ folder)
 #  - Graceful Ctrl+C Cancellation with ADB Temp Cleanup
 #  - 3-Stage Fallback: Unconditionally defeats all ADB path bugs
-#  - 12x Parallel Push: Restores files PCâ†’Phone at massive speed
+#  - 20x Parallel Push: Restores files PC→Phone at massive speed
 # ================================================================
 
 # ================================================================
@@ -24,6 +24,8 @@
 #  - Show-JigarIncludeMenu : full WinForms GUI (INCLUDE mode)
 #  - Test-JgrIncluded      : most-specific-ancestor lookup
 # ================================================================
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName System.Windows.Forms;
 Add-Type -AssemblyName System.Drawing;
 
@@ -338,7 +340,7 @@ $LogFile = Join-Path $LogsDir "RestoreLog_$LogTimestamp.txt";
 Start-Transcript -Path $LogFile -Append | Out-Null;
 
 Write-Host "`n ==============================================================" -ForegroundColor Cyan;
-Write-Host "   JIGAR SMART RESTORE v2.0 Gold Edition  (12x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
+Write-Host "   JIGAR SMART RESTORE v2.0 Gold Edition  (20x THREADS + 3-STAGE TITAN FALLBACK)" -ForegroundColor Cyan;
 Write-Host " ==============================================================" -ForegroundColor Cyan;
 Write-Host "   Log: $LogFile" -ForegroundColor DarkGray;
 
@@ -597,21 +599,21 @@ if ($isAdbRoot -or $isSuRoot) {
 # Build scan commands using absolute paths (avoids cd+namespace path issues on Android FUSE mounts)
 $scanCmd = "";
 if ($isAdbRoot) {
-    $scanCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+    $scanCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
 } elseif ($isSuRoot) {
-    $scanCmd = "su -c \`"find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null\`"";
+    $scanCmd = "su -c \`"find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null\`"";
 } else {
-    $scanCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
+    $scanCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
 }
 
-# Fallback: xargs variant if exec+ batching fails
+# Fallback: exec+ variant if xargs batching fails
 $scanFallbackCmd = "";
 if ($isAdbRoot) {
-    $scanFallbackCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
+    $scanFallbackCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
 } elseif ($isSuRoot) {
-    $scanFallbackCmd = "su -c \`"find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null\`"";
+    $scanFallbackCmd = "su -c \`"find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null\`"";
 } else {
-    $scanFallbackCmd = "find $scanTarget -type f -print0 2>/dev/null | xargs -0 stat -c '%s|%n' 2>/dev/null";
+    $scanFallbackCmd = "find $scanTarget -type f -exec stat -c '%s|%n' {} + 2>/dev/null";
 }
 
 $procInfo = New-Object System.Diagnostics.ProcessStartInfo;
@@ -718,7 +720,7 @@ if ($totalFiles -eq 0) {
 Write-Host "[RESTORE] Queued $totalFiles missing or modified files for push." -ForegroundColor Magenta;
 
 # ----------------------------------------------------------------
-#  6. THE 12x TITAN PUSH ENGINE (SMART PATHING + 3-STAGE FALLBACK)
+#  6. THE 20x TITAN PUSH ENGINE (SMART PATHING + 3-STAGE FALLBACK)
 # ----------------------------------------------------------------
 Write-Host "[RESTORE] Pre-allocating directory trees on device..." -ForegroundColor DarkGray;
 $uniqueDirs = @{}
@@ -733,9 +735,9 @@ foreach ($dir in $uniqueDirs.Keys) {
     & $adbExe -s $serial shell "mkdir -p '$escapedDir'" | Out-Null;
 }
 
-Write-Host "[RESTORE] Engaging 4x Parallel Titan Streams...`n" -ForegroundColor Yellow;
+$MaxThreads   = 20;
+Write-Host "[RESTORE] Engaging 20x Parallel Titan Streams...`n" -ForegroundColor Yellow;
 
-$MaxThreads   = 4;
 $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 
@@ -887,7 +889,7 @@ foreach ($file in $ToPush) {
 
         if ($done.Count -eq 0) { Start-Sleep -Milliseconds 50 };
         if ($completedCount % 5 -eq 0) {
-            Write-Progress -Activity "12x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
+            Write-Progress -Activity "20x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
         }
 
         if ($global:JigarAbort) { break };
@@ -906,10 +908,10 @@ while ($ActiveJobs.Count -gt 0) {
     }
     $ActiveJobs = [System.Collections.Generic.List[psobject]]::new([psobject[]]@($ActiveJobs | Where-Object { -not $_.Async.IsCompleted }));
     if ($done.Count -eq 0) { Start-Sleep -Milliseconds 100 };
-    Write-Progress -Activity "12x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
+    Write-Progress -Activity "20x Multi-Threaded Titan Push" -Status "[$completedCount / $totalFiles] Restored" -PercentComplete (($completedCount / $totalFiles) * 100);
     if ($global:JigarAbort -and $ActiveJobs.Count -eq 0) { break };
 }
-Write-Progress -Activity "12x Multi-Threaded Titan Push" -Completed;
+Write-Progress -Activity "20x Multi-Threaded Titan Push" -Completed;
 
 # ----------------------------------------------------------------
 #  GRACEFUL ABORT CLEANUP (Feature 5)

@@ -4,7 +4,7 @@
 
 <br/>
 
-[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=JetBrains+Mono&weight=700&size=22&duration=3000&pause=800&color=7B61FF&center=true&vCenter=true&multiline=false&width=700&lines=12x+Parallel+Titan+Engine+%E2%9A%A1;Interactive+TreeView+Selection+%F0%9F%8C%B2;Auto-Updater+from+GitHub+%F0%9F%94%84;Clean+Exit+%E2%80%94+No+Memory+Leaks+%F0%9F%94%8C;Built+by+Arvind+Ji+%F0%9F%9A%80)](https://github.com/official-Arvind/jigar-tools)
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=JetBrains+Mono&weight=700&size=22&duration=3000&pause=800&color=7B61FF&center=true&vCenter=true&multiline=false&width=700&lines=20x+Parallel+Titan+Engine+%E2%9A%A1;Interactive+TreeView+Selection+%F0%9F%8C%B2;Auto-Updater+from+GitHub+%F0%9F%94%84;Clean+Exit+%E2%80%94+No+Memory+Leaks+%F0%9F%94%8C;Built+by+Arvind+Ji+%F0%9F%9A%80)](https://github.com/official-Arvind/jigar-tools)
 
 <br/>
 
@@ -39,7 +39,7 @@
 
 ## ⚡ What Is This?
 
-Jigar Tools is a **Windows-native toolkit** designed to sync your Android device to your PC at **absolute maximum velocity**. It leverages a 12-thread parallel ADB architecture, a robust 3-stage fallback engine, and an elegant WinForms GUI that grants you surgical precision over what to back up or restore. No cloud dependencies. No subscriptions. Pure performance.
+Jigar Tools is a **Windows-native toolkit** designed to sync your Android device to your PC at **absolute maximum velocity**. It leverages a 20-thread parallel ADB architecture, a robust 3-stage fallback engine, and an elegant WinForms GUI that grants you surgical precision over what to back up or restore. No cloud dependencies. No subscriptions. Pure performance.
 
 ```
 Initial Backup  (50 GB)  →  5–10 minutes   @ 80–150 MB/s
@@ -58,7 +58,7 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 ### 🚀 `JigarSmartSync.ps1`
 **Titan Backup Engine**
 
-- ⚡ **12x Parallel ADB Threads** — Maximize USB bandwidth.
+- ⚡ **20x Parallel ADB Threads** — Maximize USB bandwidth.
 - 🔁 **3-Stage Fallback** — Circumvents all known ADB path limitations.
 - 📁 **Dynamic Snapshot Naming** — `DeviceName_YYYY-MM-DD_HH-mm-ss`.
 - 💾 **Location Memory** — Automatically recalls your previous backup destination.
@@ -73,7 +73,7 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 ### ⚡ `JigarSmartRestore.ps1`
 **Titan Restore Engine**
 
-- ⚡ **12x Parallel ADB Push Threads** — Lightning-fast data restoration.
+- ⚡ **20x Parallel ADB Push Threads** — Lightning-fast data restoration.
 - 🔁 **3-Stage Fallback** — Bulletproof injection into the Android filesystem.
 - 🗂️ **Smart Snapshot Picker** — Automatically lists available backups, newest first.
 - 🌲 **Interactive INCLUDE Menu** — Surgically select exact files/folders to restore.
