@@ -1118,8 +1118,9 @@ foreach ($key in $AndroidFiles.Keys) {
     }
 
     # Normalize name to match Windows filesystem limitations (trim trailing dots/spaces from segments)
-    $segments = $key.Split('/') | ForEach-Object { $_.TrimEnd(". ") };
-    $pcKey = ($segments -join '/') -replace '[<>:"|?*]', '_';
+    $cleanKey = if ($key.StartsWith("./")) { $key.Substring(2) } else { $key };
+    $segments = $cleanKey.Split('/') | ForEach-Object { $_.TrimEnd(". ") };
+    $pcKey = "./" + (($segments -join '/') -replace '[<>:"|?*]', '_');
     if (-not $LocalFiles.ContainsKey($pcKey) -or $LocalFiles[$pcKey] -ne $androidSize) {
         $ToPull.Add($key);
     }

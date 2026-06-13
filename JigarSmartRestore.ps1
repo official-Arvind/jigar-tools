@@ -704,8 +704,9 @@ if ($filterChoice.Trim().ToUpper() -eq 'Y') {
 # Build a lookup of Android files with normalized keys (trim trailing dots/spaces from segments to match Windows limits)
 $NormalizedAndroidFiles = @{};
 foreach ($k in $AndroidFiles.Keys) {
-    $segments = $k.Split('/') | ForEach-Object { $_.TrimEnd(". ") };
-    $norm = $segments -join '/';
+    $cleanK = if ($k.StartsWith("./")) { $k.Substring(2) } else { $k };
+    $segments = $cleanK.Split('/') | ForEach-Object { $_.TrimEnd(". ") };
+    $norm = "./" + ($segments -join '/');
     $NormalizedAndroidFiles[$norm] = $AndroidFiles[$k];
 }
 
