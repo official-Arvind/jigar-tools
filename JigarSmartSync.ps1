@@ -794,7 +794,7 @@ $devices = (& $adbExe devices 2>$null) | Select-String -Pattern '\tdevice$';
 if (-not $devices -or $devices.Count -eq 0) {
     Write-Host "`n[ERROR] No device found. Plug in phone and enable USB Debugging." -ForegroundColor Red;
     Stop-Transcript | Out-Null;
-    Read-Host "Press Enter to exit...";
+    if (-not $NonInteractive) { [void](Read-Host "Press Enter to exit...") }
     exit;
 }
 $serial = ($devices[0].ToString().Split("`t")[0]).Trim();
@@ -1132,7 +1132,7 @@ if ($totalFiles -eq 0) {
     Write-Host "==============================================================`n" -ForegroundColor Green;
     if ($virtDrive) { & subst $virtDrive /D | Out-Null };
     Stop-Transcript | Out-Null;
-    Read-Host "Press Enter to exit...";
+    if (-not $NonInteractive) { [void](Read-Host "Press Enter to exit...") }
     exit;
 }
 Write-Host "[SYNC] Queued $totalFiles missing or modified files for download." -ForegroundColor Magenta;

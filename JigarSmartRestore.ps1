@@ -393,7 +393,7 @@ $devices = (& $adbExe devices 2>$null) | Select-String -Pattern '\tdevice$';
 if (-not $devices -or $devices.Count -eq 0) {
     Write-Host "`n[ERROR] No device found. Plug in phone and enable USB Debugging." -ForegroundColor Red;
     Stop-Transcript | Out-Null;
-    Read-Host "Press Enter to exit...";
+    if (-not $NonInteractive) { [void](Read-Host "Press Enter to exit...") }
     exit;
 }
 $serial = ($devices[0].ToString().Split("`t")[0]).Trim();
@@ -559,7 +559,7 @@ if (-not $restoreRoot) {
 if (-not (Test-Path $restoreRoot)) {
     Write-Host "[ERROR] Backup folder not found!" -ForegroundColor Red;
     Stop-Transcript | Out-Null;
-    Read-Host "Press Enter to exit...";
+    if (-not $NonInteractive) { [void](Read-Host "Press Enter to exit...") }
     exit;
 }
 Write-Host "[SYSTEM] Backup Source: $restoreRoot`n" -ForegroundColor DarkGray;
@@ -737,7 +737,7 @@ if ($totalFiles -eq 0) {
     Write-Host " YOUR PHONE IS 100% IN SYNC. NO NEW FILES TO RESTORE."          -ForegroundColor Green;
     Write-Host "==============================================================`n" -ForegroundColor Green;
     Stop-Transcript | Out-Null;
-    Read-Host "Press Enter to exit...";
+    if (-not $NonInteractive) { [void](Read-Host "Press Enter to exit...") }
     exit;
 }
 Write-Host "[RESTORE] Queued $totalFiles missing or modified files for push." -ForegroundColor Magenta;
@@ -949,7 +949,7 @@ if ($global:JigarAbort) {
 
     Write-Host "`n[DONE] Process aborted safely. Temp files cleaned up." -ForegroundColor Green;
     Stop-Transcript | Out-Null;
-    Read-Host "`nPress Enter to exit...";
+    if (-not $NonInteractive) { [void](Read-Host "`nPress Enter to exit...") }
     exit;
 }
 
@@ -975,5 +975,5 @@ if ($failedFiles.Count -gt 0) {
 
 Write-Host "`n[LOG] Transcript saved to: $LogFile" -ForegroundColor DarkGray;
 Stop-Transcript | Out-Null;
-Read-Host "`nPress Enter to exit...";
+if (-not $NonInteractive) { [void](Read-Host "`nPress Enter to exit...") }
 
