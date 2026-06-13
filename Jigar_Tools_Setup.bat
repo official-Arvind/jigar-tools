@@ -1,11 +1,12 @@
 @echo off
 setlocal enabledelayedexpansion
 :: ========================================================
-::  JIGAR TOOLS - UNIFIED GOD MODE (v5.0)
-::  NEW in v5.0:
-::  - Auto-Updater: checks GitHub for latest release
-::  - ADB Server kill-on-exit (no memory leaks)
-::  - Clean update flow: preserves backups & settings
+::  JIGAR TOOLS - UNIFIED GOD MODE (v2.0 Gold Edition)
+::  NEW in v2.0 Gold Edition:
+::  - 20x Parallel Titan Engine (Sync/Restore)
+::  - Real-time Speed & Size Progress Bar
+::  - Robust Phone Scanning Pipeline (xargs)
+::  - Auto-Updater & Clean Exit (No ADB memory leaks)
 :: ========================================================
 
 :: ---- 1. ADMIN ELEVATION --------------------------------
@@ -23,7 +24,7 @@ for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "[Environment]
 set "SHORTCUT=%REAL_DESKTOP%\Jigar Tools.lnk"
 
 :: Read local version (set by updater or manually)
-set "LOCAL_VERSION=v39.1"
+set "LOCAL_VERSION=v40.0"
 if exist "%VERSION_FILE%" (
     set /p LOCAL_VERSION=<"%VERSION_FILE%"
 )
@@ -33,7 +34,7 @@ if exist "%SHORTCUT%" goto :Menu
 
 cls
 echo ========================================================
-echo        JIGAR TOOLS - INITIAL SYSTEM AUDIT (v5.0)
+echo        JIGAR TOOLS - INITIAL SYSTEM AUDIT (v2.0 Gold Edition)
 echo ========================================================
 echo.
 
@@ -81,8 +82,8 @@ pause
 :Menu
 cls
 echo ========================================================
-echo        JIGAR TOOLS v5.0  -  MASTER CONTROL CENTER
-echo        Local Version: %LOCAL_VERSION%
+echo        JIGAR TOOLS v2.0 Gold Edition  -  MASTER CONTROL CENTER
+echo        Local Version: %LOCAL_VERSION% (Internal)
 echo ========================================================
 echo.
 echo  ARSENAL:
@@ -181,7 +182,7 @@ echo [UPDATE] Querying GitHub API for latest release...
 echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$localVer = 'v39.1'; $vc = Get-Content '%VERSION_FILE%' -ErrorAction SilentlyContinue; if ($vc) { $localVer = $vc.Trim() };" ^
+    "$localVer = 'v40.0'; $vc = Get-Content '%VERSION_FILE%' -ErrorAction SilentlyContinue; if ($vc) { $localVer = $vc.Trim() };" ^
     "$api = 'https://api.github.com/repos/official-Arvind/jigar-tools/releases/latest';" ^
     "try {" ^
     "  $rel = Invoke-RestMethod -Uri $api -UseBasicParsing -ErrorAction Stop;" ^
@@ -191,7 +192,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  Write-Host \"  Local  : $localVer\" -ForegroundColor Cyan;" ^
     "  Write-Host \"  Remote : $remoteVer\" -ForegroundColor Cyan;" ^
     "  Write-Host '';" ^
-    "  if ($remoteVer -eq $localVer) {" ^
+    "  $cmpLocal = $localVer.Trim();" ^
+    "  $cmpRemote = $remoteVer.Trim();" ^
+    "  if ($cmpLocal -eq 'v40.0') { $cmpLocal = 'v2.0' };" ^
+    "  if ($cmpRemote -eq 'v40.0') { $cmpRemote = 'v2.0' };" ^
+    "  if ($cmpRemote -eq $cmpLocal) {" ^
     "    Write-Host '  [UP-TO-DATE] You are running the latest version.' -ForegroundColor Green;" ^
     "    exit 0" ^
     "  };" ^

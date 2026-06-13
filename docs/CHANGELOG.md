@@ -33,7 +33,7 @@
 
 ---
 
-## <img src="https://img.shields.io/badge/v39.1-Current-7B61FF?style=for-the-badge" align="left" alt="v39.1"/> &nbsp; Interactive Selection Engine
+## <img src="https://img.shields.io/badge/v39.1-blue?style=for-the-badge" align="left" alt="v39.1"/> &nbsp; Interactive Selection Engine
 <br>
 
 > **Focus: Granular Runtime Control**

@@ -17,10 +17,10 @@
 
 # ================================================================
 #  INTERACTIVE SELECTION ENGINE  (shared helper functions)
-#  - Build-JgrPathIndex    : flat path list â†’ nested hashtable
+#  - Build-JgrPathIndex    : flat path list → nested hashtable
 #  - Add-JgrTreeChildren   : lazy-populate a TreeView node
 #  - Set-JgrCheckedDeep    : propagate checked state to children
-#  - Get-JgrNodeStates     : harvest pathâ†’bool map from live tree
+#  - Get-JgrNodeStates     : harvest path→bool map from live tree
 #  - Show-JigarIncludeMenu : full WinForms GUI (INCLUDE mode)
 #  - Test-JgrIncluded      : most-specific-ancestor lookup
 # ================================================================
