@@ -60,7 +60,7 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 
 - ⚡ **20x Parallel ADB Threads** — Maximize USB bandwidth.
 - 🔁 **3-Stage Fallback** — Circumvents all known ADB path limitations.
-- 📁 **Dynamic Snapshot Naming** — `DeviceName_YYYY-MM-DD_HH-mm-ss`.
+- 📁 **Dynamic Device Folder** — Creates/uses a backup folder named after the device model (e.g. `22101316G`) for clean, in-place Delta Sync.
 - 💾 **Location Memory** — Automatically recalls your previous backup destination.
 - 🌲 **Interactive EXCLUDE Menu** — Exclude specific folders/files via an intuitive UI.
 - 🔄 **Delta Sync** — Intelligently transfers only modified or new files.
@@ -75,7 +75,7 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 
 - ⚡ **20x Parallel ADB Push Threads** — Lightning-fast data restoration.
 - 🔁 **3-Stage Fallback** — Bulletproof injection into the Android filesystem.
-- 🗂️ **Smart Snapshot Picker** — Automatically lists available backups, newest first.
+- 🗂️ **Smart Backup Picker** — Automatically lists available device backups in a numbered console menu.
 - 🌲 **Interactive INCLUDE Menu** — Surgically select exact files/folders to restore.
 - 🔄 **Delta Restore** — Bypasses identical files already present on the device.
 - 💾 **Location Memory** — Pre-loads snapshots based on your `settings.json`.
@@ -92,11 +92,11 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 
 | Option | Action |
 |---|---|
-| `[1]` | Execute JigarSync Backup |
-| `[2]` | Execute Smart Restore |
-| `[3]` | View Device Connection Status |
-| `[4]` | Check GitHub for Updates |
-| `[5]` | Clean Exit & Terminate ADB Server |
+| `[1]` | JigarSync Backup (20x Threads) |
+| `[2]` | Jigar Smart Restore (Full / Selective) |
+| `[3]` | Device Status (Check Connection) |
+| `[4]` | Check for Updates (Auto-Updater) |
+| `[5]` | Exit (Kills ADB Server) |
 
 </td>
 <td width="50%" valign="top">
@@ -146,11 +146,11 @@ The God Mode Launcher will autonomously:
 ### Step 4 — Engage
 
 ```
-[1] JigarSync Backup   →  Pull data: Phone to PC
-[2] Smart Restore      →  Push data: PC to Phone
-[3] Device Status      →  Verify active ADB connections
+[1] JigarSync Backup   →  Pull data: Phone to PC (20x Threads)
+[2] Smart Restore      →  Push data: PC to Phone (20x Threads)
+[3] Device Status      →  Check connection status of device
 [4] Check for Updates  →  Trigger the GitHub auto-updater
-[5] Exit               →  Clean shutdown + ADB process termination
+[5] Exit               →  Clean shutdown + ADB server termination
 ```
 
 ---
@@ -223,8 +223,7 @@ Update Sequence:
 
 ```ini
 # One path per line. Lines prefixed with # are ignored.
-/sdcard/Android/data       # Volatile application cache
-/sdcard/Android/obb        # Heavy game assets
+# (Note: /sdcard/Android/data and /sdcard/Android/obb are ignored by the script automatically)
 /sdcard/Telegram           # Media re-downloaded natively by the app
 /sdcard/DCIM/.thumbnails   # Disposable thumbnail cache
 ```

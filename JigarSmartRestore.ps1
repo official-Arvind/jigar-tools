@@ -14,6 +14,9 @@
 #  - 3-Stage Fallback: Unconditionally defeats all ADB path bugs
 #  - 20x Parallel Push: Restores files PC→Phone at massive speed
 # ================================================================
+param(
+    [switch]$NonInteractive
+)
 
 # ================================================================
 #  INTERACTIVE SELECTION ENGINE  (shared helper functions)
@@ -508,7 +511,13 @@ if ($savedBase -and (Test-Path $savedBase)) {
 
         $choice = $null;
         while ($true) {
-            $raw = "1"; # Test Override
+            $raw = "";
+            if ($NonInteractive) {
+                Write-Host "  [AUTO-SELECT] Non-interactive mode active, selecting option 1." -ForegroundColor Green;
+                $raw = "1";
+            } else {
+                $raw = Read-Host "  Choose backup option (1-$browseIdx)";
+            }
             if ($raw -match '^\d+$') {
                 $choiceNum = [int]$raw;
                 if ($choiceNum -ge 1 -and $choiceNum -lt $browseIdx) {
@@ -663,7 +672,12 @@ Write-Host "[SCAN] Found $($AndroidFiles.Count) files currently on Android.`n" -
 # ----------------------------------------------------------------
 Write-Host "[FILTER] Restore only specific folders/files from this backup?" -ForegroundColor Yellow;
 Write-Host "         (Opens a selection picker - press N to restore everything)" -ForegroundColor DarkGray;
-$filterChoice = "N"; # Test Override
+$filterChoice = "N";
+if ($NonInteractive) {
+    Write-Host "         [AUTO-SKIP] Non-interactive mode active, restoring everything." -ForegroundColor Green;
+} else {
+    $filterChoice = Read-Host "         Launch restore selection menu? [Y/N]";
+}
 $IncludeNodeStates = $null;
 $IncludeActive     = $false;
 if ($filterChoice.Trim().ToUpper() -eq 'Y') {
