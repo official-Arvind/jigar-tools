@@ -160,10 +160,10 @@ Import-Module SomeThirdPartyModule
 > These are areas where contributions would be especially welcome:
 
 - 📱 **Multi-device support** — backup multiple phones in sequence
-- 🔢 **Transfer progress** — per-file progress during the 12-thread push
+- 🔢 **Granular progress bar** — File-by-file detail toggle in GUI
 - 🌐 **Network ADB** — support `adb connect IP:PORT` for wireless backups
 - 🗓️ **Scheduled backups** — Task Scheduler integration
-- 📊 **Backup stats** — size saved, files transferred, time taken — formatted summary
+- 📊 **Backup analytics** — Interactive charts in the HTML logs
 - 🧪 **Pester tests** — PowerShell unit tests for the filter/delta logic
 - 🌍 **Translations** — README and UI strings in other languages
 

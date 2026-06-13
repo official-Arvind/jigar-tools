@@ -270,7 +270,7 @@ This is **expected behavior** for protected system directories. The Titan Engine
 <summary><b>🟡 Operation Interrupted Mid-Transfer</b></summary>
 <br/>
 
-Simply **re-initiate the operation**. The Delta Sync engine will automatically calculate file hashes and sizes, bypassing already transferred data and seamlessly resuming from the point of failure.
+Simply **re-initiate the operation**. The Delta Sync engine will automatically compare file sizes and existence, bypassing already transferred data and seamlessly resuming from the point of failure.
 
 </details>
 
