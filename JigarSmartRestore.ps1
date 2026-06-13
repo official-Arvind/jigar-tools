@@ -701,6 +701,14 @@ if ($filterChoice.Trim().ToUpper() -eq 'Y') {
 # ----------------------------------------------------------------
 #  5. CALCULATE DELTA (RESPECTING IGNORE LIST + INTERACTIVE FILTER)
 # ----------------------------------------------------------------
+# Build a lookup of Android files with normalized keys (trim trailing dots/spaces from segments to match Windows limits)
+$NormalizedAndroidFiles = @{};
+foreach ($k in $AndroidFiles.Keys) {
+    $segments = $k.Split('/') | ForEach-Object { $_.TrimEnd(". ") };
+    $norm = $segments -join '/';
+    $NormalizedAndroidFiles[$norm] = $AndroidFiles[$k];
+}
+
 $ToPush = [System.Collections.Generic.List[string]]::new();
 foreach ($key in $BackupFiles.Keys) {
     $backupSize = $BackupFiles[$key];
@@ -717,7 +725,7 @@ foreach ($key in $BackupFiles.Keys) {
         if (-not (Test-JgrIncluded -RelPath $key -NodeStates $IncludeNodeStates)) { continue };
     }
 
-    if (-not $AndroidFiles.ContainsKey($key) -or $AndroidFiles[$key] -ne $backupSize) {
+    if (-not $NormalizedAndroidFiles.ContainsKey($key) -or $NormalizedAndroidFiles[$key] -ne $backupSize) {
         $ToPush.Add($key);
     }
 }

@@ -1117,7 +1117,9 @@ foreach ($key in $AndroidFiles.Keys) {
         if (Test-JgrExcluded -RelPath $key -NodeStates $ExcludeNodeStates) { continue };
     }
 
-    $pcKey = $key -replace '[<>:"|?*]', '_';
+    # Normalize name to match Windows filesystem limitations (trim trailing dots/spaces from segments)
+    $segments = $key.Split('/') | ForEach-Object { $_.TrimEnd(". ") };
+    $pcKey = ($segments -join '/') -replace '[<>:"|?*]', '_';
     if (-not $LocalFiles.ContainsKey($pcKey) -or $LocalFiles[$pcKey] -ne $androidSize) {
         $ToPull.Add($key);
     }
