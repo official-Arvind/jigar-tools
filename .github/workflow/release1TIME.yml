@@ -1,33 +1,16 @@
 name: 🚀 ONE TIME LOL 
 
 # ──────────────────────────────────────────────────────────────────
-#  JIGAR TOOLS — Manual Release Publisher
+#  JIGAR TOOLS — Manual Release Publisher (Archive Branch)
 #  Trigger: Actions tab → "Publish Release" → Run workflow
-#  What it does:
-#    1. Gathers every commit since the previous release tag
-#    2. Categorises them into a beautiful changelog
-#    3. Packages ONLY the needed files into a clean ZIP
-#    4. Creates a GitHub release with the generated notes
 # ──────────────────────────────────────────────────────────────────
 
 on:
   push:
+    branches:
+      - Archive
   workflow_dispatch:
-    inputs:
-      version:
-        description: "📦 Version tag  (e.g. v40.0 or v39.2)"
-        required: true
-        type: string
-      title_suffix:
-        description: "✏️  Release title suffix  (e.g. 'The Speed Update')"
-        required: false
-        default: ""
-        type: string
-      prerelease:
-        description: "🧪 Mark as Pre-release?"
-        required: false
-        default: false
-        type: boolean
+    # Inputs removed. Hardcoded to v1.0 one-click deploy!
 
 permissions:
   contents: write
@@ -38,23 +21,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Full checkout (all history for git log) ──────────────
+      # ── 1. Full checkout (FORCED TO ARCHIVE BRANCH) ─────────────
       - name: ⬇️  Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: Archive
           fetch-depth: 0
 
       # ── 2. Resolve previous release tag ─────────────────────────
       - name: 🏷️  Find previous release tag
         id: prev
         run: |
-          # Get the most recent tag that is NOT the new one being created
           PREV=$(git tag --sort=-version:refname \
-                 | grep -v "^${{ inputs.version }}$" \
+                 | grep -v "^1.0$" \
                  | head -1)
 
           if [[ -z "$PREV" ]]; then
-            # No previous tag → diff from very first commit
             PREV=$(git rev-list --max-parents=0 HEAD)
             echo "first_release=true" >> "$GITHUB_OUTPUT"
             echo "prev_display=the beginning of time" >> "$GITHUB_OUTPUT"
@@ -71,24 +53,22 @@ jobs:
         id: changelog
         env:
           PREV_TAG: ${{ steps.prev.outputs.tag }}
-          NEW_TAG:  ${{ inputs.version }}
+          NEW_TAG:  "1.0"
           PREV_DISPLAY: ${{ steps.prev.outputs.prev_display }}
         run: |
-          # ---- Collect commit log -----------------------------------
           COMMITS=$(git log "${PREV_TAG}..HEAD" \
                       --pretty=format:"%H|%s|%an" \
                       --no-merges \
                       --reverse)
 
-          # ---- Bucket arrays ---------------------------------------
-          FEAT=()   # ✨ New features / major additions
-          IMPR=()   # ⚡ Improvements & enhancements
-          FIX=()    # 🐛 Bug fixes
-          PERF=()   # 🏎️ Performance
-          DOCS=()   # 📝 Documentation
-          CLEAN=()  # 🗂️  Chore / cleanup / refactor
-          BREAK=()  # 💥 Breaking changes
-          OTHER=()  # Everything else
+          FEAT=()   
+          IMPR=()   
+          FIX=()    
+          PERF=()   
+          DOCS=()   
+          CLEAN=()  
+          BREAK=()  
+          OTHER=()  
 
           while IFS='|' read -r hash subject author; do
             [[ -z "$hash" ]] && continue
@@ -96,7 +76,7 @@ jobs:
             SHORT="${hash:0:7}"
             URL="https://github.com/${{ github.repository }}/commit/$hash"
             LINK="[\`$SHORT\`]($URL)"
-            LINE="- $LINK  **$subject**  *(by $author)*"
+            LINE="- $LINK  **$subject** *(by $author)*"
 
             MSG_LOWER=$(echo "$subject" | tr '[:upper:]' '[:lower:]')
 
@@ -114,9 +94,10 @@ jobs:
 
           TOTAL=$(echo "$COMMITS" | grep -c '.' || true)
 
-          # ---- Build the markdown body ----------------------------
           {
             echo "## 📦 What's in $NEW_TAG"
+            echo ""
+            echo "> **this is the first working version i built**"
             echo ""
 
             if [[ "${#BREAK[@]}" -gt 0 ]]; then
@@ -209,20 +190,14 @@ jobs:
       - name: 🏷️  Build release title
         id: title
         run: |
-          BASE="🚀 Jigar Tools ${{ inputs.version }}"
-          SUFFIX="${{ inputs.title_suffix }}"
-          if [[ -n "$SUFFIX" ]]; then
-            FULL="$BASE — $SUFFIX"
-          else
-            FULL="$BASE"
-          fi
+          FULL="🚀 Jigar Tools 1.0 — this is the first working version i built"
           echo "title=$FULL" >> "$GITHUB_OUTPUT"
           echo "Release title: $FULL"
 
       # ── 5. Package only the needed files ─────────────────────────
       - name: 📦  Build release ZIP
         run: |
-          ZIPNAME="Jigar_Tools_${{ inputs.version }}.zip"
+          ZIPNAME="Jigar_Tools_1.0.zip"
           PKG="release_package"
 
           mkdir -p "$PKG/docs"
@@ -262,10 +237,10 @@ jobs:
       - name: 🎉  Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name:   ${{ inputs.version }}
+          tag_name:   "1.0"
           name:       ${{ steps.title.outputs.title }}
           body_path:  release_notes.md
           files:      ${{ env.ZIPNAME }}
-          prerelease: ${{ inputs.prerelease }}
+          prerelease: false
           make_latest: true
           fail_on_unmatched_files: true
