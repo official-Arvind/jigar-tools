@@ -202,20 +202,41 @@ jobs:
 
           mkdir -p "$PKG/docs"
 
-          # Core scripts & launcher
-          cp JigarSmartSync.ps1      "$PKG/"
-          cp JigarSmartRestore.ps1   "$PKG/"
-          cp Jigar_Tools_Setup.bat   "$PKG/"
-          cp Jigar_Tools_Uninstall.bat "$PKG/"
+          # ── Safe copy arrays ──
+          ROOT_FILES=(
+            "JigarSmartSync.ps1"
+            "JigarSmartRestore.ps1"
+            "Jigar_Tools_Setup.bat"
+            "Jigar_Tools_Uninstall.bat"
+            "logo.ico"
+            "LICENSE.md"
+            "README.md"
+          )
+          
+          DOC_FILES=(
+            "docs/CHANGELOG.md"
+            "docs/CONTRIBUTING.md"
+          )
 
-          # Assets & docs
-          cp logo.ico   "$PKG/"
-          cp LICENSE.md "$PKG/"
-          cp README.md  "$PKG/"
+          echo "── Copying Core Files ───────────────────────"
+          for file in "${ROOT_FILES[@]}"; do
+            if [ -f "$file" ]; then
+              cp "$file" "$PKG/"
+              echo "✅ Included: $file"
+            else
+              echo "⚠️ Skipped (Missing): $file"
+            fi
+          done
 
-          # docs/ folder (CHANGELOG, CONTRIBUTING)
-          cp docs/CHANGELOG.md    "$PKG/docs/"
-          cp docs/CONTRIBUTING.md "$PKG/docs/"
+          echo "── Copying Docs ─────────────────────────────"
+          for file in "${DOC_FILES[@]}"; do
+            if [ -f "$file" ]; then
+              cp "$file" "$PKG/docs/"
+              echo "✅ Included: $file"
+            else
+              echo "⚠️ Skipped (Missing): $file"
+            fi
+          done
 
           # Create ZIP
           cd "$PKG"
