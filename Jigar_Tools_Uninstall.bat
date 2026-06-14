@@ -27,7 +27,7 @@ set "SHORTCUT=%REAL_DESKTOP%\Jigar Tools.lnk"
 :: Read backup location from settings.json if it exists
 set "BACKUPS_DIR="
 if exist "%TOOLS_DIR%\settings.json" (
-    for /f "usebackq delims=" %%B in (`powershell -NoProfile -Command "try { $s=(Get-Content '%TOOLS_DIR%\settings.json' | ConvertFrom-Json); if($s.BackupRoot){$s.BackupRoot} } catch {}"`) do set "BACKUPS_DIR=%%B"
+    for /f "usebackq delims=" %%B in (`powershell -NoProfile -Command "try { $s=(Get-Content '%TOOLS_DIR%\settings.json' | ConvertFrom-Json); if($s.LastBackupLocation){$s.LastBackupLocation} } catch {}"`) do set "BACKUPS_DIR=%%B"
 )
 :: Fallback: check common backup location on Desktop
 if not defined BACKUPS_DIR (

@@ -1176,8 +1176,10 @@ $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads);
 $RunspacePool.Open();
 
 $ScriptBlock = {
-    param($adbExe, $serial, $src, $dest, $isAdbRoot, $isSuRoot, $busyboxPath)
+    param($adbExe, $serial, $src, $dest, $isAdbRoot, $isSuRoot, $busyboxPath, $logsDir)
     
+    $errFile = [System.IO.Path]::Combine($logsDir, "err.txt")
+
     # ---------------------------------------------------
     # ATTEMPT 1: Standard Pull (Bypass virtual drive bugs for ADB root)
     # ---------------------------------------------------
@@ -1267,15 +1269,15 @@ $ScriptBlock = {
                 [System.IO.File]::Delete($pcTemp2);
                 return 0;
             } catch {
-                [System.IO.File]::AppendAllText("D:\Desktop\jigar-tools\Logs\err.txt", "Copy exception: $_ `n")
+                [System.IO.File]::AppendAllText($errFile, "Copy exception: $_ `n")
             }
         } else {
-            [System.IO.File]::AppendAllText("D:\Desktop\jigar-tools\Logs\err.txt", "Pull failed, ExitCode: $($pPull.ExitCode) src: $src `n")
+            [System.IO.File]::AppendAllText($errFile, "Pull failed, ExitCode: $($pPull.ExitCode) src: $src `n")
         }
         if ([System.IO.File]::Exists($pcTemp2)) { [System.IO.File]::Delete($pcTemp2); }
         return $pPull.ExitCode;
     } else {
-        [System.IO.File]::AppendAllText("D:\Desktop\jigar-tools\Logs\err.txt", "su cp failed, ExitCode: $($pSu.ExitCode) src: $src `n")
+        [System.IO.File]::AppendAllText($errFile, "su cp failed, ExitCode: $($pSu.ExitCode) src: $src `n")
     }
 
     return 1; # Absolute Failure
@@ -1312,7 +1314,7 @@ foreach ($file in $ToPull) {
         $dest = Join-Path $destPath $safeWinPath;
     }
 
-    $PSInstance = [powershell]::Create().AddScript($ScriptBlock).AddArgument($adbExe).AddArgument($serial).AddArgument($src).AddArgument($dest).AddArgument($isAdbRoot).AddArgument($isSuRoot).AddArgument($busyboxPath);
+    $PSInstance = [powershell]::Create().AddScript($ScriptBlock).AddArgument($adbExe).AddArgument($serial).AddArgument($src).AddArgument($dest).AddArgument($isAdbRoot).AddArgument($isSuRoot).AddArgument($busyboxPath).AddArgument($LogsDir);
     $PSInstance.RunspacePool = $RunspacePool;
 
     $ActiveJobs.Add([PSCustomObject]@{
