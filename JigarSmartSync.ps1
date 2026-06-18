@@ -972,7 +972,7 @@ if (Test-Path $iniPath) {
     foreach ($line in $lines) {
         $line = $line.Trim();
         if ($line -match "^#" -or $line -eq "") { continue };
-        $clean   = $line -replace '^/?sdcard/', './';
+        $clean   = $line -replace '^/?(sdcard|storage/emulated/0)/', './';
         $clean   = $clean -replace '/$', '';
         $escaped = [Regex]::Escape($clean);
         $IgnorePatterns += "^$escaped/";
@@ -987,7 +987,7 @@ if (Test-Path $iniPath) {
 Write-Host "[SCAN] Mapping Android Storage... (Please Wait)" -ForegroundColor Yellow;
 $AndroidFiles = @{};
 
-$scanTarget = "/sdcard"
+$scanTarget = "/storage/emulated/0"
 if ($isAdbRoot -or $isSuRoot) {
     $scanTarget = "/data/media/0"
 }
@@ -1185,7 +1185,7 @@ $ScriptBlock = {
     # ---------------------------------------------------
     $pullSrc = $src
     if ($isAdbRoot) {
-        $pullSrc = $src -replace "^/sdcard", "/data/media/0"
+        $pullSrc = $src -replace "^(/sdcard|/storage/emulated/0)", "/data/media/0"
     }
 
     $pInfo = New-Object System.Diagnostics.ProcessStartInfo;
@@ -1231,7 +1231,7 @@ $ScriptBlock = {
 
     $uuid = [guid]::NewGuid().ToString().Substring(0,8);
     $androidTmp = "/data/local/tmp/jgr_$uuid";
-    $rootSrc = $src -replace "^/sdcard", "/data/media/0";
+    $rootSrc = $src -replace "^(/sdcard|/storage/emulated/0)", "/data/media/0";
     
     $cpCmd = if ($busyboxPath) { "$busyboxPath cp" } else { "cp" }
     $suArgs = "-s `"$serial`" shell `"su -c '$cpCmd \`"$rootSrc\`" \`"$androidTmp\`" && chmod 777 \`"$androidTmp\`"'`"";
@@ -1305,7 +1305,7 @@ foreach ($file in $ToPull) {
 
     $cleanPath   = $file.Substring(2);
     # Route source to raw storage for rooted devices (avoids FUSE virtual drive)
-    $src         = if ($isAdbRoot) { "/data/media/0/$cleanPath" } else { "/sdcard/$cleanPath" };
+    $src         = if ($isAdbRoot) { "/data/media/0/$cleanPath" } else { "/storage/emulated/0/$cleanPath" };
     $safeWinPath = $cleanPath -replace '[<>:"|?*]', '_' -replace '/', '\';
 
     if ($virtDrive -and $safeWinPath -match '\\') {

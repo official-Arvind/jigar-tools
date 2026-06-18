@@ -988,7 +988,7 @@ if (Test-Path $iniPath) {
     foreach ($line in $lines) {
         $line = $line.Trim();
         if ($line -match "^#" -or $line -eq "") { continue };
-        $clean   = $line -replace '^/?sdcard/', './';
+        $clean   = $line -replace '^/?(sdcard|storage/emulated/0)/', './';
         $clean   = $clean -replace '/$', '';
         $escaped = [Regex]::Escape($clean);
         $IgnorePatterns += "^$escaped/";
@@ -1013,7 +1013,7 @@ Write-Host "[SCAN] Found $($BackupFiles.Count) total files in backup." -Foregrou
 Write-Host "[SCAN] Mapping Android Device Storage... (Please Wait)" -ForegroundColor Yellow;
 $AndroidFiles = @{};
 
-$scanTarget = "/sdcard"
+$scanTarget = "/storage/emulated/0"
 if ($isAdbRoot -or $isSuRoot) {
     $scanTarget = "/data/media/0"
 }
@@ -1170,7 +1170,7 @@ Write-Host "[RESTORE] Pre-allocating directory trees on device..." -ForegroundCo
 $uniqueDirs = @{}
 foreach ($file in $ToPush) {
     $cleanPath  = $file.Substring(2);
-    $remotePath = "/sdcard/$cleanPath";
+    $remotePath = "/storage/emulated/0/$cleanPath";
     $remoteDir  = $remotePath.Substring(0, $remotePath.LastIndexOf('/'));
     $uniqueDirs[$remoteDir] = $true;
 }
@@ -1193,7 +1193,7 @@ $ScriptBlock = {
     # ---------------------------------------------------
     $pushDest = $dest
     if ($isAdbRoot) {
-        $pushDest = $dest -replace "^/sdcard", "/data/media/0"
+        $pushDest = $dest -replace "^(/sdcard|/storage/emulated/0)", "/data/media/0"
     }
 
     $pInfo = New-Object System.Diagnostics.ProcessStartInfo;
@@ -1223,7 +1223,7 @@ $ScriptBlock = {
     if ($p2.ExitCode -eq 0) {
         $mvDest = $dest
         if ($isAdbRoot) {
-            $mvDest = $dest -replace "^/sdcard", "/data/media/0"
+            $mvDest = $dest -replace "^(/sdcard|/storage/emulated/0)", "/data/media/0"
         }
         
         $pMvInfo = New-Object System.Diagnostics.ProcessStartInfo;
@@ -1252,7 +1252,7 @@ $ScriptBlock = {
             return 1;
         }
 
-        $rootDest = $dest -replace "^/sdcard", "/data/media/0";
+        $rootDest = $dest -replace "^(/sdcard|/storage/emulated/0)", "/data/media/0";
 
         # Try writing to /sdcard first via su -c (auto-handles ownership/permissions if successful)
         $suCmd = "su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'";
@@ -1321,7 +1321,7 @@ foreach ($file in $ToPush) {
 
     $cleanPath = $file.Substring(2);
     $src  = Join-Path $restoreRoot $cleanPath;
-    $dest = "/sdcard/$cleanPath";
+    $dest = "/storage/emulated/0/$cleanPath";
 
     $PSInstance = [powershell]::Create().AddScript($ScriptBlock).AddArgument($adbExe).AddArgument($serial).AddArgument($src).AddArgument($dest).AddArgument($isAdbRoot).AddArgument($isSuRoot).AddArgument($busyboxPath);
     $PSInstance.RunspacePool = $RunspacePool;
