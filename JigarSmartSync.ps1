@@ -340,7 +340,7 @@ function Update-JigarHtmlLog {
     
     # 1. Format file list for JSON
     $filesJsonList = [System.Collections.Generic.List[psobject]]::new()
-    $totalBytes = 0
+    [long]$totalBytes = 0
     foreach ($f in $SyncedFiles) {
         $totalBytes += $f.size
         
@@ -1139,7 +1139,7 @@ if ($totalFiles -eq 0) {
 }
 Write-Host "[SYNC] Queued $totalFiles missing or modified files for download." -ForegroundColor Magenta;
 
-$totalBytes = 0
+[long]$totalBytes = 0
 foreach ($file in $ToPull) {
     if ($AndroidFiles.ContainsKey($file)) {
         $totalBytes += $AndroidFiles[$file]
@@ -1296,7 +1296,7 @@ $ActiveJobs    = [System.Collections.Generic.List[psobject]]::new();
 $failedFiles   = [System.Collections.Generic.List[string]]::new();
 $syncedFiles   = [System.Collections.Generic.List[psobject]]::new();
 $completedCount = 0;
-$completedBytes = 0;
+[long]$completedBytes = 0;
 $syncWatch      = [System.Diagnostics.Stopwatch]::StartNew();
 
 $UpdateProgress = {

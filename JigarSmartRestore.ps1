@@ -340,7 +340,7 @@ function Update-JigarHtmlLog {
     
     # 1. Format file list for JSON
     $filesJsonList = [System.Collections.Generic.List[psobject]]::new()
-    $totalBytes = 0
+    [long]$totalBytes = 0
     foreach ($f in $RestoredFiles) {
         $totalBytes += $f.size
         
@@ -1157,7 +1157,7 @@ if ($totalFiles -eq 0) {
 }
 Write-Host "[RESTORE] Queued $totalFiles missing or modified files for push." -ForegroundColor Magenta;
 
-$totalBytes = 0
+[long]$totalBytes = 0
 foreach ($file in $ToPush) {
     if ($BackupFiles.ContainsKey($file)) {
         $totalBytes += $BackupFiles[$file]
@@ -1172,13 +1172,17 @@ Write-Host "[RESTORE] Pre-allocating directory trees on device..." -ForegroundCo
 $uniqueDirs = @{}
 foreach ($file in $ToPush) {
     $cleanPath  = $file.Substring(2);
-    $remotePath = "/storage/emulated/0/$cleanPath";
+    $remotePath = if ($isAdbRoot) { "/data/media/0/$cleanPath" } else { "/storage/emulated/0/$cleanPath" };
     $remoteDir  = $remotePath.Substring(0, $remotePath.LastIndexOf('/'));
     $uniqueDirs[$remoteDir] = $true;
 }
-foreach ($dir in $uniqueDirs.Keys) {
-    $escapedDir = $dir -replace "'", "'\''"
-    & $adbExe -s $serial shell "mkdir -p '$escapedDir'" | Out-Null;
+if ($uniqueDirs.Count -gt 0) {
+    $tmpDirFile = [System.IO.Path]::GetTempFileName();
+    [System.IO.File]::WriteAllLines($tmpDirFile, [string[]]$uniqueDirs.Keys);
+    $null = & $adbExe -s $serial push $tmpDirFile "/data/local/tmp/jgr_dirs.txt" 2>$null;
+    $null = & $adbExe -s $serial shell "while IFS= read -r d || [ -n `"`$d`"`]; do [ -n `"`$d`"`] && mkdir -p `"`$d`"`; done < /data/local/tmp/jgr_dirs.txt" 2>$null;
+    $null = & $adbExe -s $serial shell "rm /data/local/tmp/jgr_dirs.txt" 2>$null;
+    if (Test-Path $tmpDirFile) { Remove-Item $tmpDirFile -Force }
 }
 
 $MaxThreads   = 20;
@@ -1307,7 +1311,7 @@ $ActiveJobs     = [System.Collections.Generic.List[psobject]]::new();
 $failedFiles    = [System.Collections.Generic.List[string]]::new();
 $restoredFiles  = [System.Collections.Generic.List[psobject]]::new();
 $completedCount  = 0;
-$completedBytes = 0;
+[long]$completedBytes = 0;
 $restoreWatch   = [System.Diagnostics.Stopwatch]::StartNew();
 
 $UpdateProgress = {
@@ -1407,6 +1411,13 @@ while ($ActiveJobs.Count -gt 0) {
     & $UpdateProgress;
 }
 Write-Progress -Activity "$MaxThreads`x Multi-Threaded Titan Push" -Completed;
+
+# ----------------------------------------------------------------
+#  FORCE ANDROID MEDIA RE-INDEX
+# ----------------------------------------------------------------
+Write-Host "[RESTORE] Refreshing Android Media Library..." -ForegroundColor DarkGray;
+& $adbExe -s $serial shell "content call --method scan_volume --uri content://media --arg external" 2>$null | Out-Null;
+& $adbExe -s $serial shell "am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///sdcard/ -p com.android.providers.media" 2>$null | Out-Null;
 
 # ----------------------------------------------------------------
 #  UPDATE HTML RESTORE LOG
