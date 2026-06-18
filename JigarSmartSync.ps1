@@ -7,7 +7,7 @@
 #  - Most-specific-ancestor filter logic for partial selections
 #  ------------------------------------------------------------
 #  From v2.0 Gold Edition:
-#  - Dynamic Folder Naming (DeviceName_Date_Time)
+#  - In-Place Delta-Sync (DeviceName Folder)
 #  - Location Memory (settings.json)
 #  - Persistent Logging (Logs\ folder)
 #  - Graceful Ctrl+C Cancellation with ADB Temp Cleanup
@@ -1181,6 +1181,15 @@ $ScriptBlock = {
     param($adbExe, $serial, $src, $dest, $isAdbRoot, $isSuRoot, $busyboxPath, $logsDir)
     
     $errFile = [System.IO.Path]::Combine($logsDir, "err.txt")
+    $LogErr = {
+        param($msg)
+        [System.Threading.Monitor]::Enter([System.Console])
+        try {
+            [System.IO.File]::AppendAllText($errFile, "$msg`n")
+        } finally {
+            [System.Threading.Monitor]::Exit([System.Console])
+        }
+    }
 
     # ---------------------------------------------------
     # ATTEMPT 1: Standard Pull (Bypass virtual drive bugs for ADB root)
@@ -1218,7 +1227,7 @@ $ScriptBlock = {
             [System.IO.File]::Delete($pcTemp);
             return 0;
         } catch {
-            [System.IO.File]::AppendAllText($errFile, "PC-side Copy exception (Attempt 2): $_ `n")
+            & $LogErr "PC-side Copy exception (Attempt 2): $_"
             if ([System.IO.File]::Exists($pcTemp)) { [System.IO.File]::Delete($pcTemp); }
             return 5; # PC-side write failure
         }
@@ -1276,17 +1285,17 @@ $ScriptBlock = {
                 [System.IO.File]::Delete($pcTemp2);
                 return 0;
             } catch {
-                [System.IO.File]::AppendAllText($errFile, "Copy exception (Attempt 3): $_ `n")
+                & $LogErr "Copy exception (Attempt 3): $_"
                 if ([System.IO.File]::Exists($pcTemp2)) { [System.IO.File]::Delete($pcTemp2); }
                 return 5; # PC-side write failure
             }
         } else {
-            [System.IO.File]::AppendAllText($errFile, "Pull failed, ExitCode: $($pPull.ExitCode) src: $src `n")
+            & $LogErr "Pull failed, ExitCode: $($pPull.ExitCode) src: $src"
         }
         if ([System.IO.File]::Exists($pcTemp2)) { [System.IO.File]::Delete($pcTemp2); }
         return $pPull.ExitCode;
     } else {
-        [System.IO.File]::AppendAllText($errFile, "su cp failed, ExitCode: $($pSu.ExitCode) src: $src `n")
+        & $LogErr "su cp failed, ExitCode: $($pSu.ExitCode) src: $src"
     }
 
     return 1; # Absolute Failure

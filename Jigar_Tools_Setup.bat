@@ -59,7 +59,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Command adb -Err
 
 echo.
 echo [+] Registering Jigar Tools to System PATH...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$oldPath = [Environment]::GetEnvironmentVariable('Path', 'Machine'); if ($oldPath -notlike '*%TOOLS_DIR%*') { [Environment]::SetEnvironmentVariable('Path', $oldPath + ';%TOOLS_DIR%', 'Machine'); Write-Host '  [DONE] Path Registered.' } else { Write-Host '  [SKIP] Already in Path.' }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$oldPath = [Environment]::GetEnvironmentVariable('Path', 'Machine'); if ($oldPath -notlike ('*' + $env:TOOLS_DIR + '*')) { [Environment]::SetEnvironmentVariable('Path', $oldPath + ';' + $env:TOOLS_DIR, 'Machine'); Write-Host '  [DONE] Path Registered.' } else { Write-Host '  [SKIP] Already in Path.' }"
 
 echo.
 echo [+] Writing version file (%LOCAL_VERSION%)...
@@ -67,7 +67,8 @@ echo %LOCAL_VERSION%> "%VERSION_FILE%"
 
 echo.
 echo [+] Planting the Flower (Desktop Shortcut)...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%SHORTCUT%');$s.TargetPath='%~f0';$s.WorkingDirectory='%TOOLS_DIR%';if(Test-Path '%ICON_FILE%'){$s.IconLocation='%ICON_FILE%'};$s.Save()"
+set "SELF_PATH=%~f0"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut($env:SHORTCUT);$s.TargetPath=$env:SELF_PATH;$s.WorkingDirectory=$env:TOOLS_DIR;if(Test-Path $env:ICON_FILE){$s.IconLocation=$env:ICON_FILE};$s.Save()"
 
 echo.
 echo ========================================================
@@ -118,7 +119,7 @@ echo [CHECK] Scanning for connected devices...
 echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$bin = Join-Path '%TOOLS_DIR%' 'bin';" ^
+    "$bin = Join-Path $env:TOOLS_DIR 'bin';" ^
     "$adb  = if (Test-Path (Join-Path $bin 'adb.exe')) { Join-Path $bin 'adb.exe' } else { 'adb' };" ^
     "$devices = & $adb devices 2>$null | Select-String '\tdevice$';" ^
     "if ($devices.Count -eq 0) {" ^
@@ -182,7 +183,7 @@ echo [UPDATE] Querying GitHub API for latest release...
 echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$localVer = 'v40.0'; $vc = Get-Content '%VERSION_FILE%' -ErrorAction SilentlyContinue; if ($vc) { $localVer = $vc.Trim() };" ^
+    "$localVer = 'v40.0'; $vc = Get-Content $env:VERSION_FILE -ErrorAction SilentlyContinue; if ($vc) { $localVer = $vc.Trim() };" ^
     "$api = 'https://api.github.com/repos/official-Arvind/jigar-tools/releases/latest';" ^
     "try {" ^
     "  $rel = Invoke-RestMethod -Uri $api -UseBasicParsing -ErrorAction Stop;" ^
@@ -215,7 +216,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  $root = Get-ChildItem $tmpDir -Directory | Select-Object -First 1;" ^
     "  if (-not $root) { $root = [System.IO.DirectoryInfo]$tmpDir };" ^
     "  Write-Host '  [3/4] Installing (preserving backups + config)...' -ForegroundColor Yellow;" ^
-    "  $toolsDir   = '%TOOLS_DIR%';" ^
+    "  $toolsDir   = $env:TOOLS_DIR;" ^
     "  $preservePat = @('settings.json','.version','Logs','*.log','directory-ignore-list.ini');" ^
     "  Get-ChildItem $root.FullName | ForEach-Object {" ^
     "    $name   = $_.Name;" ^
@@ -236,7 +237,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  Write-Host \"  [4/4] Update to $remoteVer complete.\" -ForegroundColor Green;" ^
     "  Write-Host '        Relaunching Jigar Tools...' -ForegroundColor Cyan;" ^
     "  Start-Sleep -Seconds 2;" ^
-    "  Start-Process cmd -ArgumentList ('/c', 'timeout /t 2 >nul & move /y \"' + $toolsDir + '\Jigar_Tools_Setup_New.bat\" \"' + $toolsDir + '\Jigar_Tools_Setup.bat\" & \"' + $toolsDir + '\Jigar_Tools_Setup.bat\"');" ^
+    "  $qc = [char]34;" ^
+    "  Start-Process cmd -ArgumentList ('/c', 'timeout /t 2 >nul & move /y ' + $qc + $toolsDir + '\Jigar_Tools_Setup_New.bat' + $qc + ' ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc + ' & ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc);" ^
     "  exit 99" ^
     "} catch {" ^
     "  Write-Host \"  [ERROR] Could not reach GitHub: $($_.Exception.Message)\" -ForegroundColor Red;" ^
@@ -310,5 +312,6 @@ exit /b 1
 echo [WARN] This tool requires Administrator privileges...
 echo [WARN] Requesting God Mode elevation...
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd -ArgumentList '/c', '\"%~f0\"' -Verb RunAs"
+set "SELF_PATH=%~f0"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd -ArgumentList ('/c', $env:SELF_PATH) -Verb RunAs"
 exit /b 0

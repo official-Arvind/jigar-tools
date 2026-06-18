@@ -1180,7 +1180,7 @@ if ($uniqueDirs.Count -gt 0) {
     $tmpDirFile = [System.IO.Path]::GetTempFileName();
     [System.IO.File]::WriteAllLines($tmpDirFile, [string[]]$uniqueDirs.Keys);
     $null = & $adbExe -s $serial push $tmpDirFile "/data/local/tmp/jgr_dirs.txt" 2>$null;
-    $null = & $adbExe -s $serial shell "while IFS= read -r d || [ -n `"`$d`"`]; do [ -n `"`$d`"`] && mkdir -p `"`$d`"`; done < /data/local/tmp/jgr_dirs.txt" 2>$null;
+    $null = & $adbExe -s $serial shell "while IFS= read -r d || [ -n `"`\`$d`"`]; do [ -n `"`\`$d`"`] && mkdir -p `"`\`$d`"`; done < /data/local/tmp/jgr_dirs.txt" 2>$null;
     $null = & $adbExe -s $serial shell "rm /data/local/tmp/jgr_dirs.txt" 2>$null;
     if (Test-Path $tmpDirFile) { Remove-Item $tmpDirFile -Force }
 }

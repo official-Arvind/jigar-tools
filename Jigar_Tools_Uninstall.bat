@@ -27,7 +27,7 @@ set "SHORTCUT=%REAL_DESKTOP%\Jigar Tools.lnk"
 :: Read backup location from settings.json if it exists
 set "BACKUPS_DIR="
 if exist "%TOOLS_DIR%\settings.json" (
-    for /f "usebackq delims=" %%B in (`powershell -NoProfile -Command "try { $s=(Get-Content '%TOOLS_DIR%\settings.json' | ConvertFrom-Json); if($s.LastBackupLocation){$s.LastBackupLocation} } catch {}"`) do set "BACKUPS_DIR=%%B"
+    for /f "usebackq delims=" %%B in (`powershell -NoProfile -Command "try { $s=(Get-Content (Join-Path $env:TOOLS_DIR 'settings.json') | ConvertFrom-Json); if($s.LastBackupLocation){$s.LastBackupLocation} } catch {}"`) do set "BACKUPS_DIR=%%B"
 )
 :: Fallback: check common backup location on Desktop
 if not defined BACKUPS_DIR (
@@ -61,7 +61,7 @@ echo  ============================================================
 echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$dir = '%TOOLS_DIR%';" ^
+    "$dir = $env:TOOLS_DIR;" ^
     "$scope = 'Machine';" ^
     "$cur = [Environment]::GetEnvironmentVariable('Path', $scope);" ^
     "$parts = $cur -split ';' | Where-Object { $_.Trim() -ne '' -and $_.TrimEnd('\') -ne $dir.TrimEnd('\') };" ^
@@ -159,7 +159,7 @@ if defined BACKUPS_DIR (
     )
 )
 
-if "%HAS_INLINE%"=="0" (
+if "!HAS_INLINE!"=="0" (
     echo   [INFO] No backup data found anywhere. Nothing to delete.
     goto :SelfDelete
 )
@@ -262,6 +262,7 @@ echo.
 echo  [WARN] Administrator privileges required for PATH modification.
 echo  [WARN] Requesting elevation...
 echo.
+set "SELF_PATH=%~f0"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "Start-Process cmd -ArgumentList '/c \"%~f0\"' -Verb RunAs"
+    "Start-Process cmd -ArgumentList ('/c', $env:SELF_PATH) -Verb RunAs"
 exit /b 0
