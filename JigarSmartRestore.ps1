@@ -1253,9 +1253,11 @@ $ScriptBlock = {
         }
 
         $rootDest = $dest -replace "^(/sdcard|/storage/emulated/0)", "/data/media/0";
+        $escapedDest = $dest -replace "'", "'\''" -replace '"', '\"'
+        $escapedRootDest = $rootDest -replace "'", "'\''" -replace '"', '\"'
 
         # Try writing to /sdcard first via su -c (auto-handles ownership/permissions if successful)
-        $suCmd = "su -c 'cat \`"$androidTmp\`" > \`"$dest\`"'";
+        $suCmd = "su -c 'cat \`"$androidTmp\`" > \`"$escapedDest\`"'";
         $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
         $pSuInfo.FileName = $adbExe;
         $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmd`"";
@@ -1276,7 +1278,7 @@ $ScriptBlock = {
         }
 
         # Fallback to direct raw copy to /data/media/0 + chown/chmod
-        $suCmdRaw = "su -c 'cat \`"$androidTmp\`" > \`"$rootDest\`" && chown 1023:1023 \`"$rootDest\`" && chmod 664 \`"$rootDest\`"'";
+        $suCmdRaw = "su -c 'cat \`"$androidTmp\`" > \`"$escapedRootDest\`" && chown 1023:1023 \`"$escapedRootDest\`" && chmod 664 \`"$escapedRootDest\`"'";
         $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmdRaw`"";
         $pSuRaw = [System.Diagnostics.Process]::Start($pSuInfo);
         $pSuRaw.WaitForExit();
@@ -1336,7 +1338,14 @@ foreach ($file in $ToPush) {
         $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
         foreach ($d in $done) {
             $rawResult = $d.PS.EndInvoke($d.Async);
-            $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+            $exitCode = 1;
+            if ($null -ne $rawResult) {
+                if ($rawResult -is [System.Collections.ICollection] -or $rawResult -is [array]) {
+                    if ($rawResult.Count -gt 0) { $exitCode = $rawResult[-1] }
+                } else {
+                    $exitCode = $rawResult
+                }
+            }
             
             $fileKey = "./" + $d.File;
             $fileSize = if ($BackupFiles.ContainsKey($fileKey)) { $BackupFiles[$fileKey] } else { 0 };
@@ -1368,7 +1377,14 @@ while ($ActiveJobs.Count -gt 0) {
     $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
     foreach ($d in $done) {
         $rawResult = $d.PS.EndInvoke($d.Async);
-        $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+        $exitCode = 1;
+        if ($null -ne $rawResult) {
+            if ($rawResult -is [System.Collections.ICollection] -or $rawResult -is [array]) {
+                if ($rawResult.Count -gt 0) { $exitCode = $rawResult[-1] }
+            } else {
+                $exitCode = $rawResult
+            }
+        }
         
         $fileKey = "./" + $d.File;
         $fileSize = if ($BackupFiles.ContainsKey($fileKey)) { $BackupFiles[$fileKey] } else { 0 };

@@ -1215,7 +1215,11 @@ $ScriptBlock = {
             [System.IO.File]::Copy($pcTemp, $dest, $true);
             [System.IO.File]::Delete($pcTemp);
             return 0;
-        } catch {}
+        } catch {
+            [System.IO.File]::AppendAllText($errFile, "PC-side Copy exception (Attempt 2): $_ `n")
+            if ([System.IO.File]::Exists($pcTemp)) { [System.IO.File]::Delete($pcTemp); }
+            return 5; # PC-side write failure
+        }
     }
     
     if ([System.IO.File]::Exists($pcTemp)) {
@@ -1232,9 +1236,10 @@ $ScriptBlock = {
     $uuid = [guid]::NewGuid().ToString().Substring(0,8);
     $androidTmp = "/data/local/tmp/jgr_$uuid";
     $rootSrc = $src -replace "^(/sdcard|/storage/emulated/0)", "/data/media/0";
+    $escapedRootSrc = $rootSrc -replace "'", "'\''" -replace '"', '\"'
     
     $cpCmd = if ($busyboxPath) { "$busyboxPath cp" } else { "cp" }
-    $suArgs = "-s `"$serial`" shell `"su -c '$cpCmd \`"$rootSrc\`" \`"$androidTmp\`" && chmod 777 \`"$androidTmp\`"'`"";
+    $suArgs = "-s `"$serial`" shell `"su -c '$cpCmd \`"$escapedRootSrc\`" \`"$androidTmp\`" && chmod 777 \`"$androidTmp\`"'`"";
     $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
     $pSuInfo.FileName = $adbExe;
     $pSuInfo.Arguments = $suArgs;
@@ -1269,7 +1274,9 @@ $ScriptBlock = {
                 [System.IO.File]::Delete($pcTemp2);
                 return 0;
             } catch {
-                [System.IO.File]::AppendAllText($errFile, "Copy exception: $_ `n")
+                [System.IO.File]::AppendAllText($errFile, "Copy exception (Attempt 3): $_ `n")
+                if ([System.IO.File]::Exists($pcTemp2)) { [System.IO.File]::Delete($pcTemp2); }
+                return 5; # PC-side write failure
             }
         } else {
             [System.IO.File]::AppendAllText($errFile, "Pull failed, ExitCode: $($pPull.ExitCode) src: $src `n")
@@ -1327,7 +1334,14 @@ foreach ($file in $ToPull) {
         $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
         foreach ($d in $done) {
             $rawResult = $d.PS.EndInvoke($d.Async);
-            $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+            $exitCode = 1;
+            if ($null -ne $rawResult) {
+                if ($rawResult -is [System.Collections.ICollection] -or $rawResult -is [array]) {
+                    if ($rawResult.Count -gt 0) { $exitCode = $rawResult[-1] }
+                } else {
+                    $exitCode = $rawResult
+                }
+            }
             
             $fileKey = "./" + $d.File;
             $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
@@ -1359,7 +1373,14 @@ while ($ActiveJobs.Count -gt 0) {
     $done = $ActiveJobs | Where-Object { $_.Async.IsCompleted };
     foreach ($d in $done) {
         $rawResult = $d.PS.EndInvoke($d.Async);
-        $exitCode = if ($rawResult -is [array] -or $rawResult -is [System.Collections.ICollection]) { $rawResult[-1] } else { $rawResult }
+        $exitCode = 1;
+        if ($null -ne $rawResult) {
+            if ($rawResult -is [System.Collections.ICollection] -or $rawResult -is [array]) {
+                if ($rawResult.Count -gt 0) { $exitCode = $rawResult[-1] }
+            } else {
+                $exitCode = $rawResult
+            }
+        }
         
         $fileKey = "./" + $d.File;
         $fileSize = if ($AndroidFiles.ContainsKey($fileKey)) { $AndroidFiles[$fileKey] } else { 0 };
