@@ -47,3 +47,4 @@ bin/
 src/
 dst/
 directory-ignore-list.ini
+scratch/
