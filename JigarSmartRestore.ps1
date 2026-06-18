@@ -395,7 +395,9 @@ function Update-JigarHtmlLog {
     
     # 3. Generate HTML content
     $template = Get-JigarHtmlTemplate
-    $updatedHtml = $template -replace '(?s)/\* JGR_DATA_START \*/const RESTORE_HISTORY = (.*?);/\* JGR_DATA_END \*/', "/* JGR_DATA_START */const RESTORE_HISTORY = $newJson;/* JGR_DATA_END */"
+    $target = "/* JGR_DATA_START */const RESTORE_HISTORY = [];/* JGR_DATA_END */"
+    $replacement = "/* JGR_DATA_START */const RESTORE_HISTORY = $newJson;/* JGR_DATA_END */"
+    $updatedHtml = $template.Replace($target, $replacement)
 
     $updatedHtml | Set-Content -Path $LogHtml -Encoding UTF8
 }
