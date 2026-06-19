@@ -142,7 +142,7 @@
   }
 
   /* ============================================================
-     TERMINAL — Live terminal simulation
+     TERMINAL — Optimized & Accurate Terminal Simulation
      ============================================================ */
   const terminalBody = document.querySelector('.terminal-body');
   
@@ -162,6 +162,8 @@
       'DCIM/Camera/VID_20260620_021045.mp4'
     ];
 
+    let isTerminalVisible = false;
+
     function createLine(html, className = '') {
       const el = document.createElement('div');
       el.className = `t-line ${className}`;
@@ -173,12 +175,20 @@
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    async function waitTillVisible() {
+      while (!isTerminalVisible) {
+        await sleep(500);
+      }
+    }
+
     async function typeCmd(lineEl, text) {
+      await waitTillVisible();
       const cmdSpan = lineEl.querySelector('.t-cmd');
       lineEl.classList.add('t-blink');
       for (let i = 0; i < text.length; i++) {
+        await waitTillVisible();
         cmdSpan.textContent += text[i];
-        await sleep(40 + Math.random() * 80);
+        await sleep(30 + Math.random() * 60);
       }
       lineEl.classList.remove('t-blink');
     }
@@ -187,74 +197,136 @@
       let scenarioIndex = 0;
       
       while (true) {
+        await waitTillVisible();
         terminalBody.innerHTML = '';
         
         if (scenarioIndex === 0) {
           // --- SCENARIO 0: SETUP/INSTALL ---
           const linePrompt = createLine('<span class="t-prompt">PS&gt;</span> <span class="t-cmd"></span>');
           terminalBody.appendChild(linePrompt);
-          await sleep(1000);
+          await sleep(600);
           await typeCmd(linePrompt, '.\\Jigar_Tools_Setup.bat');
+          await sleep(300);
+          await waitTillVisible();
+
+          const setupLogs1 = [
+            { text: '========================================================', class: 't-dim' },
+            { text: '       JIGAR TOOLS - INITIAL SYSTEM AUDIT (v2.0 Gold)', class: 't-cyan' },
+            { text: '========================================================', class: 't-dim' },
+            { text: '[AUDIT] Checking Directory Content...', class: 't-dim' },
+            { text: '  [OK] JigarSmartSync.ps1 found.', class: 't-green' },
+            { text: '  [OK] JigarSmartRestore.ps1 found.', class: 't-green' },
+            { text: '[AUDIT] Checking Assets...', class: 't-dim' },
+            { text: '  [OK] logo.ico found.', class: 't-green' },
+            { text: '[AUDIT] Checking PowerShell Environment...', class: 't-dim' },
+            { text: '  [OK] PS 5.1+ Active.', class: 't-green' },
+            { text: '[AUDIT] Checking ADB Availability...', class: 't-dim' },
+            { text: '  [WARN] ADB not in system PATH.', class: 't-yellow' },
+            { text: '[+] Registering Jigar Tools to System PATH...', class: 't-dim' },
+            { text: '  [DONE] Path Registered.', class: 't-green' },
+            { text: '[+] Planting the Flower (Desktop Shortcut)...', class: 't-dim' },
+            { text: '========================================================', class: 't-dim' },
+            { text: ' [SUCCESS] Setup Complete.', class: 't-green' },
+            { text: ' [ACTION]  Entering the God Mode Menu...', class: 't-cyan' },
+            { text: '========================================================', class: 't-dim' },
+            { text: 'Press any key to continue . . .', class: 't-dim' }
+          ];
+
+          for (const log of setupLogs1) {
+            await waitTillVisible();
+            terminalBody.appendChild(createLine(log.text, log.class));
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+            await sleep(80 + Math.random() * 50);
+          }
+
+          await sleep(1500); // Simulate prompt pause
+          await waitTillVisible();
+          terminalBody.innerHTML = '';
+
+          // Launch Master Control Center
+          const menuLogs = [
+            { text: '========================================================', class: 't-dim' },
+            { text: '       JIGAR TOOLS v2.0 Gold Edition  -  CONTROL CENTER', class: 't-cyan' },
+            { text: '       Local Version: v2.0-Gold (Internal)', class: 't-dim' },
+            { text: '========================================================', class: 't-dim' },
+            { text: '  ARSENAL:', class: 't-dim' },
+            { text: '  [1] JIGARSYNC BACKUP     (20x Threads + 3-Stage Fallback)', class: 't-cyan' },
+            { text: '  [2] JIGAR SMART RESTORE  (Full / Selective Folder Restore)', class: 't-dim' },
+            { text: '  [3] DEVICE STATUS        (Check Connection)', class: 't-dim' },
+            { text: '  [4] CHECK FOR UPDATES    (GitHub Auto-Updater)', class: 't-dim' },
+            { text: '  [5] EXIT                 (Kills ADB server + closes)', class: 't-dim' },
+            { text: '========================================================', class: 't-dim' }
+          ];
+
+          for (const log of menuLogs) {
+            await waitTillVisible();
+            terminalBody.appendChild(createLine(log.text, log.class));
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+            await sleep(50);
+          }
+          await sleep(600);
+
+          const choiceLine = createLine('<span class="t-prompt"> Choose your weapon (1-5):</span> <span class="t-cmd"></span>');
+          terminalBody.appendChild(choiceLine);
+          terminalBody.scrollTop = terminalBody.scrollHeight;
+          await sleep(800);
+          await typeCmd(choiceLine, '1');
           await sleep(400);
-
-          const setupLogs = [
-            { text: '====================================================', class: 't-dim' },
-            { text: '    JIGAR TOOLS 2.0 — INSTALLER & LAUNCHER', class: 't-cyan' },
-            { text: '====================================================', class: 't-dim' },
-            { text: '[INFO] Checking Windows architecture... (64-bit detected)', class: 't-dim' },
-            { text: '[INFO] Verifying PowerShell execution policy... (Bypassed)', class: 't-dim' },
-            { text: '[INFO] Checking local ADB binaries... (Missing)', class: 't-dim' },
-            { text: '[INFO] Downloading Google platform-tools... (Success)', class: 't-green' },
-            { text: '[INFO] Verifying ADB daemon... (Initialized)', class: 't-dim' },
-            { text: '[INFO] Searching for connected Android device...', class: 't-dim' },
-            { text: '[WARN] No device detected. Please connect device via USB.', class: 't-yellow' }
-          ];
-
-          for (const log of setupLogs) {
-            terminalBody.appendChild(createLine(log.text, log.class));
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(150 + Math.random() * 100);
-          }
-
-          await sleep(1200); // Simulate user plugging in phone
-
-          const setupLogs2 = [
-            { text: '[INFO] Device detected: pixel_8_pro (Android 14)', class: 't-green' },
-            { text: '[INFO] Creating local configuration environment... (settings.json)', class: 't-dim' },
-            { text: '[INFO] Setup complete! Launcher ready.', class: 't-cyan' }
-          ];
-
-          for (const log of setupLogs2) {
-            terminalBody.appendChild(createLine(log.text, log.class));
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(150 + Math.random() * 100);
-          }
 
         } else if (scenarioIndex === 1) {
           // --- SCENARIO 1: SYNC (SUCCESS) ---
           const linePrompt = createLine('<span class="t-prompt">PS&gt;</span> <span class="t-cmd"></span>');
           terminalBody.appendChild(linePrompt);
-          await sleep(1000);
+          await sleep(600);
           await typeCmd(linePrompt, '.\\JigarSmartSync.ps1');
-          await sleep(400);
+          await sleep(300);
+          await waitTillVisible();
 
           const syncLogs = [
-            { text: '[SYSTEM] Device Connected & Verified!', class: 't-cyan' },
-            { text: '[SYSTEM] Root Status: Non-Rooted Device', class: 't-dim' },
-            { text: '[SYSTEM] BusyBox: Found (v1.36.1)', class: 't-dim' },
+            { text: ' ==============================================================', class: 't-dim' },
+            { text: '   JIGAR SMART SYNC v2.0 Gold Edition  (20x THREADS + TITAN)', class: 't-cyan' },
+            { text: ' ==============================================================', class: 't-dim' },
+            { text: '   Log: Logs\\Sync_2026-06-20_02-56-03.log', class: 't-dim' },
+            { text: '[SYSTEM] Device Connected & Verified!', class: 't-green' },
+            { text: '[SYSTEM] Probing device capabilities...', class: 't-dim' },
+            { text: '[SYSTEM] Root Status: Non-Rooted Device', class: 't-yellow' },
+            { text: '[SYSTEM] BusyBox     : Found at \'/system/xbin/busybox\' (v1.36.1)', class: 't-green' },
+            { text: '[SYSTEM] Device Model : pixel_8_pro', class: 't-cyan' },
+            { text: '[SYSTEM] Folder Name  : pixel_8_pro', class: 't-cyan' },
+            { text: '[CONFIG] Previous backup location found: D:\\Backups', class: 't-dim' },
+            { text: '[SYSTEM] Backup Destination: D:\\Backups\\pixel_8_pro', class: 't-green' },
             { text: '[SYSTEM] Smart Virtual Drive → Z:\\ mapped', class: 't-green' },
-            { text: '[SCAN]   Mapping Android storage... (100,513 files found)', class: 't-yellow' },
-            { text: '[SYNC]   Queued 847 missing files for download', class: 't-dim' },
-            { text: '[TITAN]  Engaging 20x Parallel Streams...', class: 't-violet' }
+            { text: '[SYSTEM] Loaded 12 custom ignore rules from INI file.', class: 't-dim' },
+            { text: '[SCAN] Mapping Android Storage... (Please Wait)', class: 't-yellow' }
           ];
 
           for (const log of syncLogs) {
+            await waitTillVisible();
             terminalBody.appendChild(createLine(log.text, log.class));
             terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(150 + Math.random() * 100);
+            await sleep(100 + Math.random() * 80);
           }
 
+          await sleep(800);
+          await waitTillVisible();
+          terminalBody.appendChild(createLine('[SCAN] Found 100513 total files on Android.', 't-green'));
+          terminalBody.appendChild(createLine('[SCAN] Mapping Local PC Backup...', 't-yellow'));
           await sleep(400);
+          terminalBody.appendChild(createLine('[SCAN] Found 99666 files currently on PC.', 't-green'));
+          terminalBody.appendChild(createLine('[FILTER] Customize which folders/files to EXCLUDE from this backup?', 't-yellow'));
+          terminalBody.appendChild(createLine('         (Opens picker - press N to backup everything)', 't-dim'));
+          await sleep(600);
+          terminalBody.appendChild(createLine('[FILTER] Building Android file tree for selection...', 't-cyan'));
+          await sleep(500);
+          terminalBody.appendChild(createLine('[FILTER] 0 item(s) marked for exclusion.', 't-green'));
+          terminalBody.appendChild(createLine('[SYNC] Queued 847 missing or modified files for download.', 't-violet'));
+          terminalBody.appendChild(createLine('[SYNC] Pre-allocating directory trees natively...', 't-dim'));
+          await sleep(300);
+          terminalBody.appendChild(createLine('[SYNC] Engaging 20x Parallel Titan Streams...', 't-yellow'));
+          terminalBody.scrollTop = terminalBody.scrollHeight;
+
+          await sleep(400);
+          await waitTillVisible();
 
           const syncContainer = document.createElement('div');
           terminalBody.appendChild(syncContainer);
@@ -263,6 +335,7 @@
           const totalFiles = 847;
 
           while (progress <= 100) {
+            await waitTillVisible();
             syncContainer.innerHTML = '';
             const barWidth = 15;
             const filledChars = Math.round((progress / 100) * barWidth);
@@ -290,71 +363,106 @@
 
             terminalBody.scrollTop = terminalBody.scrollHeight;
             if (progress === 100) break;
-            progress += Math.floor(Math.random() * 8) + 6;
+            progress += Math.floor(Math.random() * 9) + 7;
             if (progress > 100) progress = 100;
-            await sleep(250 + Math.random() * 100);
+            await sleep(200 + Math.random() * 100);
           }
 
           await sleep(600);
+          await waitTillVisible();
 
           const compLogs = [
-            { text: `[SYSTEM] Successfully backed up ${totalFiles} files (2.45 GB).`, class: 't-green' },
+            { text: ' ==============================================================', class: 't-dim' },
+            { text: '   SYNC COMPLETED', class: 't-green' },
+            { text: `   Total Processed : ${totalFiles} file(s)`, class: 't-dim' },
+            { text: '   Total Size      : 2.45 GB', class: 't-dim' },
+            { text: '   Speed Average   : 38.6 MB/s', class: 't-dim' },
+            { text: ' ==============================================================', class: 't-dim' },
             { text: '[SYSTEM] Smart Virtual Drive Z:\\ unmounted.', class: 't-dim' },
             { text: '[SYSTEM] Sync completed successfully.', class: 't-cyan' }
           ];
 
           for (const log of compLogs) {
+            await waitTillVisible();
             terminalBody.appendChild(createLine(log.text, log.class));
             terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(250);
+            await sleep(150);
           }
 
         } else if (scenarioIndex === 2) {
           // --- SCENARIO 2: RESTORE (SUCCESS) ---
           const linePrompt = createLine('<span class="t-prompt">PS&gt;</span> <span class="t-cmd"></span>');
           terminalBody.appendChild(linePrompt);
-          await sleep(1000);
+          await sleep(600);
           await typeCmd(linePrompt, '.\\JigarSmartRestore.ps1');
-          await sleep(400);
+          await sleep(300);
+          await waitTillVisible();
 
-          terminalBody.appendChild(createLine('[SYSTEM] Initializing restore session...', 't-cyan'));
-          terminalBody.appendChild(createLine('[SYSTEM] Scanning backup snapshots...', 't-dim'));
-          await sleep(400);
-
-          terminalBody.appendChild(createLine('   Index   Date/Time             Snapshot Name', 't-dim'));
-          terminalBody.appendChild(createLine('   [1]     2026-06-18 15:30      pixel_8_pro_backup', 't-dim'));
-          terminalBody.appendChild(createLine('   [2]     2026-06-19 22:45      pixel_8_pro_backup_Gold', 't-dim'));
-          terminalBody.scrollTop = terminalBody.scrollHeight;
-          await sleep(600);
-
-          const lineSelect = createLine('<span class="t-prompt">[INPUT] Select snapshot index to restore [1-2]:</span> <span class="t-cmd"></span>');
-          terminalBody.appendChild(lineSelect);
-          terminalBody.scrollTop = terminalBody.scrollHeight;
-          await sleep(600);
-          await typeCmd(lineSelect, '2');
-          await sleep(400);
-
-          const restoreLogs = [
-            { text: '[SYSTEM] Smart Virtual Drive → Y:\\ mapped', class: 't-green' },
-            { text: '[TITAN]  Queued 1,204 files for restoration', class: 't-dim' },
-            { text: '[TITAN]  Engaging 20x Parallel Streams...', class: 't-violet' }
+          const restoreLogs1 = [
+            { text: ' ==============================================================', class: 't-dim' },
+            { text: '   JIGAR SMART RESTORE v2.0 Gold Edition  (20x THREADS + TITAN)', class: 't-cyan' },
+            { text: ' ==============================================================', class: 't-dim' },
+            { text: '   Log: Logs\\Restore_2026-06-20_02-58-12.log', class: 't-dim' },
+            { text: '[SYSTEM] Device Connected & Verified!', class: 't-green' },
+            { text: '[SYSTEM] Device Model : pixel_8_pro', class: 't-cyan' },
+            { text: '[SYSTEM] Probing device capabilities...', class: 't-dim' },
+            { text: '[SYSTEM] Root Status: Non-Rooted Device', class: 't-yellow' },
+            { text: '[SYSTEM] BusyBox     : Found at \'/system/xbin/busybox\' (v1.36.1)', class: 't-green' },
+            { text: '[RESTORE] Available backups in: D:\\Backups', class: 't-yellow' },
+            { text: '  -------------------------------------------------------', class: 't-dim' },
+            { text: '  [1] pixel_8_pro_backup', class: 't-dim' },
+            { text: '  [2] pixel_8_pro_backup_Gold', class: 't-dim' },
+            { text: '  [3] Browse for another folder...', class: 't-dim' },
+            { text: '  -------------------------------------------------------', class: 't-dim' }
           ];
 
-          for (const log of restoreLogs) {
+          for (const log of restoreLogs1) {
+            await waitTillVisible();
             terminalBody.appendChild(createLine(log.text, log.class));
             terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(150 + Math.random() * 100);
+            await sleep(100 + Math.random() * 50);
           }
+          await sleep(600);
+          await waitTillVisible();
+
+          const lineSelect = createLine('<span class="t-prompt">[INPUT] Select option [1-3]:</span> <span class="t-cmd"></span>');
+          terminalBody.appendChild(lineSelect);
+          terminalBody.scrollTop = terminalBody.scrollHeight;
+          await sleep(800);
+          await typeCmd(lineSelect, '2');
+          await sleep(400);
+          await waitTillVisible();
+
+          terminalBody.appendChild(createLine('[RESTORE] Selected: D:\\Backups\\pixel_8_pro_backup_Gold', 't-green'));
+          terminalBody.appendChild(createLine('[SCAN] Mapping Backup Files on PC... (Please Wait)', 't-yellow'));
+          await sleep(600);
+          terminalBody.appendChild(createLine('[SCAN] Found 1204 total files in backup.', 't-green'));
+          terminalBody.appendChild(createLine('[SCAN] Mapping Android Device Storage... (Please Wait)', 't-yellow'));
+          await sleep(500);
+          terminalBody.appendChild(createLine('[SCAN] Found 1056 files currently on Android.', 't-green'));
+          terminalBody.appendChild(createLine('[FILTER] Restore only specific folders/files from this backup?', 't-yellow'));
+          terminalBody.appendChild(createLine('         (Opens picker - press N to restore everything)', 't-dim'));
+          await sleep(600);
+          terminalBody.appendChild(createLine('[FILTER] Building backup file tree for selection...', 't-cyan'));
+          await sleep(400);
+          terminalBody.appendChild(createLine('[FILTER] 1204 item(s) selected for restore.', 't-green'));
+          terminalBody.appendChild(createLine('[RESTORE] Queued 148 missing or modified files for push.', 't-magenta'));
+          terminalBody.appendChild(createLine('[RESTORE] Pre-allocating directory trees on device...', 't-dim'));
+          await sleep(300);
+          terminalBody.appendChild(createLine('[RESTORE] Engaging 20x Parallel Titan Streams...', 't-yellow'));
+          terminalBody.scrollTop = terminalBody.scrollHeight;
 
           await sleep(400);
+          await waitTillVisible();
 
           const restoreContainer = document.createElement('div');
           terminalBody.appendChild(restoreContainer);
 
           let progress = 0;
-          const totalFiles = 1204;
+          const totalFiles = 148;
 
           while (progress <= 100) {
+            await waitTillVisible();
             restoreContainer.innerHTML = '';
             const barWidth = 15;
             const filledChars = Math.round((progress / 100) * barWidth);
@@ -382,35 +490,41 @@
 
             terminalBody.scrollTop = terminalBody.scrollHeight;
             if (progress === 100) break;
-            progress += Math.floor(Math.random() * 10) + 8;
+            progress += Math.floor(Math.random() * 12) + 9;
             if (progress > 100) progress = 100;
-            await sleep(250 + Math.random() * 100);
+            await sleep(200 + Math.random() * 100);
           }
 
           await sleep(600);
+          await waitTillVisible();
 
           const restoreCompleteLogs = [
-            { text: '[SYSTEM] Triggering Android MediaStore scan...', class: 't-dim' },
-            { text: '[SYSTEM] MediaScanner invoked successfully on 1,204 files.', class: 't-green' },
+            { text: '[RESTORE] Refreshing Android Media Library...', class: 't-dim' },
+            { text: '[SYSTEM] MediaScanner invoked successfully on 148 files.', class: 't-green' },
             { text: '[SYSTEM] Smart Virtual Drive Y:\\ unmounted.', class: 't-dim' },
             { text: '[SYSTEM] Restore completed successfully!', class: 't-cyan' }
           ];
 
           for (const log of restoreCompleteLogs) {
+            await waitTillVisible();
             terminalBody.appendChild(createLine(log.text, log.class));
             terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(250);
+            await sleep(200);
           }
 
         } else if (scenarioIndex === 3) {
           // --- SCENARIO 3: SYNC (ERRORS & GRACEFUL ABORT) ---
           const linePrompt = createLine('<span class="t-prompt">PS&gt;</span> <span class="t-cmd"></span>');
           terminalBody.appendChild(linePrompt);
-          await sleep(1000);
+          await sleep(600);
           await typeCmd(linePrompt, '.\\JigarSmartSync.ps1');
-          await sleep(400);
+          await sleep(300);
+          await waitTillVisible();
 
           const syncLogs = [
+            { text: ' ==============================================================', class: 't-dim' },
+            { text: '   JIGAR SMART SYNC v2.0 Gold Edition  (20x THREADS + TITAN)', class: 't-cyan' },
+            { text: ' ==============================================================', class: 't-dim' },
             { text: '[SYSTEM] Device Connected & Verified!', class: 't-cyan' },
             { text: '[SYSTEM] Smart Virtual Drive → Z:\\ mapped', class: 't-green' },
             { text: '[SCAN]   Mapping Android storage... (100,513 files found)', class: 't-yellow' },
@@ -418,12 +532,14 @@
           ];
 
           for (const log of syncLogs) {
+            await waitTillVisible();
             terminalBody.appendChild(createLine(log.text, log.class));
             terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(150 + Math.random() * 100);
+            await sleep(100 + Math.random() * 80);
           }
 
           await sleep(400);
+          await waitTillVisible();
 
           const syncContainer = document.createElement('div');
           terminalBody.appendChild(syncContainer);
@@ -432,6 +548,7 @@
           const totalFiles = 847;
 
           while (progress <= 38) {
+            await waitTillVisible();
             syncContainer.innerHTML = '';
             const barWidth = 15;
             const filledChars = Math.round((progress / 100) * barWidth);
@@ -461,17 +578,20 @@
             await sleep(350 + Math.random() * 150);
           }
 
-          await sleep(200);
+          await sleep(300);
+          await waitTillVisible();
 
           // Simulated Error: connection lost
           terminalBody.appendChild(createLine('<span style="color: #f87171;">[ERROR] adb.exe: device offline (connection lost!)</span>'));
           terminalBody.scrollTop = terminalBody.scrollHeight;
           await sleep(600);
+          await waitTillVisible();
 
           // Graceful Abort Warning
           terminalBody.appendChild(createLine('[WARN]  Titan threads interrupted. Initiating cleanup...', 't-yellow'));
           terminalBody.scrollTop = terminalBody.scrollHeight;
           await sleep(500);
+          await waitTillVisible();
 
           // subst cleanup
           terminalBody.appendChild(createLine('[SYSTEM] subst Z: /D executed.', 't-dim'));
@@ -483,43 +603,59 @@
           // --- SCENARIO 4: UNINSTALL ---
           const linePrompt = createLine('<span class="t-prompt">PS&gt;</span> <span class="t-cmd"></span>');
           terminalBody.appendChild(linePrompt);
-          await sleep(1000);
+          await sleep(600);
           await typeCmd(linePrompt, '.\\Jigar_Tools_Uninstall.bat');
-          await sleep(400);
+          await sleep(300);
+          await waitTillVisible();
 
           const uninstallLogs = [
-            { text: '====================================================', class: 't-dim' },
-            { text: '    JIGAR TOOLS 2.0 — UNINSTALLER', class: 't-yellow' },
-            { text: '====================================================', class: 't-dim' },
-            { text: '[WARN] This will remove your configuration settings.', class: 't-yellow' }
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '     JIGAR TOOLS  |  UNINSTALLER v2.0', class: 't-yellow' },
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '   This will PERMANENTLY remove Jigar Tools from your system.', class: 't-dim' },
+            { text: '   Your backup data choices will be asked separately.', class: 't-dim' },
+            { text: ' ============================================================', class: 't-dim' }
           ];
 
           for (const log of uninstallLogs) {
+            await waitTillVisible();
             terminalBody.appendChild(createLine(log.text, log.class));
             terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(150 + Math.random() * 100);
+            await sleep(100);
           }
           await sleep(500);
+          await waitTillVisible();
 
-          const lineSelect = createLine('<span class="t-prompt">Are you sure you want to proceed? (Y/N):</span> <span class="t-cmd"></span>');
+          const lineSelect = createLine('<span class="t-prompt"> Are you sure you want to continue? [Y/N]:</span> <span class="t-cmd"></span>');
           terminalBody.appendChild(lineSelect);
           terminalBody.scrollTop = terminalBody.scrollHeight;
           await sleep(800);
           await typeCmd(lineSelect, 'Y');
           await sleep(400);
+          await waitTillVisible();
 
           const uninstallLogs2 = [
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '  STEP 1 |  Removing from System PATH', class: 't-dim' },
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '  [DONE] Jigar Tools removed from System PATH.', class: 't-green' },
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '  STEP 2 |  Deleting Desktop Shortcut', class: 't-dim' },
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '  [DONE] Shortcut deleted: C:\\Users\\Arvind\\Desktop\\Jigar Tools.lnk', class: 't-green' },
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '  STEP 3 |  ADB Server Cleanup', class: 't-dim' },
+            { text: ' ============================================================', class: 't-dim' },
+            { text: '  [DONE] ADB server stopped.', class: 't-green' },
             { text: '[INFO] Deleting settings.json... (Success)', class: 't-green' },
-            { text: '[INFO] Cleaning up virtual drive mappings...', class: 't-dim' },
-            { text: '[INFO] Checking for active subst drives... (None)', class: 't-dim' },
-            { text: '[INFO] Clearing ADB server... (Killed)', class: 't-yellow' },
             { text: '[INFO] Uninstallation complete. Jigar Tools removed.', class: 't-cyan' }
           ];
 
           for (const log of uninstallLogs2) {
+            await waitTillVisible();
             terminalBody.appendChild(createLine(log.text, log.class));
             terminalBody.scrollTop = terminalBody.scrollHeight;
-            await sleep(150 + Math.random() * 100);
+            await sleep(100 + Math.random() * 50);
           }
         }
 
@@ -539,15 +675,12 @@
     if ('IntersectionObserver' in window) {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            startSimulation();
-            observer.disconnect();
-          }
+          isTerminalVisible = entry.isIntersecting;
         });
-      }, { threshold: 0.15 });
+      }, { threshold: 0.1 });
       observer.observe(document.querySelector('.terminal-card'));
     } else {
-      startSimulation();
+      isTerminalVisible = true;
     }
   }
 

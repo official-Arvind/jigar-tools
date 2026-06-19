@@ -440,6 +440,13 @@ code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   line-height: 1.8;
+  height: 360px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.terminal-body::-webkit-scrollbar {
+  display: none;
 }
 .t-line { display: block; }
 .t-prompt { color: #4ade80; }
