@@ -624,14 +624,7 @@
     (function() {
       // Check if we arrived here via fallback from Android Chrome intent failure
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('fallback') === 'true') {
-        const fallbackAmt = parseInt(urlParams.get('am'), 10) || 101;
-        const upiParams = `pay?pa=arvindji@fam&pn=Arvind&am=${fallbackAmt}&cu=INR&tn=Jigar+Tools+Support`;
-        // Remove query parameters from the address bar to prevent loops on refresh
-        window.history.replaceState({}, document.title, window.location.pathname);
-        // Fallback to standard upi:// deep link
-        window.location.href = `upi://${upiParams}`;
-      }
+      const isFallback = urlParams.get('fallback') === 'true';
 
       // ---- Amount chips ----
       const chips = document.querySelectorAll('.amount-chip');
@@ -641,25 +634,44 @@
       const customInput = document.getElementById('custom-amount');
       let selectedAmount = 101;
 
+      if (isFallback) {
+        selectedAmount = parseInt(urlParams.get('am'), 10) || 101;
+        // Remove query parameters from the address bar to prevent loops on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Show a toast warning the user
+        setTimeout(() => {
+          showToast("System chooser failed. Tap the button below to pay via default app.");
+        }, 500);
+      }
+
       function updatePayLink(amt) {
         const upiParams = `pay?pa=arvindji@fam&pn=Arvind&am=${amt}&cu=INR&tn=Jigar+Tools+Support`;
         const upiUrl = `upi://${upiParams}`;
         
         const isAndroid = /Android/i.test(navigator.userAgent);
-        if (isAndroid) {
+        
+        if (isFallback) {
+          // If we are in fallback mode, use the standard upi:// scheme directly
+          payLink.href = upiUrl;
+          payLinkText.textContent = `Pay ₹${amt} via Default UPI App`;
+          payLink.setAttribute('aria-label', `Open default UPI app to pay ₹${amt}`);
+        } else if (isAndroid) {
           // Use absolute URL for the fallback to ensure it works anywhere
           let fallbackUrl = `${window.location.origin}${window.location.pathname}?fallback=true&am=${amt}`;
           if (window.location.protocol === 'file:') {
             fallbackUrl = `https://official-arvind.github.io/jigar-tools/donate.html?fallback=true&am=${amt}`;
           }
           const encodedFallback = encodeURIComponent(fallbackUrl);
-          payLink.href = `intent://${upiParams}#Intent;scheme=upi;action=android.intent.action.VIEW;S.browser_fallback_url=${encodedFallback};end;`;
+          // Omit action parameter to make intent resolution more permissive
+          payLink.href = `intent://${upiParams}#Intent;scheme=upi;S.browser_fallback_url=${encodedFallback};end;`;
+          
+          payLink.setAttribute('aria-label', `Open UPI app to pay ₹${amt}`);
+          payLinkText.textContent = `Pay ₹${amt} via UPI App`;
         } else {
           payLink.href = upiUrl;
+          payLink.setAttribute('aria-label', `Open UPI app to pay ₹${amt}`);
+          payLinkText.textContent = `Pay ₹${amt} via UPI App`;
         }
-        
-        payLink.setAttribute('aria-label', `Open UPI app to pay ₹${amt}`);
-        payLinkText.textContent = `Pay ₹${amt} via UPI App`;
       }
       
       updatePayLink(selectedAmount);
