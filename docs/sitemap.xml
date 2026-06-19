@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage -->
   <url>
     <loc>https://official-arvind.github.io/jigar-tools/</loc>
     <lastmod>2026-06-19</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://official-arvind.github.io/jigar-tools/logo.png</image:loc>
+      <image:title>Jigar Tools — Free Android Backup for Windows</image:title>
+    </image:image>
   </url>
+
+  <!-- Donation page -->
   <url>
-    <loc>https://official-arvind.github.io/jigar-tools/docs/CHANGELOG</loc>
+    <loc>https://official-arvind.github.io/jigar-tools/donate.html</loc>
     <lastmod>2026-06-19</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
+
+  <!-- Changelog -->
+  <url>
+    <loc>https://official-arvind.github.io/jigar-tools/CHANGELOG</loc>
+    <lastmod>2026-06-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>

@@ -1,4 +1,13 @@
+# =====================================================
+#  Jigar Tools — robots.txt
+#  https://official-arvind.github.io/jigar-tools/
+# =====================================================
+
+# Allow all crawlers to index everything
 User-agent: *
 Allow: /
 
+# Sitemap location — tells Google/Bing where to find it
 Sitemap: https://official-arvind.github.io/jigar-tools/sitemap.xml
+
+# Crawl-delay: none (GitHub Pages is fast, no need to throttle)
