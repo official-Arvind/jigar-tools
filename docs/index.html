@@ -1,364 +1,457 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigar Tools v2.0-Gold — Official Documentation</title>
-    <meta name="description" content="The official interactive documentation for Jigar Tools: the world's most aggressive Android backup and sync suite.">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Premium Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b14" />
+
+  <title>Jigar Tools — Android Backup Done Right</title>
+  <meta name="description" content="The world's most aggressive, multi-threaded Android backup and restore suite for Windows. 20x parallel transfers, zero BS, free forever." />
+  <meta property="og:title" content="Jigar Tools — Android Backup Done Right" />
+  <meta property="og:description" content="20x parallel ADB transfers, smart MAX_PATH routing, 3-stage fallback — all in a single PowerShell script." />
+  <meta property="og:image" content="https://official-arvind.github.io/jigar-tools/og-image.png" />
+  <meta property="og:url" content="https://official-arvind.github.io/jigar-tools/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo.png" />
+
+  <!-- Fonts: Inter + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- Background Glow Blobs -->
-    <div class="glow-blob blob-1"></div>
-    <div class="glow-blob blob-2"></div>
-    <div class="glow-blob blob-3"></div>
 
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="brand">
-                    <span class="brand-icon"><i class="fa-solid fa-bolt"></i></span>
-                    <div class="brand-text">
-                        <h1>JIGAR TOOLS</h1>
-                        <span class="version-badge">v2.0-Gold Edition</span>
-                    </div>
-                </div>
-            </div>
+  <!-- ======= HEADER / NAV ======= -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="#" class="logo-link" aria-label="Jigar Tools home">
+        <img src="logo.png" alt="Jigar Tools logo" class="logo-img" />
+        <span class="logo-name">Jigar Tools</span>
+        <span class="logo-tag">v2.0-Gold</span>
+      </a>
 
-            <!-- Search Area -->
-            <div class="search-container">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="search-input" placeholder="Search documentation...">
-            </div>
+      <nav class="main-nav" id="main-nav" role="navigation" aria-label="Main navigation">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#docs" class="nav-link">Docs</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+        <a href="https://github.com/official-Arvind/jigar-tools" class="nav-link nav-link--gh" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58 0-.28-.01-1.03-.02-2.03-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.93.43.37.81 1.1.81 2.22 0 1.6-.01 2.9-.01 3.29 0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z"/></svg>
+          GitHub
+        </a>
+        <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="btn btn-sm" target="_blank" rel="noopener">Download</a>
+      </nav>
 
-            <!-- Navigation Links -->
-            <nav class="nav-menu">
-                <div class="nav-group">
-                    <span class="nav-group-title">Getting Started</span>
-                    <a href="#welcome" class="nav-item active" data-target="welcome">
-                        <i class="fa-solid fa-house"></i> <span>Welcome</span>
-                    </a>
-                    <a href="#quickstart" class="nav-item" data-target="quickstart">
-                        <i class="fa-solid fa-rocket"></i> <span>Quick Start Guide</span>
-                    </a>
-                </div>
-
-                <div class="nav-group">
-                    <span class="nav-group-title">Architecture & Features</span>
-                    <a href="#routing" class="nav-item" data-target="routing">
-                        <i class="fa-solid fa-route"></i> <span>Smart Virtual Drive</span>
-                    </a>
-                    <a href="#fallback" class="nav-item" data-target="fallback">
-                        <i class="fa-solid fa-shield-halved"></i> <span>3-Stage Fallback</span>
-                    </a>
-                    <a href="#gui" class="nav-item" data-target="gui">
-                        <i class="fa-solid fa-window-restore"></i> <span>Interactive GUI</span>
-                    </a>
-                </div>
-
-                <div class="nav-group">
-                    <span class="nav-group-title">Resources</span>
-                    <a href="#troubleshooting" class="nav-item" data-target="troubleshooting">
-                        <i class="fa-solid fa-triangle-exclamation"></i> <span>Troubleshooting & FAQ</span>
-                    </a>
-                    <a href="#changelog" class="nav-item" data-target="changelog">
-                        <i class="fa-solid fa-list-check"></i> <span>Changelog</span>
-                    </a>
-                </div>
-            </nav>
-
-            <!-- Sidebar Footer -->
-            <div class="sidebar-footer">
-                <a href="https://github.com/official-Arvind/jigar-tools" target="_blank" class="github-btn">
-                    <i class="fa-brands fa-github"></i> View GitHub
-                </a>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="content-wrapper">
-            <!-- Top Navbar -->
-            <header class="top-nav">
-                <button class="mobile-toggle" id="mobile-menu-toggle">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-                <div class="top-nav-right">
-                    <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="release-btn" target="_blank">
-                        <i class="fa-solid fa-circle-down"></i> Download Zip
-                    </a>
-                </div>
-            </header>
-
-            <!-- Scrollable Content -->
-            <div class="content-body" id="content-body">
-                <!-- WELCOME SECTION -->
-                <section id="welcome" class="content-section active-section">
-                    <div class="hero-card">
-                        <span class="hero-badge"><i class="fa-solid fa-sparkles"></i> God Mode Unlocked</span>
-                        <h2 class="animate-text">The World's Most Aggressive Android Backup & Sync Suite</h2>
-                        <p class="hero-desc">Engineered for power users who refuse to wait. Fully multi-threaded with 20x parallel Titan streams, un-restrictive path resolution, and intelligent delta sync.</p>
-                        <div class="hero-actions">
-                            <a href="#quickstart" class="btn btn-primary" onclick="navigateTo('quickstart')">Get Started <i class="fa-solid fa-arrow-right"></i></a>
-                            <a href="https://github.com/official-Arvind/jigar-tools" target="_blank" class="btn btn-secondary"><i class="fa-brands fa-github"></i> Star on GitHub</a>
-                        </div>
-                    </div>
-
-                    <div class="grid-features">
-                        <div class="glass-card clickable-card" onclick="navigateTo('routing')">
-                            <div class="card-icon"><i class="fa-solid fa-route"></i></div>
-                            <h3>Smart Routing</h3>
-                            <p>Overcomes Windows' legacy 260-character <code>MAX_PATH</code> limit via dynamic <code>subst</code> virtual drive mapping.</p>
-                            <span class="card-link">Learn more <i class="fa-solid fa-chevron-right"></i></span>
-                        </div>
-                        <div class="glass-card clickable-card" onclick="navigateTo('fallback')">
-                            <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                            <h3>3-Stage Fallback</h3>
-                            <p>Bypasses ADB errors across standard non-rooted, custom root, and su namespace global mounts.</p>
-                            <span class="card-link">Learn more <i class="fa-solid fa-chevron-right"></i></span>
-                        </div>
-                        <div class="glass-card clickable-card" onclick="navigateTo('gui')">
-                            <div class="card-icon"><i class="fa-solid fa-window-restore"></i></div>
-                            <h3>Interactive TreeView</h3>
-                            <p>Dark-themed lazy-loaded WinForms GUI to select exactly what folders and files to sync or exclude.</p>
-                            <span class="card-link">Learn more <i class="fa-solid fa-chevron-right"></i></span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- QUICK START GUIDE -->
-                <section id="quickstart" class="content-section">
-                    <h2>⚡ Quick Start Guide</h2>
-                    <p class="section-lead">Get up and running with Jigar Tools in less than two minutes.</p>
-                    
-                    <div class="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-badge">1</div>
-                            <div class="timeline-content">
-                                <h3>Provision Device</h3>
-                                <p>Enable **USB Debugging** on your Android device (Settings > Developer Options > USB Debugging) and connect it to a high-speed USB 3.0 port on your PC.</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-badge">2</div>
-                            <div class="timeline-content">
-                                <h3>Download & Extract</h3>
-                                <p>Grab the latest release archive <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" target="_blank">Jigar_Tools_2.0-Gold.zip</a> and extract it to a local folder (e.g. <code>D:\jigar-tools\</code>).</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-badge">3</div>
-                            <div class="timeline-content">
-                                <h3>Launch Installer</h3>
-                                <p>Double-click <code>Jigar_Tools_Setup.bat</code>. The utility will automatically run UAC elevation, configure path settings, verify ADB availability, and open the Main Dashboard menu.</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-badge">4</div>
-                            <div class="timeline-content">
-                                <h3>Run Sync / Restore</h3>
-                                <p>Select Option 1 to back up your phone, or Option 2 to restore snapshots. The interactive WinForms window will open automatically to let you refine your selection.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- SMART VIRTUAL DRIVE ROUTING -->
-                <section id="routing" class="content-section">
-                    <h2>🛣️ Smart Virtual Drive Routing</h2>
-                    <p class="section-lead">How Jigar Tools bypasses Windows <code>MAX_PATH</code> (260 character) limits.</p>
-
-                    <div class="glass-card alert-card info-glow">
-                        <i class="fa-solid fa-circle-info card-alert-icon"></i>
-                        <div>
-                            <h4>Why is this needed?</h4>
-                            <p>Android is Unix-based and allows deeply nested directory paths. Windows Win32 APIs crash when a file path exceeds 260 characters. Smart Routing dynamically shrinks destination prefixes.</p>
-                        </div>
-                    </div>
-
-                    <h3>Interactive Terminal Simulation</h3>
-                    <div class="mock-terminal">
-                        <div class="terminal-header">
-                            <span class="terminal-dot red-dot"></span>
-                            <span class="terminal-dot yellow-dot"></span>
-                            <span class="terminal-dot green-dot"></span>
-                            <span class="terminal-title">Windows PowerShell</span>
-                        </div>
-                        <div class="terminal-content">
-                            <p class="terminal-line"><span class="t-prompt">PS D:\jigar-tools></span> ./JigarSmartSync.ps1</p>
-                            <p class="terminal-line t-cyan">[SYSTEM] Backup Destination: D:\Backups\22101316G_2026-06-20_00-00-00</p>
-                            <p class="terminal-line t-yellow">[SYSTEM] Path length exceeds safety threshold. Initializing Smart Routing...</p>
-                            <p class="terminal-line t-green">[SYSTEM] Mapping D:\Backups\22101316G_... to Virtual Drive Z:\</p>
-                            <p class="terminal-line t-dim">Executing: subst Z: "D:\Backups\22101316G_..."</p>
-                            <p class="terminal-line t-cyan">[SYSTEM] Sync Target set to: Z:\</p>
-                            <p class="terminal-line"><span class="t-success">✓ Mapped successfully. MAX_PATH safely bypassed.</span></p>
-                        </div>
-                    </div>
-
-                    <h3>Key Enhancements in v2.0-Gold</h3>
-                    <ul>
-                        <li><strong>Case-Insensitive Normalization:</strong> Replaced buggy .NET starts-with checks with native PowerShell case-insensitive comparisons, ensuring that paths matching settings are always caught.</li>
-                        <li><strong>try/finally Execution Guard:</strong> The unmounting logic is wrapped in a script-wide <code>finally</code> block, so even if the pipeline crashes, your drives are cleaned up.</li>
-                        <li><strong>Lock Retry Loops:</strong> If Explorer locks the drive, the script retries 5 times with a 200ms sleep, avoiding silent failures.</li>
-                    </ul>
-                </section>
-
-                <!-- 3-STAGE FALLBACK ARCHITECTURE -->
-                <section id="fallback" class="content-section">
-                    <h2>🛡️ 3-Stage Fallback Architecture</h2>
-                    <p class="section-lead">The fail-proof pipeline ensuring that 100% of Android files are successfully backed up.</p>
-
-                    <div class="diagram-container">
-                        <!-- Custom Animated Fallback Visualizer -->
-                        <div class="fallback-visualizer">
-                            <div class="stage-node active-node" id="node-1">
-                                <div class="node-number">1</div>
-                                <h4>Direct Pull</h4>
-                                <p>Standard ADB interface pull</p>
-                            </div>
-                            <div class="connector-line" id="line-1"></div>
-                            <div class="stage-node" id="node-2">
-                                <div class="node-number">2</div>
-                                <h4>Temp Copy</h4>
-                                <p>ADB Sandbox (/data/local/tmp)</p>
-                            </div>
-                            <div class="connector-line" id="line-2"></div>
-                            <div class="stage-node" id="node-3">
-                                <div class="node-number">3</div>
-                                <h4>Root Mount</h4>
-                                <p>Elevated su global namespace cp</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="glass-card border-glow-purple">
-                        <h3>Detailed Pipeline Breakdown</h3>
-                        <ol class="spaced-list">
-                            <li><strong>Stage 1 (Direct Pull):</strong> Standard Toybox/Toolbox call. Fast and efficient. Covers 95% of user files.</li>
-                            <li><strong>Stage 2 (Device Temp Copy):</strong> If direct pull fails due to strict file read/ownership locks, the file is duplicated to the ADB-accessible sandbox folder <code>/data/local/tmp</code> on the device, pulled, and deleted.</li>
-                            <li><strong>Stage 3 (Root Global Mount):</strong> For rooted devices (APatch, Magisk, KernelSU), the script elevates execution to <code>su</code> to bypass security boundaries, copy file structures out of restricted system storage, and retrieve them safely.</li>
-                        </ol>
-                    </div>
-                </section>
-
-                <!-- INTERACTIVE GUI -->
-                <section id="gui" class="content-section">
-                    <h2>🎛️ Interactive Selections (TreeView GUI)</h2>
-                    <p class="section-lead">Granular, lazy-loaded folder and file filtering at runtime.</p>
-
-                    <div class="gui-showcase">
-                        <div class="gui-mockup">
-                            <div class="gui-window-title">
-                                <span class="title-text"><i class="fa-solid fa-filter"></i> Jigar Smart Sync Exclude Menu</span>
-                                <span class="gui-close">×</span>
-                            </div>
-                            <div class="gui-body">
-                                <div class="gui-toolbar">
-                                    <button class="gui-btn"><i class="fa-solid fa-check-double"></i> Select All</button>
-                                    <button class="gui-btn"><i class="fa-solid fa-circle-xmark"></i> Clear All</button>
-                                    <button class="gui-btn"><i class="fa-solid fa-chevron-down"></i> Expand</button>
-                                </div>
-                                <div class="gui-tree">
-                                    <div class="tree-node"><i class="fa-solid fa-chevron-down t-exp"></i> <i class="fa-regular fa-square-check t-chk"></i> <i class="fa-solid fa-folder t-fld"></i> <span>storage/emulated/0</span></div>
-                                    <div class="tree-node indent-1"><i class="fa-solid fa-chevron-right t-exp"></i> <i class="fa-regular fa-square t-chk"></i> <i class="fa-solid fa-folder t-fld"></i> <span class="t-excluded">Android (Excluded)</span></div>
-                                    <div class="tree-node indent-1"><i class="fa-solid fa-chevron-down t-exp"></i> <i class="fa-regular fa-square-check t-chk"></i> <i class="fa-solid fa-folder t-fld"></i> <span>DCIM</span></div>
-                                    <div class="tree-node indent-2"><i class="fa-solid fa-file-image t-fil"></i> <i class="fa-regular fa-square-check t-chk"></i> <span class="t-file">IMG_0001.jpg</span></div>
-                                    <div class="tree-node indent-2"><i class="fa-solid fa-file-image t-fil"></i> <i class="fa-regular fa-square-check t-chk"></i> <span class="t-file">IMG_0002.jpg</span></div>
-                                </div>
-                                <div class="gui-statusbar">
-                                    <span>Lazy loading: Active | Total Files Indexed: 100,513</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h3>Performance Highlights</h3>
-                    <ul>
-                        <li><strong>Zero-Lag Lazy Loading:</strong> Only loads top-level directories first. Subdirectories index only when you click expand. Handles 50,000+ files instantly without blocking threads.</li>
-                        <li><strong>Most-Specific-Ancestor:</strong> If you exclude <code>DCIM</code> but explicitly include <code>DCIM/Camera/IMG_01.jpg</code>, the resolver correctly handles partial exclusion maps.</li>
-                    </ul>
-                </section>
-
-                <!-- TROUBLESHOOTING & FAQ -->
-                <section id="troubleshooting" class="content-section">
-                    <h2>📋 Troubleshooting & FAQ</h2>
-                    <p class="section-lead">Find fast solutions to common ADB, virtual drive, and sync issues.</p>
-
-                    <div class="accordion">
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <h3>Why is there a virtual "Z:" drive left in my Explorer?</h3>
-                                <i class="fa-solid fa-chevron-down accordion-arrow"></i>
-                            </div>
-                            <div class="accordion-content">
-                                <p>If the script window is closed abruptly (e.g., clicking "X" instead of letting the script finish), the unmount command is bypassed. To fix, simply run the launcher again—it scans and unmounts orphan drives at startup. Alternatively, run <code>subst Z: /D</code> in a Command Prompt.</p>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <h3>"No device found" error - how to fix?</h3>
-                                <i class="fa-solid fa-chevron-down accordion-arrow"></i>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Check your cable and ensure it's plugged into a USB 3.0 port. Toggle "USB Debugging" off and back on in your phone's Developer Options. If still not working, choose Option 6 in the launcher dashboard to fully restart the local ADB daemon server.</p>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <h3>How do I automate this without prompts?</h3>
-                                <i class="fa-solid fa-chevron-down accordion-arrow"></i>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Run the script with the <code>-NonInteractive</code> switch. This skips folder dialogs, excludes interactive menus, and runs the sync directly using settings stored in <code>settings.json</code>.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- CHANGELOG -->
-                <section id="changelog" class="content-section">
-                    <h2>🚀 Changelog & Version History</h2>
-                    <p class="section-lead">Track updates and fixes in Jigar Tools.</p>
-
-                    <div class="changelog-timeline">
-                        <div class="changelog-item">
-                            <div class="changelog-ver">v2.0-Gold</div>
-                            <div class="changelog-details">
-                                <h4>Gold Edition Engine Overhaul</h4>
-                                <ul>
-                                    <li>Upgraded runspaces to 20x parallel streams.</li>
-                                    <li>Fixed 32-bit arithmetic overflow on byte counters using <code>[long]</code> casts.</li>
-                                    <li>Created batched native directory pre-allocation speedups (up to 100x initialization speed).</li>
-                                    <li>Wrapped virtual drive mapping in a global try/finally block to prevent orphan drives.</li>
-                                    <li>Added folder and file level checkbox TreeView selections.</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="changelog-item">
-                            <div class="changelog-ver">v1.0</div>
-                            <div class="changelog-details">
-                                <h4>Initial Release</h4>
-                                <ul>
-                                    <li>First working version of high-performance sync.</li>
-                                    <li>Implemented 12x parallel threads.</li>
-                                    <li>Added basic file delta comparisons.</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </main>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
 
-    <!-- Scripts -->
-    <script src="app.js"></script>
+    <!-- Mobile Nav Drawer -->
+    <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+      <a href="#features" class="mobile-nav-link">Features</a>
+      <a href="#how-it-works" class="mobile-nav-link">How It Works</a>
+      <a href="#docs" class="mobile-nav-link">Docs</a>
+      <a href="#faq" class="mobile-nav-link">FAQ</a>
+      <a href="https://github.com/official-Arvind/jigar-tools" class="mobile-nav-link" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="btn btn-sm w-full" target="_blank" rel="noopener">Download v2.0-Gold</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ======= HERO ======= -->
+    <section class="hero" id="hero" aria-label="Hero section">
+      <div class="hero-bg-grid" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow--1" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow--2" aria-hidden="true"></div>
+
+      <div class="container">
+        <div class="hero-eyebrow">
+          <span class="badge badge--new">New</span>
+          <span>v2.0 Gold Edition is here — 20x faster backups</span>
+          <a href="#" class="badge-link">Read changelog →</a>
+        </div>
+
+        <h1 class="hero-title">
+          Back up your Android.<br />
+          <span class="gradient-text">No limits. No excuses.</span>
+        </h1>
+
+        <p class="hero-desc">
+          Jigar Tools is a free, open-source Android backup and restore suite for Windows. Built on raw ADB power, engineered with 20 parallel threads, a 3-stage fallback engine, and the only backup tool that actually defeats the Windows MAX_PATH limit.
+        </p>
+
+        <div class="hero-actions">
+          <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="btn btn-primary" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Free
+          </a>
+          <a href="https://github.com/official-Arvind/jigar-tools" class="btn btn-ghost" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58 0-.28-.01-1.03-.02-2.03-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.93.43.37.81 1.1.81 2.22 0 1.6-.01 2.9-.01 3.29 0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">20×</span>
+            <span class="stat-label">Parallel threads</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-num">3-stage</span>
+            <span class="stat-label">Fallback engine</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-num">100%</span>
+            <span class="stat-label">Free &amp; open source</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-num">0 limits</span>
+            <span class="stat-label">MAX_PATH defeated</span>
+          </div>
+        </div>
+
+        <!-- Terminal preview -->
+        <div class="terminal-card" role="img" aria-label="Terminal output showing a sync in progress">
+          <div class="terminal-bar">
+            <div class="terminal-dots" aria-hidden="true">
+              <span class="dot dot--red"></span>
+              <span class="dot dot--yellow"></span>
+              <span class="dot dot--green"></span>
+            </div>
+            <span class="terminal-title-text">PowerShell — JigarSmartSync.ps1</span>
+          </div>
+          <div class="terminal-body">
+            <div class="t-line"><span class="t-prompt">PS&gt;</span> <span class="t-cmd">.\JigarSmartSync.ps1</span></div>
+            <div class="t-line t-cyan">[SYSTEM] Device Connected &amp; Verified!</div>
+            <div class="t-line t-dim">[SYSTEM] Root Status: Non-Rooted Device</div>
+            <div class="t-line t-dim">[SYSTEM] BusyBox: Found (v1.36.1)</div>
+            <div class="t-line t-green">[SYSTEM] Smart Virtual Drive → Z:\ mapped</div>
+            <div class="t-line t-yellow">[SCAN]   Mapping Android storage... (100,513 files found)</div>
+            <div class="t-line t-dim">[SYNC]   Queued 847 missing files for download</div>
+            <div class="t-line t-violet">[TITAN]  Engaging 20x Parallel Streams...</div>
+            <div class="t-line t-green t-blink">▓▓▓▓▓▓▓▓▓░░  [Thread-12] IMG_20240821_174355.jpg → 4.2 MB/s</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= FEATURES ======= -->
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-eyebrow">What's inside</p>
+          <h2 id="features-title" class="section-title">Built different, on purpose.</h2>
+          <p class="section-desc">Every feature exists because a real problem needed solving. No fluff, no bloat — just precision engineering on top of ADB.</p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Feature 1 -->
+          <article class="feature-card feature-card--wide" tabindex="0">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <h3>20× Parallel Titan Engine</h3>
+            <p>Your phone's USB connection is sitting idle. Twenty runspaces hit it simultaneously, pulling files in parallel. One ADB command per thread, zero wasted bandwidth.</p>
+            <div class="feature-pill">20 concurrent streams</div>
+          </article>
+
+          <!-- Feature 2 -->
+          <article class="feature-card" tabindex="0">
+            <div class="feature-icon feature-icon--cyan" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>3-Stage Fallback</h3>
+            <p>Direct pull → sandbox copy → root su mount. Three attempts, three escalating strategies. Files that break other tools just get pushed to the next stage.</p>
+          </article>
+
+          <!-- Feature 3 -->
+          <article class="feature-card" tabindex="0">
+            <div class="feature-icon feature-icon--orange" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+            </div>
+            <h3>Smart Virtual Drive</h3>
+            <p>Windows caps paths at 260 characters. Android doesn't. We map your backup folder to Z:\ before syncing, so deeply nested Android paths land safely.</p>
+          </article>
+
+          <!-- Feature 4 -->
+          <article class="feature-card" tabindex="0">
+            <div class="feature-icon feature-icon--green" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
+            </div>
+            <h3>Interactive TreeView GUI</h3>
+            <p>A WinForms dark-themed TreeView opens after scanning. Lazy-loaded, handles 100k+ files. Pick exactly which folders to include or exclude at runtime.</p>
+          </article>
+
+          <!-- Feature 5 -->
+          <article class="feature-card" tabindex="0">
+            <div class="feature-icon feature-icon--violet" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 11 8 11"/><polyline points="23 20 23 13 16 13"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            </div>
+            <h3>Delta Sync</h3>
+            <p>Compares file sizes between your phone and PC. Only downloads what's actually new or changed. Your second backup is always a fraction of the first one.</p>
+          </article>
+
+          <!-- Feature 6 -->
+          <article class="feature-card" tabindex="0">
+            <div class="feature-icon feature-icon--cyan" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h3>Graceful Abort</h3>
+            <p>Ctrl+C sets a flag instead of killing the process. The active batch drains clean, temp files are deleted from the device, and the virtual drive unmounts before exit.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= HOW IT WORKS ======= -->
+    <section class="section section--alt" id="how-it-works" aria-labelledby="hiw-title">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-eyebrow">Under the hood</p>
+          <h2 id="hiw-title" class="section-title">From plug-in to done.</h2>
+          <p class="section-desc">Four steps. That's all it takes to back up every file on your Android device.</p>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num" aria-hidden="true">01</div>
+            <div class="step-content">
+              <h3>Plug in &amp; launch</h3>
+              <p>Connect your phone over USB with debugging enabled. Run <code>Jigar_Tools_Setup.bat</code>. It auto-downloads ADB if you don't have it, verifies your device is alive, and reports root status.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num" aria-hidden="true">02</div>
+            <div class="step-content">
+              <h3>Phone gets scanned</h3>
+              <p>A single <code>find</code> command maps your entire storage in one ADB call — file paths and sizes. 100,000 files indexed in under 10 seconds depending on your device speed.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num" aria-hidden="true">03</div>
+            <div class="step-content">
+              <h3>You choose what to sync</h3>
+              <p>The TreeView GUI opens. Every folder from your phone is listed with lazy-loaded children. Check what you want, uncheck what you don't. Or just hit Skip to back up everything.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num" aria-hidden="true">04</div>
+            <div class="step-content">
+              <h3>Titan Engine fires up</h3>
+              <p>Twenty parallel runspaces start pulling. A live progress bar shows throughput in MB/s, total progress, and per-file status. When it's done, the drive unmounts, temp files clean themselves up, and you get a log.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= DOCS QUICK REFERENCE ======= -->
+    <section class="section" id="docs" aria-labelledby="docs-title">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-eyebrow">Documentation</p>
+          <h2 id="docs-title" class="section-title">Everything you need, straight up.</h2>
+        </div>
+
+        <div class="docs-grid">
+          <a class="doc-card" href="https://github.com/official-Arvind/jigar-tools/wiki/Quick-Start-Guide" target="_blank" rel="noopener">
+            <div class="doc-card-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="doc-card-content">
+              <h3>Quick Start Guide</h3>
+              <p>Install, connect, and run your first backup in 5 minutes.</p>
+            </div>
+            <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+
+          <a class="doc-card" href="https://github.com/official-Arvind/jigar-tools/wiki/Smart-Routing" target="_blank" rel="noopener">
+            <div class="doc-card-icon doc-card-icon--orange" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+            </div>
+            <div class="doc-card-content">
+              <h3>Smart Virtual Drive</h3>
+              <p>Why we use <code>subst</code>, how it works, and the safety net around it.</p>
+            </div>
+            <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+
+          <a class="doc-card" href="https://github.com/official-Arvind/jigar-tools/wiki/Fallback-Engine" target="_blank" rel="noopener">
+            <div class="doc-card-icon doc-card-icon--green" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="doc-card-content">
+              <h3>3-Stage Fallback Architecture</h3>
+              <p>The full breakdown of what happens when direct ADB pull fails.</p>
+            </div>
+            <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+
+          <a class="doc-card" href="https://github.com/official-Arvind/jigar-tools/wiki/Troubleshooting" target="_blank" rel="noopener">
+            <div class="doc-card-icon doc-card-icon--red" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="doc-card-content">
+              <h3>Troubleshooting &amp; FAQ</h3>
+              <p>Drive not unmounting? Device not found? Start here.</p>
+            </div>
+            <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+
+          <a class="doc-card" href="https://github.com/official-Arvind/jigar-tools/wiki/Interactive-Menu" target="_blank" rel="noopener">
+            <div class="doc-card-icon doc-card-icon--violet" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
+            </div>
+            <div class="doc-card-content">
+              <h3>Interactive TreeView Menu</h3>
+              <p>How the GUI works, lazy loading, and the most-specific-ancestor filter logic.</p>
+            </div>
+            <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+
+          <a class="doc-card" href="https://github.com/official-Arvind/jigar-tools/blob/main/docs/CHANGELOG.md" target="_blank" rel="noopener">
+            <div class="doc-card-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div class="doc-card-content">
+              <h3>Changelog</h3>
+              <p>What changed in v2.0 Gold — every fix, every feature, nothing redacted.</p>
+            </div>
+            <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= FAQ ======= -->
+    <section class="section section--alt" id="faq" aria-labelledby="faq-title">
+      <div class="container container--narrow">
+        <div class="section-header">
+          <p class="section-eyebrow">FAQ</p>
+          <h2 id="faq-title" class="section-title">Real questions, straight answers.</h2>
+        </div>
+
+        <div class="faq-list" role="list">
+          <details class="faq-item" role="listitem">
+            <summary class="faq-q">Do I need to be rooted?</summary>
+            <div class="faq-a">
+              <p>No. The tool works on non-rooted devices via standard ADB access. Root unlocks access to <code>/data/media/0</code> and speeds up scanning with native <code>find</code> commands, but it's completely optional. If you're not rooted, the 3-stage fallback handles everything it can.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary class="faq-q">There's a Z: drive left in my Explorer. What happened?</summary>
+            <div class="faq-a">
+              <p>If the terminal was force-closed (like hitting the X button), the cleanup phase was skipped. Fix it manually by running <code>subst Z: /D</code> in any terminal. Starting the tool again will also automatically detect and unmount any leftover drives pointing to your backup folder.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary class="faq-q">How fast is it actually?</summary>
+            <div class="faq-a">
+              <p>That's limited by your USB controller and your phone's storage speed, not by the tool. On USB 3.0 with a mid-range phone you'll typically see 35–50 MB/s average. Budget phones with USB 2.0 controllers cap out around 25–35 MB/s. Either way, 20 threads means you're saturating whatever the connection can give.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary class="faq-q">Can I automate it? Run it without prompts?</summary>
+            <div class="faq-a">
+              <p>Yes. Pass the <code>-NonInteractive</code> flag when calling the script directly. It'll skip the folder picker (uses the saved location from <code>settings.json</code>) and bypass the GUI filter menu, making it suitable for scheduled tasks or scripted automation.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary class="faq-q">What about photos restored to Android not showing in gallery?</summary>
+            <div class="faq-a">
+              <p>The restore script fires an Android Media Scanner broadcast intent for each restored file immediately after transfer. If they still don't show up, wait a minute or two for the media database to catch up, or reboot the device once.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary class="faq-q">Is this actually free? What's the catch?</summary>
+            <div class="faq-a">
+              <p>Fully free, MIT licensed, open source on GitHub. No telemetry, no accounts, no cloud syncing your data anywhere. It's a PowerShell script that uses ADB. That's it. The catch is you need Windows and a cable.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= CTA ======= -->
+    <section class="section cta-section" aria-labelledby="cta-title">
+      <div class="cta-glow" aria-hidden="true"></div>
+      <div class="container container--narrow cta-content">
+        <img src="logo.png" alt="" class="cta-logo" aria-hidden="true" />
+        <h2 id="cta-title" class="cta-title">Your phone. Your data. Your call.</h2>
+        <p class="cta-desc">Download Jigar Tools and run your first backup in under five minutes. No installs, no accounts, no excuses.</p>
+        <div class="cta-actions">
+          <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="btn btn-primary btn-lg" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download v2.0-Gold — Free
+          </a>
+          <a href="https://github.com/official-Arvind/jigar-tools" class="btn btn-ghost btn-lg" target="_blank" rel="noopener">View source on GitHub</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======= FOOTER ======= -->
+  <footer class="site-footer-bottom">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <a href="#" class="footer-logo" aria-label="Jigar Tools home">
+          <img src="logo.png" alt="Jigar Tools" class="footer-logo-img" />
+          <span>Jigar Tools</span>
+        </a>
+        <p class="footer-tagline">Free and open-source Android backup for Windows.</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <div class="footer-nav-col">
+          <p class="footer-nav-heading">Product</p>
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" target="_blank" rel="noopener">Download</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/blob/main/docs/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
+        </div>
+        <div class="footer-nav-col">
+          <p class="footer-nav-heading">Docs</p>
+          <a href="https://github.com/official-Arvind/jigar-tools/wiki" target="_blank" rel="noopener">Wiki</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/wiki/Quick-Start-Guide" target="_blank" rel="noopener">Quick Start</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/wiki/Troubleshooting" target="_blank" rel="noopener">Troubleshooting</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/blob/main/docs/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+        </div>
+        <div class="footer-nav-col">
+          <p class="footer-nav-heading">GitHub</p>
+          <a href="https://github.com/official-Arvind/jigar-tools" target="_blank" rel="noopener">Repository</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/official-Arvind/jigar-tools/blob/main/LICENSE.md" target="_blank" rel="noopener">License</a>
+        </div>
+      </nav>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <div class="container">
+        <p>Built by <a href="https://github.com/official-Arvind" target="_blank" rel="noopener">Arvind</a>. MIT licensed. No tracking. No servers. Just a script and a cable.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>

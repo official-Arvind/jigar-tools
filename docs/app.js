@@ -1,227 +1,279 @@
-/* ==========================================================================
-   JIGAR TOOLS - v2.0-Gold Edition Documentation Javascript Logic
-   Logic: Navigation, Accordions, Search, Interactive Demos, and Visualizers
-   ========================================================================== */
+/* ============================================================
+   Jigar Tools — Product Site · JavaScript
+   ============================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
-    // --- 1. TAB NAVIGATION ---
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('.content-section');
-    const contentBody = document.getElementById('content-body');
+(function () {
+  'use strict';
 
-    window.navigateTo = function(targetId) {
-        // Remove active from all items and sections
-        navItems.forEach(item => item.classList.remove('active'));
-        sections.forEach(sec => sec.classList.remove('active-section'));
-
-        // Add active to selected
-        const activeNav = document.querySelector(`.nav-item[data-target="${targetId}"]`);
-        if (activeNav) activeNav.classList.add('active');
-
-        const activeSection = document.getElementById(targetId);
-        if (activeSection) activeSection.classList.add('active-section');
-
-        // Scroll content to top
-        contentBody.scrollTop = 0;
-        
-        // Update URL hash
-        window.location.hash = targetId;
-        
-        // Close mobile sidebar if open
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar) sidebar.classList.remove('menu-open');
+  /* ---- Utility: throttle ---- */
+  function throttle(fn, wait) {
+    let last = 0;
+    return function (...args) {
+      const now = Date.now();
+      if (now - last >= wait) { last = now; fn.apply(this, args); }
     };
+  }
 
-    // Handle clicks
-    navItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const target = item.getAttribute('data-target');
-            navigateTo(target);
-        });
+  /* ============================================================
+     HEADER — scroll shadow & hamburger menu
+     ============================================================ */
+  const header    = document.getElementById('site-header');
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobile-nav');
+
+  // Scroll shadow on header
+  const onScroll = throttle(() => {
+    header.classList.toggle('scrolled', window.scrollY > 20);
+  }, 60);
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Hamburger toggle
+  hamburger.addEventListener('click', () => {
+    const open = hamburger.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+    mobileNav.classList.toggle('open', open);
+    mobileNav.setAttribute('aria-hidden', !open);
+  });
+
+  // Close mobile nav when a link is clicked
+  mobileNav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      mobileNav.classList.remove('open');
+      mobileNav.setAttribute('aria-hidden', 'true');
+    });
+  });
+
+  // Close mobile nav on outside click
+  document.addEventListener('click', (e) => {
+    if (!header.contains(e.target) && mobileNav.classList.contains('open')) {
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      mobileNav.classList.remove('open');
+      mobileNav.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  /* ============================================================
+     SMOOTH SCROLL — nav anchors
+     ============================================================ */
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', (e) => {
+      const id = anchor.getAttribute('href').slice(1);
+      if (!id) return;
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      const offset = header.offsetHeight + 16;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  });
+
+  /* ============================================================
+     SCROLL REVEAL — elements enter on scroll
+     ============================================================ */
+  const revealItems = [];
+
+  function initReveal() {
+    // Section headers
+    document.querySelectorAll('.section-header, .hero-eyebrow, .hero-title, .hero-desc, .hero-actions, .hero-stats').forEach((el, i) => {
+      el.classList.add('reveal');
+      el.style.transitionDelay = `${i * 60}ms`;
+      revealItems.push(el);
     });
 
-    // Check hash on load
-    if (window.location.hash) {
-        const hashTarget = window.location.hash.substring(1);
-        if (document.getElementById(hashTarget)) {
-            navigateTo(hashTarget);
-        }
-    }
-
-
-    // --- 2. MOBILE MENU TOGGLE ---
-    const mobileToggle = document.getElementById('mobile-menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
-
-    if (mobileToggle && sidebar) {
-        mobileToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('menu-open');
-        });
-        
-        // Close sidebar if clicking outside on mobile
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && 
-                !sidebar.contains(e.target) && 
-                !mobileToggle.contains(e.target) && 
-                sidebar.classList.contains('menu-open')) {
-                sidebar.classList.remove('menu-open');
-            }
-        });
-    }
-
-
-    // --- 3. FAQ ACCORDION ---
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
-    
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-            const item = header.parentElement;
-            const isActive = item.classList.contains('active');
-            
-            // Close all
-            document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
-            
-            // Toggle active
-            if (!isActive) {
-                item.classList.add('active');
-            }
-        });
+    // Feature cards
+    document.querySelectorAll('.feature-card').forEach((el, i) => {
+      el.classList.add('reveal');
+      el.style.transitionDelay = `${i * 60}ms`;
+      revealItems.push(el);
     });
 
-
-    // --- 4. REAL-TIME SEARCH FILTER ---
-    const searchInput = document.getElementById('search-input');
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            
-            // Search inside section text blocks
-            sections.forEach(section => {
-                const text = section.innerText.toLowerCase();
-                const cards = section.querySelectorAll('.glass-card, .timeline-item, h3, p');
-                
-                if (query === '') {
-                    // Show everything if search is empty
-                    cards.forEach(c => c.style.opacity = '1');
-                    cards.forEach(c => c.style.display = '');
-                    return;
-                }
-                
-                let foundMatch = false;
-                cards.forEach(card => {
-                    if (card.innerText.toLowerCase().includes(query)) {
-                        card.style.display = '';
-                        card.style.opacity = '1';
-                        foundMatch = true;
-                    } else {
-                        // Fade/hide unmatched blocks within active section
-                        card.style.opacity = '0.15';
-                    }
-                });
-            });
-        });
-    }
-
-
-    // --- 5. INTERACTIVE DEMO: FALLBACK PIPELINE VISUALIZER ---
-    const nodes = [
-        document.getElementById('node-1'),
-        document.getElementById('node-2'),
-        document.getElementById('node-3')
-    ];
-    const lines = [
-        document.getElementById('line-1'),
-        document.getElementById('line-2')
-    ];
-    
-    let activeStageIndex = 0;
-    
-    function animatePipeline() {
-        // Reset all nodes and lines
-        nodes.forEach(node => {
-            if (node) {
-                node.classList.remove('active-node');
-                node.style.transform = 'scale(1)';
-            }
-        });
-        lines.forEach(line => {
-            if (line) {
-                line.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-                line.style.boxShadow = 'none';
-            }
-        });
-        
-        // Highlight active node
-        const activeNode = nodes[activeStageIndex];
-        if (activeNode) {
-            activeNode.classList.add('active-node');
-            activeNode.style.transform = 'scale(1.05)';
-        }
-        
-        // Highlight active lines leading up to active node
-        for (let i = 0; i < activeStageIndex; i++) {
-            if (lines[i]) {
-                lines[i].style.backgroundColor = 'var(--color-cyan)';
-                lines[i].style.boxShadow = '0 0 10px var(--color-cyan)';
-            }
-            if (nodes[i]) {
-                nodes[i].classList.add('active-node');
-            }
-        }
-        
-        // Cycle stages
-        activeStageIndex = (activeStageIndex + 1) % 3;
-    }
-    
-    // Run animation loop every 2.5 seconds
-    if (nodes[0]) {
-        setInterval(animatePipeline, 2500);
-        // Run initial animation
-        animatePipeline();
-    }
-
-
-    // --- 6. INTERACTIVE DEMO: WINFORMS TREEVIEW CHECKBOXES ---
-    const checkboxes = document.querySelectorAll('.t-chk');
-    
-    checkboxes.forEach(chk => {
-        chk.addEventListener('click', (e) => {
-            e.stopPropagation();
-            
-            // Toggle checkbox classes: check-square / square
-            if (chk.classList.contains('fa-square-check')) {
-                chk.classList.replace('fa-square-check', 'fa-square');
-                chk.style.color = 'var(--text-muted)';
-                
-                // If it's the root node, uncheck all children
-                if (chk.parentElement.innerText.includes('storage/emulated/0')) {
-                    uncheckAllNodes();
-                }
-            } else {
-                chk.classList.replace('fa-square', 'fa-square-check');
-                chk.style.color = 'var(--color-violet)';
-                
-                // If it's the root node, check all children
-                if (chk.parentElement.innerText.includes('storage/emulated/0')) {
-                    checkAllNodes();
-                }
-            }
-        });
+    // Steps
+    document.querySelectorAll('.step').forEach((el, i) => {
+      el.classList.add('reveal');
+      el.style.transitionDelay = `${i * 80}ms`;
+      revealItems.push(el);
     });
-    
-    function checkAllNodes() {
-        checkboxes.forEach(c => {
-            c.classList.replace('fa-square', 'fa-square-check');
-            c.style.color = 'var(--color-violet)';
+
+    // Doc cards
+    document.querySelectorAll('.doc-card').forEach((el, i) => {
+      el.classList.add('reveal');
+      el.style.transitionDelay = `${i * 50}ms`;
+      revealItems.push(el);
+    });
+
+    // FAQ items
+    document.querySelectorAll('.faq-item').forEach((el, i) => {
+      el.classList.add('reveal');
+      el.style.transitionDelay = `${i * 40}ms`;
+      revealItems.push(el);
+    });
+
+    // Terminal card + CTA content
+    document.querySelectorAll('.terminal-card, .cta-content').forEach(el => {
+      el.classList.add('reveal');
+      revealItems.push(el);
+    });
+  }
+
+  function checkReveal() {
+    const vh = window.innerHeight;
+    revealItems.forEach(el => {
+      if (el.classList.contains('in-view')) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top < vh - 60) {
+        el.classList.add('in-view');
+      }
+    });
+  }
+
+  // Only animate if user hasn't requested reduced motion
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    initReveal();
+    window.addEventListener('scroll', throttle(checkReveal, 50), { passive: true });
+    // Check immediately for items already in view
+    requestAnimationFrame(checkReveal);
+  } else {
+    // No animations, make everything visible
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in-view'));
+  }
+
+  /* ============================================================
+     TERMINAL — typewriter effect for the last line
+     ============================================================ */
+  const terminalLines = document.querySelectorAll('.t-line');
+  if (terminalLines.length) {
+    // Stagger terminal line visibility
+    terminalLines.forEach((line, i) => {
+      line.style.opacity = '0';
+      line.style.transition = 'opacity 200ms ease';
+      setTimeout(() => {
+        line.style.opacity = '1';
+      }, 600 + i * 200);
+    });
+  }
+
+  /* ============================================================
+     ACTIVE NAV LINK — highlight based on scroll position
+     ============================================================ */
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+
+  function updateActiveNav() {
+    const scrollY = window.scrollY + header.offsetHeight + 40;
+    let current = '';
+
+    sections.forEach(section => {
+      if (scrollY >= section.offsetTop) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href').slice(1);
+      link.classList.toggle('nav-link--active', href === current);
+    });
+  }
+
+  window.addEventListener('scroll', throttle(updateActiveNav, 80), { passive: true });
+
+  /* ============================================================
+     FAQ — close others when one opens
+     ============================================================ */
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(item => {
+    item.addEventListener('toggle', () => {
+      if (item.open) {
+        faqItems.forEach(other => {
+          if (other !== item && other.open) {
+            other.removeAttribute('open');
+          }
         });
+      }
+    });
+  });
+
+  /* ============================================================
+     HERO STATS — count-up animation
+     ============================================================ */
+  function animateCounter(el, end, suffix, duration) {
+    const start = 0;
+    const startTime = performance.now();
+    function tick(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(start + (end - start) * eased);
+      el.textContent = value + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
     }
-    
-    function uncheckAllNodes() {
-        checkboxes.forEach(c => {
-            c.classList.replace('fa-square-check', 'fa-square');
-            c.style.color = 'var(--text-muted)';
-        });
+    requestAnimationFrame(tick);
+  }
+
+  // Set up intersection observer for stat nums
+  const statNums = document.querySelectorAll('.stat-num');
+  const counters = [
+    { el: statNums[0], end: 20, suffix: '×' },
+  ];
+
+  if ('IntersectionObserver' in window && statNums.length) {
+    const statsObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          counters.forEach(({ el, end, suffix }) => {
+            if (el && !el.dataset.animated) {
+              el.dataset.animated = '1';
+              animateCounter(el, end, suffix, 800);
+            }
+          });
+          statsObserver.disconnect();
+        }
+      });
+    }, { threshold: 0.5 });
+
+    statsObserver.observe(document.querySelector('.hero-stats'));
+  }
+
+  /* ============================================================
+     FEATURE CARDS — subtle mouse-follow glow
+     ============================================================ */
+  if (window.matchMedia('(pointer: fine)').matches) {
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--glow-x', `${x}%`);
+        card.style.setProperty('--glow-y', `${y}%`);
+        card.classList.add('glow-active');
+      });
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('glow-active');
+      });
+    });
+  }
+
+  /* ============================================================
+     BACK TO TOP — show after scrolling 400px
+     ============================================================ */
+  // Keyboard escape closes mobile menu
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileNav.classList.contains('open')) {
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      mobileNav.classList.remove('open');
+      mobileNav.setAttribute('aria-hidden', 'true');
     }
-});
+  });
+
+  /* ============================================================
+     CURRENT YEAR in footer (if needed)
+     ============================================================ */
+  const yearEls = document.querySelectorAll('[data-year]');
+  yearEls.forEach(el => { el.textContent = new Date().getFullYear(); });
+
+})();
