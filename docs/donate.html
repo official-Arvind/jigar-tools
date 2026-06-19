@@ -537,13 +537,19 @@
               </div>
             </div>
 
-            <!-- Suggested amounts -->
             <div class="amounts" role="group" aria-label="Suggested donation amounts">
               <button class="amount-chip" data-amount="21" aria-pressed="false">₹21</button>
               <button class="amount-chip" data-amount="51" aria-pressed="false">₹51</button>
               <button class="amount-chip active" data-amount="101" aria-pressed="true">₹101</button>
               <button class="amount-chip" data-amount="251" aria-pressed="false">₹251</button>
               <button class="amount-chip" data-amount="501" aria-pressed="false">₹501</button>
+              <button class="amount-chip" id="custom-chip" data-amount="custom" aria-pressed="false">Custom</button>
+            </div>
+
+            <!-- Custom amount input -->
+            <div id="custom-input-wrap" style="display: none; width: 100%; max-width: 200px; margin-top: -16px; position: relative;">
+              <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600;">₹</span>
+              <input type="number" id="custom-amount" min="1" placeholder="Amount" style="width: 100%; padding: 12px 16px 12px 32px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.09); color: var(--violet-light); font-weight: 700; font-size: 16px; outline: none;" />
             </div>
 
             <!-- Pay via UPI deep link -->
@@ -554,7 +560,7 @@
               aria-label="Open UPI app to pay ₹101"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              Pay ₹101 via UPI App
+              <span id="pay-link-text">Pay ₹101 via UPI App</span>
             </a>
 
             <p class="pay-sub">Opens PhonePe · Google Pay · Paytm · BHIM or any UPI app</p>
@@ -619,23 +625,39 @@
       // ---- Amount chips ----
       const chips = document.querySelectorAll('.amount-chip');
       const payLink = document.getElementById('pay-link');
+      const payLinkText = document.getElementById('pay-link-text');
+      const customWrap = document.getElementById('custom-input-wrap');
+      const customInput = document.getElementById('custom-amount');
       let selectedAmount = 101;
+
+      function updatePayLink(amt) {
+        payLink.href = `upi://pay?pa=arvindji@fam&pn=Arvind&am=${amt}&cu=INR&tn=Jigar+Tools+Support`;
+        payLink.setAttribute('aria-label', `Open UPI app to pay ₹${amt}`);
+        payLinkText.textContent = `Pay ₹${amt} via UPI App`;
+      }
 
       chips.forEach(chip => {
         chip.addEventListener('click', () => {
           chips.forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
           chip.classList.add('active');
           chip.setAttribute('aria-pressed', 'true');
-          selectedAmount = parseInt(chip.dataset.amount, 10);
-          payLink.href = `upi://pay?pa=arvindji@fam&pn=Arvind&am=${selectedAmount}&cu=INR&tn=Jigar+Tools+Support`;
-          payLink.setAttribute('aria-label', `Open UPI app to pay ₹${selectedAmount}`);
-          payLink.querySelector('span, [aria-hidden]') // update button text
-          payLink.childNodes.forEach(n => {
-            if (n.nodeType === 3) { // text node
-              n.textContent = ` Pay ₹${selectedAmount} via UPI App`;
-            }
-          });
+          
+          if (chip.id === 'custom-chip') {
+            customWrap.style.display = 'block';
+            selectedAmount = parseInt(customInput.value) || 0;
+            customInput.focus();
+            if (selectedAmount > 0) updatePayLink(selectedAmount);
+          } else {
+            customWrap.style.display = 'none';
+            selectedAmount = parseInt(chip.dataset.amount, 10);
+            updatePayLink(selectedAmount);
+          }
         });
+      });
+      
+      customInput.addEventListener('input', (e) => {
+        selectedAmount = parseInt(e.target.value) || 0;
+        updatePayLink(selectedAmount);
       });
 
       // ---- Copy UPI ID ----
