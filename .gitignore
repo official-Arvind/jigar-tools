@@ -11,7 +11,10 @@ settings.json
 # --- Operation logs (created by Start-Transcript) ---------------
 Logs/
 *.log
+# Note: *.txt excluded from docs/ — see negation below
 *.txt
+!docs/*.txt
+!docs/robots.txt
 
 # --- Backup output folders (DeviceName_YYYY-MM-DD_HH-mm-ss) ----
 *_????-??-??_*/

@@ -5,18 +5,102 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#080b14" />
 
-  <title>Jigar Tools — Android Backup Done Right</title>
-  <meta name="description" content="The world's most aggressive, multi-threaded Android backup and restore suite for Windows. 20x parallel transfers, zero BS, free forever." />
-  <meta property="og:title" content="Jigar Tools — Android Backup Done Right" />
-  <meta property="og:description" content="20x parallel ADB transfers, smart MAX_PATH routing, 3-stage fallback — all in a single PowerShell script." />
-  <meta property="og:image" content="https://official-arvind.github.io/jigar-tools/og-image.png" />
+  <!-- ======= PRIMARY SEO ======= -->
+  <title>Jigar Tools — Free Android Backup &amp; Restore for Windows</title>
+  <meta name="description" content="Free, open-source Android backup and restore tool for Windows. 20x parallel ADB transfers, 3-stage fallback, MAX_PATH fix, no cloud, no accounts. Download free." />
+  <meta name="keywords" content="android backup tool windows, free android backup software, ADB backup tool, android file transfer windows, android backup restore, powershell android backup, jigar tools, android backup without root, best android backup tool 2024" />
+  <meta name="author" content="Arvind" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <link rel="canonical" href="https://official-arvind.github.io/jigar-tools/" />
+
+  <!-- ======= OPEN GRAPH (Facebook, LinkedIn, Discord etc) ======= -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Jigar Tools" />
+  <meta property="og:title" content="Jigar Tools — Free Android Backup &amp; Restore for Windows" />
+  <meta property="og:description" content="20x parallel ADB transfers, smart MAX_PATH routing, 3-stage fallback — all in a single free PowerShell script. No cloud. No accounts." />
+  <meta property="og:image" content="https://official-arvind.github.io/jigar-tools/logo.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
   <meta property="og:url" content="https://official-arvind.github.io/jigar-tools/" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- ======= TWITTER / X ======= -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Jigar Tools — Free Android Backup for Windows" />
+  <meta name="twitter:description" content="20x parallel ADB transfers. 3-stage fallback. MAX_PATH fix. Free forever. No cloud." />
+  <meta name="twitter:image" content="https://official-arvind.github.io/jigar-tools/logo.png" />
 
-  <!-- Favicon -->
+  <!-- ======= STRUCTURED DATA (Google Rich Results) ======= -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Jigar Tools",
+    "alternateName": ["Jigar Android Backup", "JigarSmartSync", "Android Backup Tool"],
+    "applicationCategory": "UtilitiesApplication",
+    "applicationSubCategory": "Backup Software",
+    "operatingSystem": "Windows 10, Windows 11",
+    "url": "https://official-arvind.github.io/jigar-tools/",
+    "downloadUrl": "https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold",
+    "softwareVersion": "2.0-Gold",
+    "releaseNotes": "https://github.com/official-Arvind/jigar-tools/blob/main/docs/CHANGELOG.md",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": "Free, open-source Android backup and restore tool for Windows. Uses 20 parallel ADB threads to maximize transfer speed, includes a 3-stage fallback engine for locked files, solves the Windows MAX_PATH limit via smart virtual drive mapping, and features a dark-themed interactive folder picker.",
+    "featureList": [
+      "20x parallel ADB file transfers",
+      "3-stage fallback: direct pull, sandbox copy, root su mount",
+      "Windows MAX_PATH fix via virtual drive mapping",
+      "Delta sync (only downloads new or changed files)",
+      "Interactive WinForms folder selector",
+      "Supports rooted and non-rooted Android devices",
+      "BusyBox detection and fallback",
+      "Graceful abort with cleanup",
+      "Full restore with media scanner trigger",
+      "Free and open source — MIT license"
+    ],
+    "softwareRequirements": "Windows 10 or later, ADB (auto-downloaded), USB debugging enabled on Android",
+    "author": {
+      "@type": "Person",
+      "name": "Arvind",
+      "url": "https://github.com/official-Arvind"
+    },
+    "maintainer": {
+      "@type": "Person",
+      "name": "Arvind",
+      "url": "https://github.com/official-Arvind"
+    },
+    "license": "https://github.com/official-Arvind/jigar-tools/blob/main/LICENSE.md",
+    "codeRepository": "https://github.com/official-Arvind/jigar-tools",
+    "isAccessibleForFree": true,
+    "screenshot": "https://official-arvind.github.io/jigar-tools/logo.png"
+  }
+  </script>
+
+  <!-- ======= BREADCRUMB (for Google site links) ======= -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Jigar Tools",
+        "item": "https://official-arvind.github.io/jigar-tools/"
+      }
+    ]
+  }
+  </script>
+
+  <!-- ======= FAVICON ======= -->
   <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="apple-touch-icon" href="logo.png" />
 
-  <!-- Fonts: Inter + JetBrains Mono -->
+  <!-- ======= FONTS ======= -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -43,6 +127,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58 0-.28-.01-1.03-.02-2.03-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.93.43.37.81 1.1.81 2.22 0 1.6-.01 2.9-.01 3.29 0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z"/></svg>
           GitHub
         </a>
+        <a href="donate.html" class="btn btn-sm" style="background:linear-gradient(135deg,#f59e0b,#f97316);border-color:rgba(245,158,11,0.3);color:#fff;">❤️ Support</a>
         <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="btn btn-sm" target="_blank" rel="noopener">Download</a>
       </nav>
 
@@ -58,6 +143,7 @@
       <a href="#docs" class="mobile-nav-link">Docs</a>
       <a href="#faq" class="mobile-nav-link">FAQ</a>
       <a href="https://github.com/official-Arvind/jigar-tools" class="mobile-nav-link" target="_blank" rel="noopener">GitHub</a>
+      <a href="donate.html" class="mobile-nav-link" style="color:#fbbf24;">❤️ Support the project</a>
       <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="btn btn-sm w-full" target="_blank" rel="noopener">Download v2.0-Gold</a>
     </div>
   </header>

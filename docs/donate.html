@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b14" />
+
+  <title>Support Jigar Tools — Buy Arvind a Coffee</title>
+  <meta name="description" content="Jigar Tools is free and always will be. If it saved you time, a small tip goes a long way. Donate via UPI — arvindji@fam." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://official-arvind.github.io/jigar-tools/donate.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Support Jigar Tools — Buy Arvind a Coffee" />
+  <meta property="og:description" content="Jigar Tools is free, always will be. If it saved you hours, a small tip keeps the project alive." />
+  <meta property="og:image" content="https://official-arvind.github.io/jigar-tools/logo.png" />
+  <meta property="og:url" content="https://official-arvind.github.io/jigar-tools/donate.html" />
+
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="apple-touch-icon" href="logo.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ===== Donate-page local styles ===== */
+    .donate-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Hero */
+    .donate-hero {
+      position: relative;
+      overflow: hidden;
+      padding: 100px 0 80px;
+      flex: 1;
+    }
+    .donate-hero-glow {
+      position: absolute;
+      width: 700px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, rgba(6,182,212,0.07) 60%, transparent 100%);
+      filter: blur(80px);
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .donate-hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, black 30%, transparent 100%);
+    }
+
+    .donate-inner {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0;
+    }
+
+    .donate-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      margin-bottom: 28px;
+      object-fit: cover;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 8px 32px rgba(124,58,237,0.3);
+    }
+
+    .donate-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--violet-light);
+      margin-bottom: 16px;
+    }
+
+    .donate-title {
+      font-size: clamp(32px, 5vw, 54px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 18px;
+      max-width: 640px;
+    }
+
+    .donate-subtitle {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin-bottom: 60px;
+    }
+    .donate-subtitle strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Main card */
+    .donate-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.1) inset;
+      transition: border-color 300ms ease-out, box-shadow 300ms ease-out;
+      margin-bottom: 40px;
+    }
+    .donate-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.2) inset, 0 0 60px rgba(124,58,237,0.06);
+    }
+
+    /* QR section */
+    .qr-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .qr-frame {
+      position: relative;
+      border-radius: 16px;
+      padding: 4px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(6,182,212,0.3));
+    }
+    .qr-inner {
+      border-radius: 12px;
+      overflow: hidden;
+      background: #080b14;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-img {
+      width: 200px;
+      height: 200px;
+      display: block;
+      border-radius: 10px;
+    }
+
+    /* Scanning pulse ring */
+    .qr-pulse {
+      position: absolute;
+      inset: -8px;
+      border-radius: 20px;
+      border: 2px solid rgba(124,58,237,0.4);
+      animation: pulse-ring 2.5s ease-out infinite;
+    }
+    .qr-pulse-2 {
+      animation-delay: 1.25s;
+    }
+    @keyframes pulse-ring {
+      0%   { opacity: 0.6; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.15); }
+    }
+
+    .qr-hint {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .qr-hint svg { color: var(--violet-light); flex-shrink: 0; }
+
+    /* Divider */
+    .donate-or {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .donate-or::before,
+    .donate-or::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+    }
+
+    /* UPI ID block */
+    .upi-block {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .upi-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    .upi-id-box {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .upi-id-text {
+      flex: 1;
+      padding: 14px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--violet-light);
+      letter-spacing: 0.01em;
+    }
+    .upi-copy-btn {
+      padding: 14px 18px;
+      background: none;
+      border: none;
+      border-left: 1px solid rgba(255,255,255,0.07);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      transition: color 150ms ease-out, background 150ms ease-out;
+      white-space: nowrap;
+    }
+    .upi-copy-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+    .upi-copy-btn.copied {
+      color: var(--green);
+    }
+
+    /* Pay button */
+    .pay-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--violet), #6d28d9);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      transition: opacity 150ms ease-out, transform 150ms ease-out, box-shadow 150ms ease-out;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+    }
+    .pay-link:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px rgba(124,58,237,0.45);
+    }
+    .pay-link:active { transform: scale(0.98); }
+
+    .pay-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    /* Amounts row */
+    .amounts {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .amount-chip {
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 99px;
+      background: rgba(255,255,255,0.03);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out, transform 150ms ease-out;
+      user-select: none;
+    }
+    .amount-chip:hover {
+      border-color: var(--violet);
+      color: var(--violet-light);
+      background: rgba(124,58,237,0.1);
+      transform: translateY(-1px);
+    }
+    .amount-chip.active {
+      border-color: var(--violet);
+      color: var(--violet-light);
+      background: rgba(124,58,237,0.15);
+    }
+
+    /* Perks below card */
+    .donate-perks {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      max-width: 440px;
+      width: 100%;
+    }
+    .donate-perk {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      text-align: left;
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      width: 100%;
+      transition: border-color 150ms ease-out;
+    }
+    .donate-perk:hover { border-color: rgba(255,255,255,0.1); }
+    .perk-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 1px;
+    }
+    .perk-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+      letter-spacing: -0.01em;
+    }
+    .perk-text p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Fine print */
+    .donate-fine {
+      margin-top: 40px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 420px;
+      line-height: 1.6;
+    }
+    .donate-fine a {
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transition: color 150ms ease-out, border-color 150ms ease-out;
+    }
+    .donate-fine a:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.3); }
+
+    /* Back link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color 150ms ease-out;
+      margin-bottom: 48px;
+    }
+    .back-link:hover { color: var(--text-primary); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1f2e;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      transition: transform 300ms ease-out, opacity 300ms ease-out;
+      opacity: 0;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast-icon { color: var(--green); }
+
+    @media (max-width: 540px) {
+      .donate-card { padding: 32px 24px; }
+      .donate-hero { padding: 72px 0 60px; }
+      .amounts { gap: 8px; }
+      .amount-chip { padding: 7px 14px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body class="donate-page">
+
+  <!-- ======= HEADER ======= -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link" aria-label="Jigar Tools home">
+        <img src="logo.png" alt="Jigar Tools logo" class="logo-img" />
+        <span class="logo-name">Jigar Tools</span>
+        <span class="logo-tag">v2.0-Gold</span>
+      </a>
+      <nav class="main-nav" role="navigation" aria-label="Main navigation">
+        <a href="index.html#features" class="nav-link">Features</a>
+        <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+        <a href="index.html#docs" class="nav-link">Docs</a>
+        <a href="https://github.com/official-Arvind/jigar-tools" class="nav-link nav-link--gh" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58 0-.28-.01-1.03-.02-2.03-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.93.43.37.81 1.1.81 2.22 0 1.6-.01 2.9-.01 3.29 0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z"/></svg>
+          GitHub
+        </a>
+        <a href="donate.html" class="btn btn-sm" style="background:linear-gradient(135deg,#f59e0b,#f97316);border-color:rgba(245,158,11,0.3);color:#fff;">
+          ❤️ Support
+        </a>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+      <a href="index.html#features" class="mobile-nav-link">Features</a>
+      <a href="index.html#how-it-works" class="mobile-nav-link">How It Works</a>
+      <a href="index.html#docs" class="mobile-nav-link">Docs</a>
+      <a href="https://github.com/official-Arvind/jigar-tools" class="mobile-nav-link" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </header>
+
+  <!-- ======= DONATE HERO ======= -->
+  <main>
+    <section class="donate-hero" aria-labelledby="donate-title">
+      <div class="donate-hero-glow" aria-hidden="true"></div>
+      <div class="donate-hero-grid" aria-hidden="true"></div>
+
+      <div class="container">
+        <div class="donate-inner">
+
+          <a href="index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Jigar Tools
+          </a>
+
+          <img src="logo.png" alt="Jigar Tools" class="donate-logo" />
+
+          <p class="donate-eyebrow">Support the project</p>
+
+          <h1 id="donate-title" class="donate-title">
+            Built with care.<br />
+            <span class="gradient-text">Keep it alive.</span>
+          </h1>
+
+          <p class="donate-subtitle">
+            Jigar Tools is <strong>100% free</strong>, has no ads, no subscriptions, and doesn't phone home to any server. If it saved you a few hours of headache, a small tip keeps the motivation going.
+          </p>
+
+          <!-- Main Donate Card -->
+          <div class="donate-card" role="region" aria-label="Donation options">
+
+            <!-- QR Code -->
+            <div class="qr-wrap">
+              <div class="qr-frame">
+                <div class="qr-pulse" aria-hidden="true"></div>
+                <div class="qr-pulse qr-pulse-2" aria-hidden="true"></div>
+                <div class="qr-inner">
+                  <img
+                    src="qr-upi.png"
+                    alt="UPI QR code — scan to pay arvindji@fam"
+                    class="qr-img"
+                    width="200"
+                    height="200"
+                  />
+                </div>
+              </div>
+              <p class="qr-hint">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                Open any UPI app and scan this code
+              </p>
+            </div>
+
+            <!-- Divider -->
+            <div class="donate-or" aria-label="or">or enter UPI ID manually</div>
+
+            <!-- UPI ID -->
+            <div class="upi-block">
+              <p class="upi-label">UPI ID</p>
+              <div class="upi-id-box" role="group" aria-label="UPI ID copy field">
+                <span class="upi-id-text" id="upi-id-value" aria-label="UPI ID: arvindji@fam">arvindji@fam</span>
+                <button class="upi-copy-btn" id="copy-upi-btn" aria-label="Copy UPI ID to clipboard">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <span id="copy-upi-text">Copy</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Suggested amounts -->
+            <div class="amounts" role="group" aria-label="Suggested donation amounts">
+              <button class="amount-chip" data-amount="21" aria-pressed="false">₹21</button>
+              <button class="amount-chip" data-amount="51" aria-pressed="false">₹51</button>
+              <button class="amount-chip active" data-amount="101" aria-pressed="true">₹101</button>
+              <button class="amount-chip" data-amount="251" aria-pressed="false">₹251</button>
+              <button class="amount-chip" data-amount="501" aria-pressed="false">₹501</button>
+            </div>
+
+            <!-- Pay via UPI deep link -->
+            <a
+              href="upi://pay?pa=arvindji@fam&pn=Arvind&am=101&cu=INR&tn=Jigar+Tools+Support"
+              id="pay-link"
+              class="pay-link"
+              aria-label="Open UPI app to pay ₹101"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Pay ₹101 via UPI App
+            </a>
+
+            <p class="pay-sub">Opens PhonePe · Google Pay · Paytm · BHIM or any UPI app</p>
+
+          </div>
+
+          <!-- Perks -->
+          <div class="donate-perks" role="list">
+            <article class="donate-perk" role="listitem">
+              <div class="perk-icon" aria-hidden="true">⚡</div>
+              <div class="perk-text">
+                <h4>Faster updates</h4>
+                <p>Every donation buys time to work on new features — better restore logic, more device support, bug fixes.</p>
+              </div>
+            </article>
+            <article class="donate-perk" role="listitem">
+              <div class="perk-icon" aria-hidden="true">🔓</div>
+              <div class="perk-text">
+                <h4>Stays free, forever</h4>
+                <p>No paywalls. No premium tiers. Jigar Tools will always be open source and free for everyone.</p>
+              </div>
+            </article>
+            <article class="donate-perk" role="listitem">
+              <div class="perk-icon" aria-hidden="true">🙏</div>
+              <div class="perk-text">
+                <h4>Direct to the developer</h4>
+                <p>UPI goes straight to Arvind — no platform cuts, no middlemen. 100% of what you send gets there.</p>
+              </div>
+            </article>
+          </div>
+
+          <p class="donate-fine">
+            No account needed. No receipt. Just a direct UPI transfer to <strong>arvindji@fam</strong>.<br />
+            Don't want to donate money? <a href="https://github.com/official-Arvind/jigar-tools" target="_blank" rel="noopener">Star the repo</a> or share it with someone who needs it — that helps too.
+          </p>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======= FOOTER ======= -->
+  <footer class="site-footer-bottom">
+    <div class="footer-bottom-bar">
+      <div class="container">
+        <p>Built by <a href="https://github.com/official-Arvind" target="_blank" rel="noopener">Arvind</a>. MIT licensed. No tracking. No servers. Just a script and a cable.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="alert" aria-live="polite" aria-atomic="true">
+    <span class="toast-icon" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </span>
+    <span id="toast-msg">Copied to clipboard!</span>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    (function() {
+      // ---- Amount chips ----
+      const chips = document.querySelectorAll('.amount-chip');
+      const payLink = document.getElementById('pay-link');
+      let selectedAmount = 101;
+
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          chips.forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
+          chip.classList.add('active');
+          chip.setAttribute('aria-pressed', 'true');
+          selectedAmount = parseInt(chip.dataset.amount, 10);
+          payLink.href = `upi://pay?pa=arvindji@fam&pn=Arvind&am=${selectedAmount}&cu=INR&tn=Jigar+Tools+Support`;
+          payLink.setAttribute('aria-label', `Open UPI app to pay ₹${selectedAmount}`);
+          payLink.querySelector('span, [aria-hidden]') // update button text
+          payLink.childNodes.forEach(n => {
+            if (n.nodeType === 3) { // text node
+              n.textContent = ` Pay ₹${selectedAmount} via UPI App`;
+            }
+          });
+        });
+      });
+
+      // ---- Copy UPI ID ----
+      const copyBtn = document.getElementById('copy-upi-btn');
+      const copyText = document.getElementById('copy-upi-text');
+
+      function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      }
+
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText('arvindji@fam');
+          copyBtn.classList.add('copied');
+          copyText.textContent = 'Copied!';
+          showToast('UPI ID copied to clipboard!');
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyText.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          // Fallback for browsers that don't support clipboard API
+          const el = document.createElement('textarea');
+          el.value = 'arvindji@fam';
+          el.style.position = 'fixed';
+          el.style.opacity = '0';
+          document.body.appendChild(el);
+          el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          showToast('UPI ID copied!');
+        }
+      });
+
+      // ---- Scroll shadow on header ----
+      const header = document.getElementById('site-header');
+      window.addEventListener('scroll', () => {
+        header.classList.toggle('scrolled', window.scrollY > 20);
+      }, { passive: true });
+
+      // ---- Hamburger ----
+      const hamburger = document.getElementById('hamburger');
+      const mobileNav = document.getElementById('mobile-nav');
+      hamburger.addEventListener('click', () => {
+        const open = hamburger.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', open);
+        mobileNav.classList.toggle('open', open);
+        mobileNav.setAttribute('aria-hidden', !open);
+      });
+    })();
+  </script>
+</body>
+</html>
