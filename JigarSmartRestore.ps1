@@ -766,8 +766,27 @@ if ($substOut) {
         if ($line -match "^([A-Z]:\\): => (.*)$") {
             $drv = $Matches[1].TrimEnd('\');
             $targetPath = $Matches[2];
-            if (($savedBase -and $targetPath.StartsWith($savedBase)) -or $targetPath -match "Smart_Backup|_\d{4}-\d\d-\d\d_") {
-                & subst $drv /D | Out-Null;
+            $normTarget = $targetPath.Replace('/', '\').TrimEnd('\');
+            $normBase = if ($savedBase) { $savedBase.Replace('/', '\').TrimEnd('\') } else { "" };
+            if (($normBase -and $normTarget -like "$normBase*") -or $normTarget -match "Smart_Backup|_\d{4}-\d\d-\d\d_") {
+                # Clean up with retry to handle Windows Explorer or ADB transient locks
+                for ($i = 0; $i -lt 3; $i++) {
+                    & subst $drv /D 2>$null;
+                    $check = & subst;
+                    $stillMapped = $false;
+                    if ($check) {
+                        foreach ($chkLine in $check) {
+                            if ($chkLine -match "^([A-Z]:\\): => (.*)$") {
+                                if ($Matches[1].TrimEnd('\') -eq $drv) {
+                                    $stillMapped = $true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (-not $stillMapped) { break }
+                    Start-Sleep -Milliseconds 100;
+                }
             }
         }
     }

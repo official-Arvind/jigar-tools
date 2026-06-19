@@ -765,8 +765,27 @@ if ($substOut) {
         if ($line -match "^([A-Z]:\\): => (.*)$") {
             $drv = $Matches[1].TrimEnd('\');
             $targetPath = $Matches[2];
-            if (($savedBase -and $targetPath.StartsWith($savedBase)) -or $targetPath -match "Smart_Backup|_\d{4}-\d\d-\d\d_") {
-                & subst $drv /D | Out-Null;
+            $normTarget = $targetPath.Replace('/', '\').TrimEnd('\');
+            $normBase = if ($savedBase) { $savedBase.Replace('/', '\').TrimEnd('\') } else { "" };
+            if (($normBase -and $normTarget -like "$normBase*") -or $normTarget -match "Smart_Backup|_\d{4}-\d\d-\d\d_") {
+                # Clean up with retry to handle Windows Explorer or ADB transient locks
+                for ($i = 0; $i -lt 3; $i++) {
+                    & subst $drv /D 2>$null;
+                    $check = & subst;
+                    $stillMapped = $false;
+                    if ($check) {
+                        foreach ($chkLine in $check) {
+                            if ($chkLine -match "^([A-Z]:\\): => (.*)$") {
+                                if ($Matches[1].TrimEnd('\') -eq $drv) {
+                                    $stillMapped = $true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (-not $stillMapped) { break }
+                    Start-Sleep -Milliseconds 100;
+                }
             }
         }
     }
@@ -949,6 +968,9 @@ if ($virtDrive) {
     $syncTarget = "$destPath\";
 }
 Write-Host "[SYSTEM] Sync Target  : $destPath`n" -ForegroundColor DarkGray;
+
+$RunspacePool = $null;
+try {
 
 # ----------------------------------------------------------------
 #  FEATURE 5: GRACEFUL CTRL+C CANCELLATION HANDLER
@@ -1419,27 +1441,60 @@ Write-Progress -Activity "$MaxThreads`x Multi-Threaded Titan Pull" -Completed;
 # ----------------------------------------------------------------
 Update-JigarHtmlLog -BaseDir $baseBackupPath -Device $DeviceName -SyncedFiles $syncedFiles -IsAbort $global:JigarAbort
 
-# ----------------------------------------------------------------
-#  GRACEFUL ABORT CLEANUP (Feature 5)
-# ----------------------------------------------------------------
-if ($global:JigarAbort) {
-    Write-Host "`n[ABORT] Closing runspace pool..." -ForegroundColor Red;
-    $RunspacePool.Close();
-    $RunspacePool.Dispose();
-    if ($virtDrive) { & subst $virtDrive /D | Out-Null };
-
-    Write-Host "[ABORT] Cleaning up abandoned ADB temp files (jgr_*)..." -ForegroundColor Yellow;
-    & $adbExe -s $serial shell "rm /data/local/tmp/jgr_* 2>/dev/null" | Out-Null;
-
-    Write-Host "`n[DONE] Process aborted safely. Temp files cleaned up." -ForegroundColor Green;
-    Stop-Transcript | Out-Null;
-    if (-not $NonInteractive) { [void](Read-Host "`nPress Enter to exit...") }
-    exit;
+    if ($global:JigarAbort) {
+        Write-Host "`n[ABORT] Initiating graceful termination sequence..." -ForegroundColor Red;
+        exit;
+    }
 }
+finally {
+    # 1. Close runspace pool if it exists
+    if ($null -ne $RunspacePool) {
+        if ($global:JigarAbort) { Write-Host "`n[ABORT] Closing runspace pool..." -ForegroundColor Red }
+        try {
+            $RunspacePool.Close();
+            $RunspacePool.Dispose();
+        } catch {}
+    }
 
-$RunspacePool.Close();
-$RunspacePool.Dispose();
-if ($virtDrive) { & subst $virtDrive /D | Out-Null };
+    # 2. Robust Virtual Drive Unmount
+    if ($virtDrive) {
+        if ($global:JigarAbort) { Write-Host "[ABORT] Unmounting virtual drive..." -ForegroundColor Red }
+        for ($i = 0; $i -lt 5; $i++) {
+            & subst $virtDrive /D 2>$null;
+            $substOut = & subst;
+            $stillMapped = $false;
+            if ($substOut) {
+                foreach ($line in $substOut) {
+                    if ($line -match "^([A-Z]:\\): => (.*)$") {
+                        if ($Matches[1].TrimEnd('\') -eq $virtDrive) {
+                            $stillMapped = $true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (-not $stillMapped) { break }
+            Start-Sleep -Milliseconds 200;
+        }
+        if ($stillMapped) {
+            Write-Host "[WARNING] Could not unmount virtual drive $virtDrive. It may be locked by another process." -ForegroundColor Yellow;
+        }
+    }
+
+    # 3. Clean up ADB temp files on abort/error
+    if ($global:JigarAbort -or $error.Count -gt 0) {
+        if ($serial -and $adbExe) {
+            Write-Host "[ABORT] Cleaning up abandoned ADB temp files (jgr_*)..." -ForegroundColor Yellow;
+            & $adbExe -s $serial shell "rm /data/local/tmp/jgr_* 2>/dev/null" | Out-Null;
+        }
+    }
+
+    if ($global:JigarAbort) {
+        Write-Host "`n[DONE] Process aborted safely. Temp files cleaned up." -ForegroundColor Green;
+        Stop-Transcript | Out-Null;
+        if (-not $NonInteractive) { [void](Read-Host "`nPress Enter to exit...") }
+    }
+}
 
 # ----------------------------------------------------------------
 #  7. SUMMARY
