@@ -622,6 +622,17 @@
   <script src="app.js"></script>
   <script>
     (function() {
+      // Check if we arrived here via fallback from Android Chrome intent failure
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('fallback') === 'true') {
+        const fallbackAmt = parseInt(urlParams.get('am'), 10) || 101;
+        const upiParams = `pay?pa=arvindji@fam&pn=Arvind&am=${fallbackAmt}&cu=INR&tn=Jigar+Tools+Support`;
+        // Remove query parameters from the address bar to prevent loops on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Fallback to standard upi:// deep link
+        window.location.href = `upi://${upiParams}`;
+      }
+
       // ---- Amount chips ----
       const chips = document.querySelectorAll('.amount-chip');
       const payLink = document.getElementById('pay-link');
@@ -632,7 +643,20 @@
 
       function updatePayLink(amt) {
         const upiParams = `pay?pa=arvindji@fam&pn=Arvind&am=${amt}&cu=INR&tn=Jigar+Tools+Support`;
-        payLink.href = `upi://${upiParams}`;
+        const upiUrl = `upi://${upiParams}`;
+        
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        if (isAndroid) {
+          // Use absolute URL for the fallback to ensure it works anywhere
+          let fallbackUrl = `${window.location.origin}${window.location.pathname}?fallback=true&am=${amt}`;
+          if (window.location.protocol === 'file:') {
+            fallbackUrl = `https://official-arvind.github.io/jigar-tools/donate.html?fallback=true&am=${amt}`;
+          }
+          const encodedFallback = encodeURIComponent(fallbackUrl);
+          payLink.href = `intent://${upiParams}#Intent;scheme=upi;action=android.intent.action.VIEW;S.browser_fallback_url=${encodedFallback};end;`;
+        } else {
+          payLink.href = upiUrl;
+        }
         
         payLink.setAttribute('aria-label', `Open UPI app to pay ₹${amt}`);
         payLinkText.textContent = `Pay ₹${amt} via UPI App`;
