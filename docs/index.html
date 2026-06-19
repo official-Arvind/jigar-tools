@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigar Tools v2.0-Gold — Official Documentation</title>
+    <meta name="description" content="The official interactive documentation for Jigar Tools: the world's most aggressive Android backup and sync suite.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Glow Blobs -->
+    <div class="glow-blob blob-1"></div>
+    <div class="glow-blob blob-2"></div>
+    <div class="glow-blob blob-3"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <span class="brand-icon"><i class="fa-solid fa-bolt"></i></span>
+                    <div class="brand-text">
+                        <h1>JIGAR TOOLS</h1>
+                        <span class="version-badge">v2.0-Gold Edition</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Area -->
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search documentation...">
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="nav-menu">
+                <div class="nav-group">
+                    <span class="nav-group-title">Getting Started</span>
+                    <a href="#welcome" class="nav-item active" data-target="welcome">
+                        <i class="fa-solid fa-house"></i> <span>Welcome</span>
+                    </a>
+                    <a href="#quickstart" class="nav-item" data-target="quickstart">
+                        <i class="fa-solid fa-rocket"></i> <span>Quick Start Guide</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <span class="nav-group-title">Architecture & Features</span>
+                    <a href="#routing" class="nav-item" data-target="routing">
+                        <i class="fa-solid fa-route"></i> <span>Smart Virtual Drive</span>
+                    </a>
+                    <a href="#fallback" class="nav-item" data-target="fallback">
+                        <i class="fa-solid fa-shield-halved"></i> <span>3-Stage Fallback</span>
+                    </a>
+                    <a href="#gui" class="nav-item" data-target="gui">
+                        <i class="fa-solid fa-window-restore"></i> <span>Interactive GUI</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <span class="nav-group-title">Resources</span>
+                    <a href="#troubleshooting" class="nav-item" data-target="troubleshooting">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span>Troubleshooting & FAQ</span>
+                    </a>
+                    <a href="#changelog" class="nav-item" data-target="changelog">
+                        <i class="fa-solid fa-list-check"></i> <span>Changelog</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <a href="https://github.com/official-Arvind/jigar-tools" target="_blank" class="github-btn">
+                    <i class="fa-brands fa-github"></i> View GitHub
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-wrapper">
+            <!-- Top Navbar -->
+            <header class="top-nav">
+                <button class="mobile-toggle" id="mobile-menu-toggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="top-nav-right">
+                    <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" class="release-btn" target="_blank">
+                        <i class="fa-solid fa-circle-down"></i> Download Zip
+                    </a>
+                </div>
+            </header>
+
+            <!-- Scrollable Content -->
+            <div class="content-body" id="content-body">
+                <!-- WELCOME SECTION -->
+                <section id="welcome" class="content-section active-section">
+                    <div class="hero-card">
+                        <span class="hero-badge"><i class="fa-solid fa-sparkles"></i> God Mode Unlocked</span>
+                        <h2 class="animate-text">The World's Most Aggressive Android Backup & Sync Suite</h2>
+                        <p class="hero-desc">Engineered for power users who refuse to wait. Fully multi-threaded with 20x parallel Titan streams, un-restrictive path resolution, and intelligent delta sync.</p>
+                        <div class="hero-actions">
+                            <a href="#quickstart" class="btn btn-primary" onclick="navigateTo('quickstart')">Get Started <i class="fa-solid fa-arrow-right"></i></a>
+                            <a href="https://github.com/official-Arvind/jigar-tools" target="_blank" class="btn btn-secondary"><i class="fa-brands fa-github"></i> Star on GitHub</a>
+                        </div>
+                    </div>
+
+                    <div class="grid-features">
+                        <div class="glass-card clickable-card" onclick="navigateTo('routing')">
+                            <div class="card-icon"><i class="fa-solid fa-route"></i></div>
+                            <h3>Smart Routing</h3>
+                            <p>Overcomes Windows' legacy 260-character <code>MAX_PATH</code> limit via dynamic <code>subst</code> virtual drive mapping.</p>
+                            <span class="card-link">Learn more <i class="fa-solid fa-chevron-right"></i></span>
+                        </div>
+                        <div class="glass-card clickable-card" onclick="navigateTo('fallback')">
+                            <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                            <h3>3-Stage Fallback</h3>
+                            <p>Bypasses ADB errors across standard non-rooted, custom root, and su namespace global mounts.</p>
+                            <span class="card-link">Learn more <i class="fa-solid fa-chevron-right"></i></span>
+                        </div>
+                        <div class="glass-card clickable-card" onclick="navigateTo('gui')">
+                            <div class="card-icon"><i class="fa-solid fa-window-restore"></i></div>
+                            <h3>Interactive TreeView</h3>
+                            <p>Dark-themed lazy-loaded WinForms GUI to select exactly what folders and files to sync or exclude.</p>
+                            <span class="card-link">Learn more <i class="fa-solid fa-chevron-right"></i></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- QUICK START GUIDE -->
+                <section id="quickstart" class="content-section">
+                    <h2>⚡ Quick Start Guide</h2>
+                    <p class="section-lead">Get up and running with Jigar Tools in less than two minutes.</p>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-badge">1</div>
+                            <div class="timeline-content">
+                                <h3>Provision Device</h3>
+                                <p>Enable **USB Debugging** on your Android device (Settings > Developer Options > USB Debugging) and connect it to a high-speed USB 3.0 port on your PC.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-badge">2</div>
+                            <div class="timeline-content">
+                                <h3>Download & Extract</h3>
+                                <p>Grab the latest release archive <a href="https://github.com/official-Arvind/jigar-tools/releases/tag/v2.0-Gold" target="_blank">Jigar_Tools_2.0-Gold.zip</a> and extract it to a local folder (e.g. <code>D:\jigar-tools\</code>).</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-badge">3</div>
+                            <div class="timeline-content">
+                                <h3>Launch Installer</h3>
+                                <p>Double-click <code>Jigar_Tools_Setup.bat</code>. The utility will automatically run UAC elevation, configure path settings, verify ADB availability, and open the Main Dashboard menu.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-badge">4</div>
+                            <div class="timeline-content">
+                                <h3>Run Sync / Restore</h3>
+                                <p>Select Option 1 to back up your phone, or Option 2 to restore snapshots. The interactive WinForms window will open automatically to let you refine your selection.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SMART VIRTUAL DRIVE ROUTING -->
+                <section id="routing" class="content-section">
+                    <h2>🛣️ Smart Virtual Drive Routing</h2>
+                    <p class="section-lead">How Jigar Tools bypasses Windows <code>MAX_PATH</code> (260 character) limits.</p>
+
+                    <div class="glass-card alert-card info-glow">
+                        <i class="fa-solid fa-circle-info card-alert-icon"></i>
+                        <div>
+                            <h4>Why is this needed?</h4>
+                            <p>Android is Unix-based and allows deeply nested directory paths. Windows Win32 APIs crash when a file path exceeds 260 characters. Smart Routing dynamically shrinks destination prefixes.</p>
+                        </div>
+                    </div>
+
+                    <h3>Interactive Terminal Simulation</h3>
+                    <div class="mock-terminal">
+                        <div class="terminal-header">
+                            <span class="terminal-dot red-dot"></span>
+                            <span class="terminal-dot yellow-dot"></span>
+                            <span class="terminal-dot green-dot"></span>
+                            <span class="terminal-title">Windows PowerShell</span>
+                        </div>
+                        <div class="terminal-content">
+                            <p class="terminal-line"><span class="t-prompt">PS D:\jigar-tools></span> ./JigarSmartSync.ps1</p>
+                            <p class="terminal-line t-cyan">[SYSTEM] Backup Destination: D:\Backups\22101316G_2026-06-20_00-00-00</p>
+                            <p class="terminal-line t-yellow">[SYSTEM] Path length exceeds safety threshold. Initializing Smart Routing...</p>
+                            <p class="terminal-line t-green">[SYSTEM] Mapping D:\Backups\22101316G_... to Virtual Drive Z:\</p>
+                            <p class="terminal-line t-dim">Executing: subst Z: "D:\Backups\22101316G_..."</p>
+                            <p class="terminal-line t-cyan">[SYSTEM] Sync Target set to: Z:\</p>
+                            <p class="terminal-line"><span class="t-success">✓ Mapped successfully. MAX_PATH safely bypassed.</span></p>
+                        </div>
+                    </div>
+
+                    <h3>Key Enhancements in v2.0-Gold</h3>
+                    <ul>
+                        <li><strong>Case-Insensitive Normalization:</strong> Replaced buggy .NET starts-with checks with native PowerShell case-insensitive comparisons, ensuring that paths matching settings are always caught.</li>
+                        <li><strong>try/finally Execution Guard:</strong> The unmounting logic is wrapped in a script-wide <code>finally</code> block, so even if the pipeline crashes, your drives are cleaned up.</li>
+                        <li><strong>Lock Retry Loops:</strong> If Explorer locks the drive, the script retries 5 times with a 200ms sleep, avoiding silent failures.</li>
+                    </ul>
+                </section>
+
+                <!-- 3-STAGE FALLBACK ARCHITECTURE -->
+                <section id="fallback" class="content-section">
+                    <h2>🛡️ 3-Stage Fallback Architecture</h2>
+                    <p class="section-lead">The fail-proof pipeline ensuring that 100% of Android files are successfully backed up.</p>
+
+                    <div class="diagram-container">
+                        <!-- Custom Animated Fallback Visualizer -->
+                        <div class="fallback-visualizer">
+                            <div class="stage-node active-node" id="node-1">
+                                <div class="node-number">1</div>
+                                <h4>Direct Pull</h4>
+                                <p>Standard ADB interface pull</p>
+                            </div>
+                            <div class="connector-line" id="line-1"></div>
+                            <div class="stage-node" id="node-2">
+                                <div class="node-number">2</div>
+                                <h4>Temp Copy</h4>
+                                <p>ADB Sandbox (/data/local/tmp)</p>
+                            </div>
+                            <div class="connector-line" id="line-2"></div>
+                            <div class="stage-node" id="node-3">
+                                <div class="node-number">3</div>
+                                <h4>Root Mount</h4>
+                                <p>Elevated su global namespace cp</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card border-glow-purple">
+                        <h3>Detailed Pipeline Breakdown</h3>
+                        <ol class="spaced-list">
+                            <li><strong>Stage 1 (Direct Pull):</strong> Standard Toybox/Toolbox call. Fast and efficient. Covers 95% of user files.</li>
+                            <li><strong>Stage 2 (Device Temp Copy):</strong> If direct pull fails due to strict file read/ownership locks, the file is duplicated to the ADB-accessible sandbox folder <code>/data/local/tmp</code> on the device, pulled, and deleted.</li>
+                            <li><strong>Stage 3 (Root Global Mount):</strong> For rooted devices (APatch, Magisk, KernelSU), the script elevates execution to <code>su</code> to bypass security boundaries, copy file structures out of restricted system storage, and retrieve them safely.</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- INTERACTIVE GUI -->
+                <section id="gui" class="content-section">
+                    <h2>🎛️ Interactive Selections (TreeView GUI)</h2>
+                    <p class="section-lead">Granular, lazy-loaded folder and file filtering at runtime.</p>
+
+                    <div class="gui-showcase">
+                        <div class="gui-mockup">
+                            <div class="gui-window-title">
+                                <span class="title-text"><i class="fa-solid fa-filter"></i> Jigar Smart Sync Exclude Menu</span>
+                                <span class="gui-close">×</span>
+                            </div>
+                            <div class="gui-body">
+                                <div class="gui-toolbar">
+                                    <button class="gui-btn"><i class="fa-solid fa-check-double"></i> Select All</button>
+                                    <button class="gui-btn"><i class="fa-solid fa-circle-xmark"></i> Clear All</button>
+                                    <button class="gui-btn"><i class="fa-solid fa-chevron-down"></i> Expand</button>
+                                </div>
+                                <div class="gui-tree">
+                                    <div class="tree-node"><i class="fa-solid fa-chevron-down t-exp"></i> <i class="fa-regular fa-square-check t-chk"></i> <i class="fa-solid fa-folder t-fld"></i> <span>storage/emulated/0</span></div>
+                                    <div class="tree-node indent-1"><i class="fa-solid fa-chevron-right t-exp"></i> <i class="fa-regular fa-square t-chk"></i> <i class="fa-solid fa-folder t-fld"></i> <span class="t-excluded">Android (Excluded)</span></div>
+                                    <div class="tree-node indent-1"><i class="fa-solid fa-chevron-down t-exp"></i> <i class="fa-regular fa-square-check t-chk"></i> <i class="fa-solid fa-folder t-fld"></i> <span>DCIM</span></div>
+                                    <div class="tree-node indent-2"><i class="fa-solid fa-file-image t-fil"></i> <i class="fa-regular fa-square-check t-chk"></i> <span class="t-file">IMG_0001.jpg</span></div>
+                                    <div class="tree-node indent-2"><i class="fa-solid fa-file-image t-fil"></i> <i class="fa-regular fa-square-check t-chk"></i> <span class="t-file">IMG_0002.jpg</span></div>
+                                </div>
+                                <div class="gui-statusbar">
+                                    <span>Lazy loading: Active | Total Files Indexed: 100,513</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Performance Highlights</h3>
+                    <ul>
+                        <li><strong>Zero-Lag Lazy Loading:</strong> Only loads top-level directories first. Subdirectories index only when you click expand. Handles 50,000+ files instantly without blocking threads.</li>
+                        <li><strong>Most-Specific-Ancestor:</strong> If you exclude <code>DCIM</code> but explicitly include <code>DCIM/Camera/IMG_01.jpg</code>, the resolver correctly handles partial exclusion maps.</li>
+                    </ul>
+                </section>
+
+                <!-- TROUBLESHOOTING & FAQ -->
+                <section id="troubleshooting" class="content-section">
+                    <h2>📋 Troubleshooting & FAQ</h2>
+                    <p class="section-lead">Find fast solutions to common ADB, virtual drive, and sync issues.</p>
+
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h3>Why is there a virtual "Z:" drive left in my Explorer?</h3>
+                                <i class="fa-solid fa-chevron-down accordion-arrow"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <p>If the script window is closed abruptly (e.g., clicking "X" instead of letting the script finish), the unmount command is bypassed. To fix, simply run the launcher again—it scans and unmounts orphan drives at startup. Alternatively, run <code>subst Z: /D</code> in a Command Prompt.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h3>"No device found" error - how to fix?</h3>
+                                <i class="fa-solid fa-chevron-down accordion-arrow"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <p>Check your cable and ensure it's plugged into a USB 3.0 port. Toggle "USB Debugging" off and back on in your phone's Developer Options. If still not working, choose Option 6 in the launcher dashboard to fully restart the local ADB daemon server.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h3>How do I automate this without prompts?</h3>
+                                <i class="fa-solid fa-chevron-down accordion-arrow"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <p>Run the script with the <code>-NonInteractive</code> switch. This skips folder dialogs, excludes interactive menus, and runs the sync directly using settings stored in <code>settings.json</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CHANGELOG -->
+                <section id="changelog" class="content-section">
+                    <h2>🚀 Changelog & Version History</h2>
+                    <p class="section-lead">Track updates and fixes in Jigar Tools.</p>
+
+                    <div class="changelog-timeline">
+                        <div class="changelog-item">
+                            <div class="changelog-ver">v2.0-Gold</div>
+                            <div class="changelog-details">
+                                <h4>Gold Edition Engine Overhaul</h4>
+                                <ul>
+                                    <li>Upgraded runspaces to 20x parallel streams.</li>
+                                    <li>Fixed 32-bit arithmetic overflow on byte counters using <code>[long]</code> casts.</li>
+                                    <li>Created batched native directory pre-allocation speedups (up to 100x initialization speed).</li>
+                                    <li>Wrapped virtual drive mapping in a global try/finally block to prevent orphan drives.</li>
+                                    <li>Added folder and file level checkbox TreeView selections.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="changelog-item">
+                            <div class="changelog-ver">v1.0</div>
+                            <div class="changelog-details">
+                                <h4>Initial Release</h4>
+                                <ul>
+                                    <li>First working version of high-performance sync.</li>
+                                    <li>Implemented 12x parallel threads.</li>
+                                    <li>Added basic file delta comparisons.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
