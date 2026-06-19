@@ -1,6 +1,8 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f0c29,50:302b63,100:24243e&height=220&section=header&text=Jigar%20Tools&fontSize=72&fontColor=ffffff&fontAlignY=38&desc=God%20Mode%20Android%20Suite&descAlignY=58&descSize=22&animation=fadeIn" width="100%"/>
+<a href="https://github.com/official-Arvind/jigar-tools">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f0c29,50:302b63,100:24243e&height=220&section=header&text=Jigar%20Tools&fontSize=72&fontColor=ffffff&fontAlignY=38&desc=God%20Mode%20Android%20Suite&descAlignY=58&descSize=22&animation=fadeIn" width="100%"/>
+</a>
 
 <br/>
 
@@ -9,9 +11,8 @@
 <br/>
 
 <a href="https://github.com/official-Arvind/jigar-tools/releases/latest">
-  <img src="https://img.shields.io/github/v/release/official-Arvind/jigar-tools?style=for-the-badge&logo=github&logoColor=white&label=Latest%20Release&color=7B61FF" alt="Latest Release"/>
+  <img src="https://img.shields.io/github/v/release/official-Arvind/jigar-tools?style=for-the-badge&logo=github&logoColor=white&label=Release%202.0%20Gold&color=FFD700" alt="Latest Release"/>
 </a>
-&nbsp;
 <a href="https://github.com/official-Arvind/jigar-tools/stargazers">
   <img src="https://img.shields.io/github/stars/official-Arvind/jigar-tools?style=for-the-badge&logo=starship&logoColor=white&color=f7c948" alt="Stars"/>
 </a>
@@ -29,7 +30,29 @@
 > **The world's most aggressive, high-performance Android backup & restore suite.**
 > Engineered for power users who refuse to wait. Free forever.
 
+<br/>
+<a href="#-getting-started">
+  <img src="https://img.shields.io/badge/Deploy_God_Mode-0f0c29?style=for-the-badge&logo=rocket&logoColor=white" alt="Deploy God Mode" />
+</a>
+
 </div>
+
+---
+
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=12,20,28&height=4&section=header" width="100%"/>
+</div>
+
+## 🛡️ Stability Policy (Gold Edition)
+
+> [!IMPORTANT]
+> **Jigar Tools v2.0 is considered the final, feature-complete Gold Edition.** 
+> No further features or updates will be pushed to this repository, unless one of the following breaking changes occurs:
+> - Android OS level storage updates breaking current architecture
+> - ADB protocol revisions disrupting operations
+> - Critical data vulnerabilities
+
+*This ensures absolute maximum stability for your most critical data.*
 
 ---
 
@@ -39,13 +62,17 @@
 
 ## ⚡ What Is This?
 
-Jigar Tools is a **Windows-native toolkit** designed to sync your Android device to your PC at **absolute maximum velocity**. It leverages a 20-thread parallel ADB architecture, a robust 3-stage fallback engine, and an elegant WinForms GUI that grants you surgical precision over what to back up or restore. No cloud dependencies. No subscriptions. Pure performance.
+Jigar Tools is a **Windows-native toolkit** designed to sync your Android device to your PC at **absolute maximum velocity**. It leverages a **20-thread parallel ADB architecture**, a robust 3-stage fallback engine, and an elegant WinForms GUI that grants you surgical precision over what to back up or restore. No cloud dependencies. No subscriptions. Pure performance.
 
-```
+<div align="center">
+  
+```text
 Initial Backup  (50 GB)  →  5–10 minutes   @ 80–150 MB/s
 Delta Sync      ( 5 GB)  →  < 2 minutes    @ 120–180 MB/s  
 Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 ```
+
+</div>
 
 ---
 
@@ -58,9 +85,9 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 ### 🚀 `JigarSmartSync.ps1`
 **Titan Backup Engine**
 
-- ⚡ **20x Parallel ADB Threads** — Maximize USB bandwidth.
-- 🔁 **3-Stage Fallback** — Circumvents all known ADB path limitations.
-- 📁 **Dynamic Device Folder** — Creates/uses a backup folder named after the device model (e.g. `22101316G`) for clean, in-place Delta Sync.
+- ⚡ **20x Parallel Threads** — Maximize USB bandwidth safely, bypassing the 32-bit `2.14GB` arithmetic overflow limits.
+- 🔁 **3-Stage Fallback** — Circumvents all known ADB path limitations (including single-quote path traps).
+- 📁 **Dynamic Device Folder** — Creates/uses a backup folder named after the device model (e.g. `22101316G`).
 - 💾 **Location Memory** — Automatically recalls your previous backup destination.
 - 🌲 **Interactive EXCLUDE Menu** — Exclude specific folders/files via an intuitive UI.
 - 🔄 **Delta Sync** — Intelligently transfers only modified or new files.
@@ -73,11 +100,12 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 ### ⚡ `JigarSmartRestore.ps1`
 **Titan Restore Engine**
 
-- ⚡ **20x Parallel ADB Push Threads** — Lightning-fast data restoration.
+- ⚡ **20x Parallel Threads** — Lightning-fast data restoration with batched `mkdir` directory pre-allocation.
 - 🔁 **3-Stage Fallback** — Bulletproof injection into the Android filesystem.
 - 🗂️ **Smart Backup Picker** — Automatically lists available device backups in a numbered console menu.
 - 🌲 **Interactive INCLUDE Menu** — Surgically select exact files/folders to restore.
 - 🔄 **Delta Restore** — Bypasses identical files already present on the device.
+- 📻 **Media Scanner Trigger** — Broadcasts Android intents directly to index newly restored media in the Gallery instantly.
 - 💾 **Location Memory** — Pre-loads snapshots based on your `settings.json`.
 - 📝 **Persistent Logging** — Detailed operational logs preserved in `Logs\`.
 - ⛔ **Graceful Abortion** — Halts cleanly without leaving orphaned temp files.

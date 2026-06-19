@@ -28,7 +28,16 @@
 
 Jigar Tools is a community project. Every improvement you make — even fixing a typo — gets your name in this repo **permanently**. Arvind Ji reviews every PR personally and is happy to chat about ideas, bugs, or anything else.
 
-This is not a corporate project. There is no roadmap committee, no issue triage bot, no three-week review cycle. If your code is solid and doesn't break anything, it gets merged.
+> [!IMPORTANT]
+> **Stability Policy (v2.0 Gold Edition)**
+> Please note that Jigar Tools has entered the **Gold Edition** lifecycle. This means it is considered feature-complete. No further features or updates will be merged unless they address one of the following breaking changes:
+> - Android OS level storage updates breaking current architecture
+> - ADB protocol revisions disrupting operations
+> - Critical data vulnerabilities or arithmetic bugs
+> 
+> *Minor typo fixes and documentation updates are always welcome!*
+
+This is not a corporate project. There is no roadmap committee, no issue triage bot, no three-week review cycle. If your code addresses critical bugs or updates docs, it gets merged.
 
 ---
 

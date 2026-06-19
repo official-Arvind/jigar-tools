@@ -22,12 +22,17 @@
 
 ### 🚀 Major Milestones & Architecture Refactor
 - **20x Parallel Titan Engine** — Upgraded both [JigarSmartSync.ps1](file:///d:/Desktop/jigar-tools/JigarSmartSync.ps1) and [JigarSmartRestore.ps1](file:///d:/Desktop/jigar-tools/JigarSmartRestore.ps1) to use exactly 20 concurrent ADB runspaces (threads), maximizing USB bandwidth and multi-core utilization.
+- **32-Bit Arithmetic Overflow Fix** — Fixed a critical `Int32` overflow bug where total bytes exceeding 2.14 GB crashed the Titan Engine counters. Enforced strict `[long]` casting for true infinite capacity.
+- **Batched Pre-Allocation Engine** — Neutralized the 50ms per-folder ADB startup bottleneck. The Titan Restore engine now uses a single batched script injection to instantly recreate directory structures on the phone, speeding up restore initializations by up to 100x.
+- **Single-Quote Path Trap Defeated** — Files with single quotes (e.g., `Don't Let Me Down.mp3`) no longer terminate the `su -c` fallback shell string. Robust escaping inside native `$env` variables handles even the most hostile paths smoothly.
+- **Ghost Loop Exterminated** — Fixed a critical parse-time expansion bug where local PowerShell variables incorrectly evaluated to empty strings instead of sending the literal variable to the Android shell during pre-allocation.
+- **Thread-Safe Logging (`err.txt`)** — Resolved a persistent concurrency bug where parallel runspaces occasionally crashed each other via `IOException` when writing to the error log simultaneously. A strict `Monitor.Enter()` thread-lock is now globally enforced.
 - **Rich Progress Bar Metrics** — Displays real-time download status, size progress (e.g. `12.50 MB / 4.20 GB`), and average transfer speed in MB/s directly in the PowerShell progress bar.
 - **Robust Phone Scanning Fix** — Replaced the buggy Toybox `find -exec stat` command (which silently truncated after 4k-6k files) with a reliable `print0 | xargs` pipeline, and made the traditional `exec` method the fallback.
+- **Media Scanner Intent Broadcast** — The Restore Engine now automatically triggers the `android.intent.action.MEDIA_SCANNER_SCAN_FILE` intent for restored files so they instantly appear in your Android Gallery.
 - **Non-Interactive Automation** — Added the `-NonInteractive` flag to the scripts to bypass all interactive prompts (saved backup location and exclude selection menu) for headless executions.
 - **UTF-8 Output Encoding** — Hardened standard output streams of scripts to force UTF-8 to prevent emoji-named folders (e.g. `❤️❤️`) from being corrupted into `????` on Windows filesystems.
 - **The Titan Fallback Engine** — Fully rewritten 3-stage fallback system unconditionally bypasses ADB virtual drive write errors across non-rooted devices, Magisk, KernelSU, and APatch.
-- **PowerShell Pipeline Bug Exterminated** — Fixed a deeply rooted PowerShell pipeline bug causing false-positive failure reports due to PSDataCollection evaluation issues. The script is now mathematically 100% accurate.
 - **HTML Ledger Verified** — Hardened JSON serialization ensures bulletproof, uncorruptable log generation regardless of folder/file names.
 - **Unified Codebase** — Synchronized robust Titan architecture between both Sync and Restore tools.
 
