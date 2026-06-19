@@ -631,10 +631,20 @@
       let selectedAmount = 101;
 
       function updatePayLink(amt) {
-        payLink.href = `upi://pay?pa=arvindji@fam&pn=Arvind&am=${amt}&cu=INR&tn=Jigar+Tools+Support`;
+        const upiParams = `pay?pa=arvindji@fam&pn=Arvind&am=${amt}&cu=INR&tn=Jigar+Tools+Support`;
+        const isAndroid = /android/i.test(navigator.userAgent);
+        
+        if (isAndroid) {
+          payLink.href = `intent://${upiParams}#Intent;scheme=upi;package=;end;`;
+        } else {
+          payLink.href = `upi://${upiParams}`;
+        }
+        
         payLink.setAttribute('aria-label', `Open UPI app to pay ₹${amt}`);
         payLinkText.textContent = `Pay ₹${amt} via UPI App`;
       }
+      
+      updatePayLink(selectedAmount);
 
       chips.forEach(chip => {
         chip.addEventListener('click', () => {
