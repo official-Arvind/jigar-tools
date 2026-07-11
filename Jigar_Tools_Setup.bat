@@ -10,7 +10,7 @@ setlocal enabledelayedexpansion
 :: ========================================================
 
 :: ---- 1. ADMIN ELEVATION --------------------------------
-:: net session >nul 2>&1
+net session >nul 2>&1
 if %errorLevel% neq 0 goto :Relaunch
 
 :: ---- 2. DIRECTORY & ASSET LOCK ------------------------
