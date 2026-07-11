@@ -136,13 +136,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  Write-Host '';" ^
     "  foreach ($line in $devices) {" ^
     "    $serial = $line.ToString().Split([char]9)[0].Trim();" ^
-    "    Write-Host \"  + Serial: $serial\" -ForegroundColor Cyan;" ^
+    "    Write-Host ('  + Serial: ' + $serial) -ForegroundColor Cyan;" ^
     "    $model = & $adb -s $serial shell 'getprop ro.product.model' 2>$null;" ^
-    "    if ($model) { Write-Host \"    Model : $($model.Trim())\" -ForegroundColor Gray };" ^
+    "    if ($model) { Write-Host ('    Model : ' + $model.Trim()) -ForegroundColor Gray };" ^
     "    $brand = (& $adb -s $serial shell 'getprop ro.product.brand' 2>$null).Trim().ToLower();" ^
     "    $manufacturer = (& $adb -s $serial shell 'getprop ro.product.manufacturer' 2>$null).Trim().ToLower();" ^
     "    $brandName = if ([string]::IsNullOrWhiteSpace($brand)) { 'unknown' } else { $brand };" ^
-    "    Write-Host \"    Brand : $($brandName.ToUpper())\" -ForegroundColor Gray;" ^
+    "    Write-Host ('    Brand : ' + $brandName.ToUpper()) -ForegroundColor Gray;" ^
     "    Write-Host '';" ^
     "    Write-Host '    [APP BACKUP HELPER]' -ForegroundColor Magenta;" ^
     "    if ($brand -match 'xiaomi|redmi|poco' -or $manufacturer -match 'xiaomi|redmi|poco') {" ^
@@ -168,12 +168,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    $dirsToCheck = @('/sdcard/MIUI/backup/AllBackup','/sdcard/Android/data/com.coloros.backuprestore/','/sdcard/Huawei/Backup','/sdcard/SmartSwitch','/sdcard/Backup');" ^
     "    $foundDirs = @();" ^
     "    foreach ($d in $dirsToCheck) {" ^
-    "      $check = (& $adb -s $serial shell \"if [ -d '$d' ]; then echo exists; fi\" 2>$null).Trim();" ^
+    "      $check = (& $adb -s $serial shell ('if [ -d ''' + $d + ''' ]; then echo exists; fi') 2>$null).Trim();" ^
     "      if ($check -eq 'exists') { $foundDirs += $d }" ^
     "    };" ^
     "    if ($foundDirs.Count -gt 0) {" ^
     "      Write-Host '    Found existing backup folders:' -ForegroundColor Yellow;" ^
-    "      foreach ($fd in $foundDirs) { Write-Host \"      - $fd\" -ForegroundColor Yellow }" ^
+    "      foreach ($fd in $foundDirs) { Write-Host ('      - ' + $fd) -ForegroundColor Yellow }" ^
     "    } else {" ^
     "      Write-Host '    No standard backup folders found on device.' -ForegroundColor DarkGray;" ^
     "    };" ^
@@ -224,7 +224,7 @@ echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$localVer = 'v40.0'; $vc = Get-Content $env:VERSION_FILE -ErrorAction SilentlyContinue; if ($vc) { $localVer = $vc.Trim() };" ^
-    "Write-Host \"  Local Version : $localVer\" -ForegroundColor Cyan;" ^
+    "Write-Host ('  Local Version : ' + $localVer) -ForegroundColor Cyan;" ^
     "Write-Host '';" ^
     "Write-Host '  [1] STABLE Release Channel' -ForegroundColor Green;" ^
     "Write-Host '  [2] BETA Release Channel' -ForegroundColor Magenta;" ^
@@ -243,13 +243,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  $i = 1;" ^
     "  $arr = @();" ^
     "  foreach ($r in $filtered) {" ^
-    "    Write-Host \"    [$i] $($r.tag_name)\" -ForegroundColor White;" ^
+    "    Write-Host ('    [' + $i + '] ' + $r.tag_name) -ForegroundColor White;" ^
     "    $arr += $r;" ^
     "    $i++;" ^
     "    if ($i -gt 10) { break }" ^
     "  };" ^
     "  Write-Host '';" ^
-    "  $sel = Read-Host \"  Select version to install (1-$($arr.Count)) or 'Q' to quit\";" ^
+    "  $sel = Read-Host ('  Select version to install (1-' + $arr.Count + ') or ''Q'' to quit');" ^
     "  if ($sel.Trim().ToUpper() -eq 'Q') { exit 0 };" ^
     "  $idx = [int]$sel;" ^
     "  if ($idx -lt 1 -or $idx -gt $arr.Count) { Write-Host '  [ERROR] Invalid selection.' -ForegroundColor Red; exit 1 };" ^
@@ -258,7 +258,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  $zipUrl = ($rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1).browser_download_url;" ^
     "  if (-not $zipUrl) { $zipUrl = $rel.zipball_url };" ^
     "  Write-Host '';" ^
-    "  Write-Host \"  [UPDATE INITIATED]  $localVer  ->  $remoteVer\" -ForegroundColor Yellow;" ^
+    "  Write-Host ('  [UPDATE INITIATED]  ' + $localVer + '  ->  ' + $remoteVer) -ForegroundColor Yellow;" ^
     "  Write-Host '';" ^
     "  Write-Host '  [1/4] Downloading release ZIP...' -ForegroundColor Yellow;" ^
     "  $tmpZip = Join-Path $env:TEMP 'jigar_update.zip';" ^
@@ -276,26 +276,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    $name   = $_.Name;" ^
     "    $keep   = $false;" ^
     "    foreach ($pat in $preservePat) { if ($name -like $pat) { $keep = $true; break } };" ^
-    "    if ($keep) { Write-Host \"    [PRESERVED] $name\" -ForegroundColor DarkGray; return };" ^
+    "    if ($keep) { Write-Host ('    [PRESERVED] ' + $name) -ForegroundColor DarkGray; return };" ^
     "    $dst = Join-Path $toolsDir $name;" ^
     "    if ($name -eq 'Jigar_Tools_Setup.bat') { $dst = Join-Path $toolsDir 'Jigar_Tools_Setup_New.bat' };" ^
     "    if ($_.PSIsContainer) { " ^
     "      if (-not (Test-Path $dst)) { New-Item -ItemType Directory -Force -Path $dst | Out-Null };" ^
-    "      Copy-Item \"$($_.FullName)\*\" $dst -Recurse -Force" ^
+    "      Copy-Item ($_.FullName + '\*') $dst -Recurse -Force" ^
     "    } else { Copy-Item $_.FullName $dst -Force };" ^
-    "    Write-Host \"    [UPDATED] $name\" -ForegroundColor Gray" ^
+    "    Write-Host ('    [UPDATED] ' + $name) -ForegroundColor Gray" ^
     "  };" ^
     "  $remoteVer | Set-Content (Join-Path $toolsDir '.version') -Encoding UTF8;" ^
     "  Remove-Item $tmpZip, $tmpDir -Recurse -Force -ErrorAction SilentlyContinue;" ^
     "  Write-Host '';" ^
-    "  Write-Host \"  [4/4] Update to $remoteVer complete.\" -ForegroundColor Green;" ^
+    "  Write-Host ('  [4/4] Update to ' + $remoteVer + ' complete.') -ForegroundColor Green;" ^
     "  Write-Host '        Relaunching Jigar Tools...' -ForegroundColor Cyan;" ^
     "  Start-Sleep -Seconds 2;" ^
     "  $qc = [char]34;" ^
     "  Start-Process cmd -ArgumentList ('/c', 'timeout /t 2 >nul & move /y ' + $qc + $toolsDir + '\Jigar_Tools_Setup_New.bat' + $qc + ' ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc + ' & ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc);" ^
     "  exit 99" ^
     "} catch {" ^
-    "  Write-Host \"  [ERROR] Could not reach GitHub: $($_.Exception.Message)\" -ForegroundColor Red;" ^
+    "  Write-Host ('  [ERROR] Could not reach GitHub: ' + $_.Exception.Message) -ForegroundColor Red;" ^
     "  Write-Host '  Check your internet connection and try again.' -ForegroundColor DarkGray" ^
     "}"
 
