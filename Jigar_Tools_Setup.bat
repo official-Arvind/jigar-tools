@@ -10,7 +10,7 @@ setlocal enabledelayedexpansion
 :: ========================================================
 
 :: ---- 1. ADMIN ELEVATION --------------------------------
-net session >nul 2>&1
+:: net session >nul 2>&1
 if %errorLevel% neq 0 goto :Relaunch
 
 :: ---- 2. DIRECTORY & ASSET LOCK ------------------------
@@ -215,7 +215,7 @@ goto :Menu
 :CheckUpdate
 cls
 echo ========================================================
-echo        JIGAR TOOLS  |  AUTO-UPDATER
+echo        JIGAR TOOLS  -  AUTO-UPDATER
 echo        Checking: github.com/official-Arvind/jigar-tools
 echo ========================================================
 echo.
@@ -299,7 +299,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  Write-Host '  Check your internet connection and try again.' -ForegroundColor DarkGray" ^
     "}"
 
-:: If updater returned 99 it relaunched itself — close this instance
+:: If updater returned 99 it relaunched itself â€” close this instance
 if %errorLevel% equ 99 exit /b 0
 
 echo.
@@ -311,7 +311,7 @@ goto :Menu
 cls
 echo.
 echo ========================================================
-echo        JIGAR TOOLS  |  SHUTDOWN SEQUENCE
+echo        JIGAR TOOLS  -  SHUTDOWN SEQUENCE
 echo ========================================================
 echo.
 echo  [SHUTDOWN] Killing ADB server daemon...
