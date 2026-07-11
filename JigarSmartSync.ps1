@@ -1273,7 +1273,7 @@ $ScriptBlock = {
     $escapedRootSrc = $rootSrc -replace "'", "'\''" -replace '"', '\"'
     
     $cpCmd = if ($busyboxPath) { "$busyboxPath cp" } else { "cp" }
-    $suArgs = "-s `"$serial`" shell `"su -c '$cpCmd \`"$escapedRootSrc\`" \`"$androidTmp\`" && chmod 777 \`"$androidTmp\`"'`"";
+    $suArgs = "-s `"$serial`" shell `"su -c '$cpCmd `"$escapedRootSrc`" `"$androidTmp`" && chmod 777 `"$androidTmp`"'`"";
     $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
     $pSuInfo.FileName = $adbExe;
     $pSuInfo.Arguments = $suArgs;
@@ -1483,7 +1483,7 @@ finally {
     }
 
     # 3. Clean up ADB temp files on abort/error
-    if ($global:JigarAbort -or $error.Count -gt 0) {
+    if ($global:JigarAbort) {
         if ($serial -and $adbExe) {
             Write-Host "[ABORT] Cleaning up abandoned ADB temp files (jgr_*)..." -ForegroundColor Yellow;
             & $adbExe -s $serial shell "rm /data/local/tmp/jgr_* 2>/dev/null" | Out-Null;

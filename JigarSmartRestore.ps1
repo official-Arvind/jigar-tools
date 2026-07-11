@@ -1139,7 +1139,7 @@ if ($filterChoice.Trim().ToUpper() -eq 'Y') {
 $NormalizedAndroidFiles = @{};
 foreach ($k in $AndroidFiles.Keys) {
     $cleanK = if ($k.StartsWith("./")) { $k.Substring(2) } else { $k };
-    $segments = $cleanK.Split('/') | ForEach-Object { $_.TrimEnd(". ") };
+    $segments = $cleanK.Split('/') | ForEach-Object { $_.TrimEnd(". ") -replace '[<>:"|?*]', '_' };
     $norm = "./" + ($segments -join '/');
     $NormalizedAndroidFiles[$norm] = $AndroidFiles[$k];
 }
@@ -1199,7 +1199,7 @@ if ($uniqueDirs.Count -gt 0) {
     $tmpDirFile = [System.IO.Path]::GetTempFileName();
     [System.IO.File]::WriteAllLines($tmpDirFile, [string[]]$uniqueDirs.Keys);
     $null = & $adbExe -s $serial push $tmpDirFile "/data/local/tmp/jgr_dirs.txt" 2>$null;
-    $null = & $adbExe -s $serial shell "while IFS= read -r d || [ -n `"`\`$d`"`]; do [ -n `"`\`$d`"`] && mkdir -p `"`\`$d`"`; done < /data/local/tmp/jgr_dirs.txt" 2>$null;
+    $null = & $adbExe -s $serial shell "while IFS= read -r d || [ -n `"`$d`" ]; do [ -n `"`$d`" ] && mkdir -p `"`$d`"; done < /data/local/tmp/jgr_dirs.txt" 2>$null;
     $null = & $adbExe -s $serial shell "rm /data/local/tmp/jgr_dirs.txt" 2>$null;
     if (Test-Path $tmpDirFile) { Remove-Item $tmpDirFile -Force }
 }
@@ -1229,7 +1229,13 @@ $ScriptBlock = {
     $p = [System.Diagnostics.Process]::Start($pInfo);
     $p.WaitForExit();
     
-    if ($p.ExitCode -eq 0) { return 0; }
+    if ($p.ExitCode -eq 0) { 
+        if ($isAdbRoot) {
+            $escapedPushDest = $pushDest -replace "'", "'\''" -replace '"', '\"'
+            $null = & $adbExe -s $serial shell "chown 1023:1023 `"$escapedPushDest`" && chmod 664 `"$escapedPushDest`"" 2>$null
+        }
+        return 0; 
+    }
 
     # ---------------------------------------------------
     # ATTEMPT 2: Temp Push Via /data/local/tmp
@@ -1239,7 +1245,7 @@ $ScriptBlock = {
 
     $pInfo2 = New-Object System.Diagnostics.ProcessStartInfo;
     $pInfo2.FileName = $adbExe;
-    $pInfo2.Arguments = "-s `"$serial`" push `"$src`" `"$androidTmp`";";
+    $pInfo2.Arguments = "-s `"$serial`" push `"$src`" `"$androidTmp`"";
     $pInfo2.UseShellExecute = $false;
     $pInfo2.CreateNoWindow = $true;
     $p2 = [System.Diagnostics.Process]::Start($pInfo2);
@@ -1282,7 +1288,7 @@ $ScriptBlock = {
         $escapedRootDest = $rootDest -replace "'", "'\''" -replace '"', '\"'
 
         # Try writing to /sdcard first via su -c (auto-handles ownership/permissions if successful)
-        $suCmd = "su -c 'cat \`"$androidTmp\`" > \`"$escapedDest\`"'";
+        $suCmd = "su -c 'cat `"$androidTmp`" > `"$escapedDest`"'";
         $pSuInfo = New-Object System.Diagnostics.ProcessStartInfo;
         $pSuInfo.FileName = $adbExe;
         $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmd`"";
@@ -1303,7 +1309,7 @@ $ScriptBlock = {
         }
 
         # Fallback to direct raw copy to /data/media/0 + chown/chmod
-        $suCmdRaw = "su -c 'cat \`"$androidTmp\`" > \`"$escapedRootDest\`" && chown 1023:1023 \`"$escapedRootDest\`" && chmod 664 \`"$escapedRootDest\`"'";
+        $suCmdRaw = "su -c 'cat `"$androidTmp`" > `"$escapedRootDest`" && chown 1023:1023 `"$escapedRootDest`" && chmod 664 `"$escapedRootDest`"'";
         $pSuInfo.Arguments = "-s `"$serial`" shell `"$suCmdRaw`"";
         $pSuRaw = [System.Diagnostics.Process]::Start($pSuInfo);
         $pSuRaw.WaitForExit();
