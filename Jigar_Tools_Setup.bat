@@ -90,7 +90,7 @@ echo.
 echo  ARSENAL:
 echo  [1] JIGARSYNC BACKUP     (20x Threads + 3-Stage Fallback)
 echo  [2] JIGAR SMART RESTORE  (Full / Selective Folder Restore)
-echo  [3] DEVICE STATUS        (Check Connection)
+echo  [3] DEVICE STATUS ^& APP BACKUP HELPER
 echo  [4] CHECK FOR UPDATES    (GitHub Auto-Updater)
 echo  [5] EXIT                 (Kills ADB server + closes)
 echo.
@@ -112,7 +112,7 @@ goto :Menu
 :DeviceStatus
 cls
 echo ========================================================
-echo        DEVICE CONNECTION STATUS
+echo        DEVICE STATUS ^& APP BACKUP HELPER
 echo ========================================================
 echo.
 echo [CHECK] Scanning for connected devices...
@@ -138,7 +138,47 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    $serial = $line.ToString().Split([char]9)[0].Trim();" ^
     "    Write-Host \"  + Serial: $serial\" -ForegroundColor Cyan;" ^
     "    $model = & $adb -s $serial shell 'getprop ro.product.model' 2>$null;" ^
-    "    if ($model) { Write-Host \"    Model : $($model.Trim())\" -ForegroundColor Gray }" ^
+    "    if ($model) { Write-Host \"    Model : $($model.Trim())\" -ForegroundColor Gray };" ^
+    "    $brand = (& $adb -s $serial shell 'getprop ro.product.brand' 2>$null).Trim().ToLower();" ^
+    "    $manufacturer = (& $adb -s $serial shell 'getprop ro.product.manufacturer' 2>$null).Trim().ToLower();" ^
+    "    $brandName = if ([string]::IsNullOrWhiteSpace($brand)) { 'unknown' } else { $brand };" ^
+    "    Write-Host \"    Brand : $($brandName.ToUpper())\" -ForegroundColor Gray;" ^
+    "    Write-Host '';" ^
+    "    Write-Host '    [APP BACKUP HELPER]' -ForegroundColor Magenta;" ^
+    "    if ($brand -match 'xiaomi|redmi|poco' -or $manufacturer -match 'xiaomi|redmi|poco') {" ^
+    "      Write-Host '      1. Go to Settings -^> About Phone -^> Back up and restore -^> Mobile device.' -ForegroundColor White;" ^
+    "      Write-Host '      2. Create a local backup (Saves to /sdcard/MIUI/backup/AllBackup).' -ForegroundColor White;" ^
+    "    } elseif ($brand -match 'oppo|oneplus|realme' -or $manufacturer -match 'oppo|oneplus|realme') {" ^
+    "      Write-Host '      1. Go to Settings -^> Additional Settings -^> Back up and reset -^> Back up & migrate -^> Local backup.' -ForegroundColor White;" ^
+    "      Write-Host '      2. Create a backup (Saves to /sdcard/Android/data/com.coloros.backuprestore/).' -ForegroundColor White;" ^
+    "    } elseif ($brand -match 'huawei|honor' -or $manufacturer -match 'huawei|honor') {" ^
+    "      Write-Host '      1. Go to Settings -^> System & updates -^> Backup & restore -^> Data backup.' -ForegroundColor White;" ^
+    "      Write-Host '      2. Create a backup (Saves to /sdcard/Huawei/Backup).' -ForegroundColor White;" ^
+    "    } elseif ($brand -match 'samsung' -or $manufacturer -match 'samsung') {" ^
+    "      Write-Host '      1. Go to Settings -^> Accounts and backup -^> External storage transfer (Smart Switch).' -ForegroundColor White;" ^
+    "      Write-Host '      2. Create a backup (Saves to /sdcard/SmartSwitch or /sdcard/Backup).' -ForegroundColor White;" ^
+    "    } elseif ($brand -match 'vivo|iqoo' -or $manufacturer -match 'vivo|iqoo') {" ^
+    "      Write-Host '      1. Go to Settings -^> System management -^> Backup & Reset -^> Local backup.' -ForegroundColor White;" ^
+    "      Write-Host '      2. Create a backup (Saves to /sdcard/Backup).' -ForegroundColor White;" ^
+    "    } else {" ^
+    "      Write-Host '      1. Go to Settings and search for Backup.' -ForegroundColor White;" ^
+    "      Write-Host '      2. Look for an option to create a local device backup to your internal storage.' -ForegroundColor White;" ^
+    "    };" ^
+    "    Write-Host '';" ^
+    "    $dirsToCheck = @('/sdcard/MIUI/backup/AllBackup','/sdcard/Android/data/com.coloros.backuprestore/','/sdcard/Huawei/Backup','/sdcard/SmartSwitch','/sdcard/Backup');" ^
+    "    $foundDirs = @();" ^
+    "    foreach ($d in $dirsToCheck) {" ^
+    "      $check = (& $adb -s $serial shell \"if [ -d '$d' ]; then echo exists; fi\" 2>$null).Trim();" ^
+    "      if ($check -eq 'exists') { $foundDirs += $d }" ^
+    "    };" ^
+    "    if ($foundDirs.Count -gt 0) {" ^
+    "      Write-Host '    Found existing backup folders:' -ForegroundColor Yellow;" ^
+    "      foreach ($fd in $foundDirs) { Write-Host \"      - $fd\" -ForegroundColor Yellow }" ^
+    "    } else {" ^
+    "      Write-Host '    No standard backup folders found on device.' -ForegroundColor DarkGray;" ^
+    "    };" ^
+    "    Write-Host '';" ^
+    "    Write-Host '    IMPORTANT: When you run this main backup, it will AUTOMATICALLY backup these folders as well because it backs up your entire sdcard!' -ForegroundColor Cyan;" ^
     "  }" ^
     "}"
 
@@ -184,25 +224,41 @@ echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$localVer = 'v40.0'; $vc = Get-Content $env:VERSION_FILE -ErrorAction SilentlyContinue; if ($vc) { $localVer = $vc.Trim() };" ^
-    "$api = 'https://api.github.com/repos/official-Arvind/jigar-tools/releases/latest';" ^
+    "Write-Host \"  Local Version : $localVer\" -ForegroundColor Cyan;" ^
+    "Write-Host '';" ^
+    "Write-Host '  [1] STABLE Release Channel' -ForegroundColor Green;" ^
+    "Write-Host '  [2] BETA Release Channel' -ForegroundColor Magenta;" ^
+    "Write-Host '';" ^
+    "$chan = Read-Host '  Select Update Channel (1-2)';" ^
+    "if ($chan -ne '1' -and $chan -ne '2') { Write-Host '  [ERROR] Invalid channel selected.' -ForegroundColor Red; exit 1 };" ^
+    "Write-Host '';" ^
+    "Write-Host '  Fetching available releases from GitHub...' -ForegroundColor Yellow;" ^
+    "$api = 'https://api.github.com/repos/official-Arvind/jigar-tools/releases';" ^
     "try {" ^
-    "  $rel = Invoke-RestMethod -Uri $api -UseBasicParsing -ErrorAction Stop;" ^
-    "  $remoteVer = $rel.tag_name.Trim();" ^
-    "  $zipUrl    = ($rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1).browser_download_url;" ^
-    "  if (-not $zipUrl) { $zipUrl = $rel.zipball_url };" ^
-    "  Write-Host \"  Local  : $localVer\" -ForegroundColor Cyan;" ^
-    "  Write-Host \"  Remote : $remoteVer\" -ForegroundColor Cyan;" ^
+    "  $allRel = Invoke-RestMethod -Uri $api -UseBasicParsing -ErrorAction Stop;" ^
+    "  if ($chan -eq '1') { $filtered = $allRel | Where-Object { $_.tag_name -notmatch '(?i)beta' } } else { $filtered = $allRel | Where-Object { $_.tag_name -match '(?i)beta' } };" ^
+    "  if (-not $filtered -or $filtered.Count -eq 0) { Write-Host '  [INFO] No releases found for this channel.' -ForegroundColor Yellow; exit 0 };" ^
     "  Write-Host '';" ^
-    "  $cmpLocal = $localVer.Trim();" ^
-    "  $cmpRemote = $remoteVer.Trim();" ^
-    "  if ($cmpLocal -match 'Beta' -or $cmpLocal -eq $cmpRemote) {" ^
-    "    Write-Host '  [UP-TO-DATE] You are running a Beta or the latest version.' -ForegroundColor Green;" ^
-    "    exit 0" ^
+    "  Write-Host '  AVAILABLE VERSIONS:' -ForegroundColor Cyan;" ^
+    "  $i = 1;" ^
+    "  $arr = @();" ^
+    "  foreach ($r in $filtered) {" ^
+    "    Write-Host \"    [$i] $($r.tag_name)\" -ForegroundColor White;" ^
+    "    $arr += $r;" ^
+    "    $i++;" ^
+    "    if ($i -gt 10) { break }" ^
     "  };" ^
-    "  Write-Host \"  [UPDATE AVAILABLE]  $localVer  ->  $remoteVer\" -ForegroundColor Yellow;" ^
     "  Write-Host '';" ^
-    "  $answer = Read-Host '  Download and install update now? [Y/N]';" ^
-    "  if ($answer.Trim().ToUpper() -ne 'Y') { Write-Host '  [SKIPPED] Update deferred.' -ForegroundColor DarkGray; exit 0 };" ^
+    "  $sel = Read-Host \"  Select version to install (1-$($arr.Count)) or 'Q' to quit\";" ^
+    "  if ($sel.Trim().ToUpper() -eq 'Q') { exit 0 };" ^
+    "  $idx = [int]$sel;" ^
+    "  if ($idx -lt 1 -or $idx -gt $arr.Count) { Write-Host '  [ERROR] Invalid selection.' -ForegroundColor Red; exit 1 };" ^
+    "  $rel = $arr[$idx - 1];" ^
+    "  $remoteVer = $rel.tag_name.Trim();" ^
+    "  $zipUrl = ($rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1).browser_download_url;" ^
+    "  if (-not $zipUrl) { $zipUrl = $rel.zipball_url };" ^
+    "  Write-Host '';" ^
+    "  Write-Host \"  [UPDATE INITIATED]  $localVer  ->  $remoteVer\" -ForegroundColor Yellow;" ^
     "  Write-Host '';" ^
     "  Write-Host '  [1/4] Downloading release ZIP...' -ForegroundColor Yellow;" ^
     "  $tmpZip = Join-Path $env:TEMP 'jigar_update.zip';" ^
