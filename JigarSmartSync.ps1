@@ -133,6 +133,65 @@ function Show-JigarExcludeMenu {
     $form.BackColor     = [System.Drawing.Color]::FromArgb(18, 18, 28);
     $form.ForeColor     = [System.Drawing.Color]::FromArgb(220, 220, 240);
 
+    # -- Main Menu (Universal Backup Helper) ------------------------
+    $mainMenu = [System.Windows.Forms.MenuStrip]::new()
+    $mainMenu.BackColor = [System.Drawing.Color]::FromArgb(28, 14, 14)
+    $mainMenu.ForeColor = [System.Drawing.Color]::FromArgb(220, 220, 240)
+    
+    $helperMenuItem = [System.Windows.Forms.ToolStripMenuItem]::new("Universal App Backup Helper")
+    $helperMenuItem.add_Click({
+        $brand = (adb shell getprop ro.product.brand 2>$null).Trim().ToLower()
+        $manufacturer = (adb shell getprop ro.product.manufacturer 2>$null).Trim().ToLower()
+        
+        $brandName = if ([string]::IsNullOrWhiteSpace($brand)) { "unknown" } else { $brand }
+        $msg = "Device Brand Detected: $($brandName.ToUpper())`n`n"
+        
+        if ($brand -match "xiaomi|redmi|poco" -or $manufacturer -match "xiaomi|redmi|poco") {
+            $msg += "To initiate a local backup:`n1. Go to Settings -> About Phone -> Back up and restore -> Mobile device.`n2. Create a local backup (Saves to /sdcard/MIUI/backup/AllBackup)."
+        } elseif ($brand -match "oppo|oneplus|realme" -or $manufacturer -match "oppo|oneplus|realme") {
+            $msg += "To initiate a local backup:`n1. Go to Settings -> Additional Settings -> Back up and reset -> Back up & migrate -> Local backup.`n2. Create a backup (Saves to /sdcard/Android/data/com.coloros.backuprestore/)."
+        } elseif ($brand -match "huawei|honor" -or $manufacturer -match "huawei|honor") {
+            $msg += "To initiate a local backup:`n1. Go to Settings -> System & updates -> Backup & restore -> Data backup.`n2. Create a backup (Saves to /sdcard/Huawei/Backup)."
+        } elseif ($brand -match "samsung" -or $manufacturer -match "samsung") {
+            $msg += "To initiate a local backup:`n1. Go to Settings -> Accounts and backup -> External storage transfer (Smart Switch).`n2. Create a backup (Saves to /sdcard/SmartSwitch or /sdcard/Backup)."
+        } elseif ($brand -match "vivo|iqoo" -or $manufacturer -match "vivo|iqoo") {
+            $msg += "To initiate a local backup:`n1. Go to Settings -> System management -> Backup & Reset -> Local backup.`n2. Create a backup (Saves to /sdcard/Backup)."
+        } else {
+            $msg += "To initiate a local backup:`n1. Go to Settings and search for 'Backup'.`n2. Look for an option to create a local device backup to your internal storage."
+        }
+        
+        $msg += "`n`nChecking for existing local backups..."
+        $dirsToCheck = @(
+            "/sdcard/MIUI/backup/AllBackup",
+            "/sdcard/Android/data/com.coloros.backuprestore/",
+            "/sdcard/Huawei/Backup",
+            "/sdcard/SmartSwitch",
+            "/sdcard/Backup"
+        )
+        
+        $foundDirs = @()
+        foreach ($d in $dirsToCheck) {
+            $check = (adb shell "if [ -d ""$d"" ]; then echo exists; fi" 2>$null).Trim()
+            if ($check -eq "exists") {
+                $foundDirs += $d
+            }
+        }
+        
+        if ($foundDirs.Count -gt 0) {
+            $msg += "`nFound existing backup folders:`n- " + ($foundDirs -join "`n- ")
+        } else {
+            $msg += "`nNo standard backup folders found on device."
+        }
+        
+        $msg += "`n`nIMPORTANT: When you run this main backup, it will AUTOMATICALLY backup these folders as well because it backs up your entire sdcard!"
+        
+        [System.Windows.Forms.MessageBox]::Show($msg, "Universal App Backup Helper", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+    })
+    
+    [void]$mainMenu.Items.Add($helperMenuItem)
+    $form.MainMenuStrip = $mainMenu
+    $form.Controls.Add($mainMenu)
+
     # -- Top instruction banner -------------------------------------
     $pnlTop = [System.Windows.Forms.Panel]::new();
     $pnlTop.Dock      = 'Top';

@@ -195,10 +195,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "  Write-Host '';" ^
     "  $cmpLocal = $localVer.Trim();" ^
     "  $cmpRemote = $remoteVer.Trim();" ^
-    "  if ($cmpLocal -eq 'v40.0') { $cmpLocal = 'v2.0' };" ^
-    "  if ($cmpRemote -eq 'v40.0') { $cmpRemote = 'v2.0' };" ^
-    "  if ($cmpRemote -eq $cmpLocal) {" ^
-    "    Write-Host '  [UP-TO-DATE] You are running the latest version.' -ForegroundColor Green;" ^
+    "  if ($cmpLocal -match 'Beta' -or $cmpLocal -eq $cmpRemote) {" ^
+    "    Write-Host '  [UP-TO-DATE] You are running a Beta or the latest version.' -ForegroundColor Green;" ^
     "    exit 0" ^
     "  };" ^
     "  Write-Host \"  [UPDATE AVAILABLE]  $localVer  ->  $remoteVer\" -ForegroundColor Yellow;" ^
