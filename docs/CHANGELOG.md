@@ -15,6 +15,26 @@
 
 ---
 
+## <img src="https://img.shields.io/badge/Beta_V2.0.1-Latest-00FF9D?style=for-the-badge" align="left" alt="Beta V2.0.1"/> &nbsp; The Beta Evolution (Auto-Updater & Bug Fixes)
+<br>
+
+**Release Date**: July 11, 2026
+
+### 🚀 Major Features
+- **In-App Auto-Updater** — The master control center (`Jigar_Tools_Setup.bat`) now features a fully integrated GitHub release fetcher. Switch between STABLE and BETA channels seamlessly, download updates directly inside the terminal, and relaunch automatically while preserving all user configurations.
+- **Universal App Backup Helper** — Added a brand new dynamic helper tool inside the `[3] DEVICE STATUS` menu. It detects your connected smartphone brand (Xiaomi, Oppo, OnePlus, Vivo, Huawei, Samsung, etc.) and provides brand-specific on-screen instructions for triggering a system-level local app backup before running the Titan engine.
+
+### 🐛 Engine Fixes & Polish
+- **Batch Syntax Parsing** — Fixed multiple crashing bugs in the new Auto-Updater where the Windows Batch parser choked on unquoted pipe (`|`) characters.
+- **Path Normalization Sync** — Restores no longer falsely detect mismatches and push duplicates for files containing Windows-incompatible characters (`<, >, :, ", |, ?, *`).
+- **Root Fallback Escaping Bug** — Resolved silent copy failures in the Stage 3 root fallback by fixing double-quote escaping inside POSIX single quotes.
+- **ADB Push Syntax** — Removed an accidental trailing semicolon that broke the Stage 2 temporary push fallback in the Restore engine.
+- **Root File Permissions** — Restored files pushed via native ADB root (Attempt 1) now explicitly run `chown 1023:1023` and `chmod 664`, ensuring the MediaStore and local apps can read them.
+- **Batched Directory Escaping** — The restore engine now correctly escapes loop variables (`"$d"`) in the batched `mkdir` Android shell command to accurately recreate deep directory structures.
+- **False-Positive Abort Sequences** — Minor suppressed warnings (like failing to unmount an already unmounted virtual drive) no longer artificially increment the `$error.Count` and trigger abort protocols on a 100% successful run.
+
+---
+
 ## <img src="https://img.shields.io/badge/v2.0_Gold_Edition-Current-FFD700?style=for-the-badge" align="left" alt="v2.0 Gold Edition"/> &nbsp; God Mode Unlocked (20x Titan Upgrade)
 <br>
 

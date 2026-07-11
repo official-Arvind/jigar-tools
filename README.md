@@ -11,7 +11,7 @@
 <br/>
 
 <a href="https://github.com/official-Arvind/jigar-tools/releases/latest">
-  <img src="https://img.shields.io/github/v/release/official-Arvind/jigar-tools?style=for-the-badge&logo=github&logoColor=white&label=Release%202.0%20Gold&color=FFD700" alt="Latest Release"/>
+  <img src="https://img.shields.io/github/v/release/official-Arvind/jigar-tools?style=for-the-badge&logo=github&logoColor=white&label=Release%20Beta%20V2.0.1&color=00FF9D" alt="Latest Release"/>
 </a>
 <a href="https://github.com/official-Arvind/jigar-tools/stargazers">
   <img src="https://img.shields.io/github/stars/official-Arvind/jigar-tools?style=for-the-badge&logo=starship&logoColor=white&color=f7c948" alt="Stars"/>
@@ -122,7 +122,7 @@ Full Restore    (50 GB)  →  8–15 minutes   @ 60–120 MB/s
 |---|---|
 | `[1]` | JigarSync Backup (20x Threads) |
 | `[2]` | Jigar Smart Restore (Full / Selective) |
-| `[3]` | Device Status (Check Connection) |
+| `[3]` | Device Status & App Backup Helper |
 | `[4]` | Check for Updates (Auto-Updater) |
 | `[5]` | Exit (Kills ADB Server) |
 
@@ -176,7 +176,7 @@ The God Mode Launcher will autonomously:
 ```
 [1] JigarSync Backup   →  Pull data: Phone to PC (20x Threads)
 [2] Smart Restore      →  Push data: PC to Phone (20x Threads)
-[3] Device Status      →  Check connection status of device
+[3] Device Status      →  Check connection status & get App Backup instructions
 [4] Check for Updates  →  Trigger the GitHub auto-updater
 [5] Exit               →  Clean shutdown + ADB server termination
 ```
