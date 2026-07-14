@@ -139,8 +139,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    Write-Host ('  + Serial: ' + $serial) -ForegroundColor Cyan;" ^
     "    $model = & $adb -s $serial shell 'getprop ro.product.model' 2>$null;" ^
     "    if ($model) { Write-Host ('    Model : ' + $model.Trim()) -ForegroundColor Gray };" ^
-    "    $brand = ([string](& $adb -s $serial shell 'getprop ro.product.brand' 2>$null)).Trim().ToLower();" ^
-    "    $manufacturer = ([string](& $adb -s $serial shell 'getprop ro.product.manufacturer' 2>$null)).Trim().ToLower();" ^
+    "    $brand = ('' + (& $adb -s $serial shell 'getprop ro.product.brand' 2>$null)).Trim().ToLower();" ^
+    "    $manufacturer = ('' + (& $adb -s $serial shell 'getprop ro.product.manufacturer' 2>$null)).Trim().ToLower();" ^
     "    $brandName = if ([string]::IsNullOrWhiteSpace($brand)) { 'unknown' } else { $brand };" ^
     "    Write-Host ('    Brand : ' + $brandName.ToUpper()) -ForegroundColor Gray;" ^
     "    Write-Host '';" ^
@@ -168,7 +168,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    $dirsToCheck = @('/sdcard/MIUI/backup/AllBackup','/sdcard/Android/data/com.coloros.backuprestore/','/sdcard/Huawei/Backup','/sdcard/SmartSwitch','/sdcard/Backup');" ^
     "    $foundDirs = @();" ^
     "    foreach ($d in $dirsToCheck) {" ^
-    "      $check = ([string](& $adb -s $serial shell ('if [ -d ''' + $d + ''' ]; then echo exists; fi') 2>$null)).Trim();" ^
+    "      $check = ('' + (& $adb -s $serial shell ('if [ -d ''' + $d + ''' ]; then echo exists; fi') 2>$null)).Trim();" ^
     "      if ($check -eq 'exists') { $foundDirs += $d }" ^
     "    };" ^
     "    if ($foundDirs.Count -gt 0) {" ^
