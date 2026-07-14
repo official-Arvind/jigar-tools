@@ -285,14 +285,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    } else { Copy-Item $_.FullName $dst -Force };" ^
     "    Write-Host ('    [UPDATED] ' + $name) -ForegroundColor Gray" ^
     "  };" ^
-    "  $remoteVer | Set-Content (Join-Path $toolsDir '.version') -Encoding UTF8;" ^
+    "  [System.IO.File]::WriteAllText((Join-Path $toolsDir '.version'), $remoteVer);" ^
     "  Remove-Item $tmpZip, $tmpDir -Recurse -Force -ErrorAction SilentlyContinue;" ^
     "  Write-Host '';" ^
     "  Write-Host ('  [4/4] Update to ' + $remoteVer + ' complete.') -ForegroundColor Green;" ^
     "  Write-Host '        Relaunching Jigar Tools...' -ForegroundColor Cyan;" ^
     "  Start-Sleep -Seconds 2;" ^
-    "  $qc = [char]34;" ^
-    "  Start-Process cmd -ArgumentList ('/c', 'timeout /t 2 >nul & move /y ' + $qc + $toolsDir + '\Jigar_Tools_Setup_New.bat' + $qc + ' ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc + ' & ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc);" ^
+    "  $qc = [char]34; $parent = Split-Path $toolsDir -Parent; $oldLeaf = Split-Path $toolsDir -Leaf; $newLeaf = 'Jigar_Tools_' + $remoteVer; $newToolsDir = Join-Path $parent $newLeaf;" ^
+    "  $cmdArgs = '/c timeout /t 2 >nul & move /y ' + $qc + $toolsDir + '\Jigar_Tools_Setup_New.bat' + $qc + ' ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc;" ^
+    "  if ($oldLeaf -ne $newLeaf -and -not (Test-Path $newToolsDir)) { $cmdArgs += ' & ren ' + $qc + $oldLeaf + $qc + ' ' + $qc + $newLeaf + $qc + ' & if exist ' + $qc + $newToolsDir + '\Jigar_Tools_Setup.bat' + $qc + ' ( ' + $qc + $newToolsDir + '\Jigar_Tools_Setup.bat' + $qc + ' ) else ( ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc + ' )' } else { $cmdArgs += ' & ' + $qc + $toolsDir + '\Jigar_Tools_Setup.bat' + $qc };" ^
+    "  Start-Process cmd -WorkingDirectory $parent -ArgumentList $cmdArgs;" ^
     "  exit 99" ^
     "} catch {" ^
     "  Write-Host ('  [ERROR] Could not reach GitHub: ' + $_.Exception.Message) -ForegroundColor Red;" ^

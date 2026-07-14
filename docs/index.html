@@ -443,43 +443,43 @@
           <h2 id="faq-title" class="section-title">Real questions, straight answers.</h2>
         </div>
 
-        <div class="faq-list" role="list">
-          <details class="faq-item" role="listitem">
+        <div class="faq-list">
+          <details class="faq-item">
             <summary class="faq-q">Do I need to be rooted?</summary>
             <div class="faq-a">
               <p>No. The tool works on non-rooted devices via standard ADB access. Root unlocks access to <code>/data/media/0</code> and speeds up scanning with native <code>find</code> commands, but it's completely optional. If you're not rooted, the 3-stage fallback handles everything it can.</p>
             </div>
           </details>
 
-          <details class="faq-item" role="listitem">
+          <details class="faq-item">
             <summary class="faq-q">There's a Z: drive left in my Explorer. What happened?</summary>
             <div class="faq-a">
               <p>If the terminal was force-closed (like hitting the X button), the cleanup phase was skipped. Fix it manually by running <code>subst Z: /D</code> in any terminal. Starting the tool again will also automatically detect and unmount any leftover drives pointing to your backup folder.</p>
             </div>
           </details>
 
-          <details class="faq-item" role="listitem">
+          <details class="faq-item">
             <summary class="faq-q">How fast is it actually?</summary>
             <div class="faq-a">
               <p>That's limited by your USB controller and your phone's storage speed, not by the tool. On USB 3.0 with a mid-range phone you'll typically see 35–50 MB/s average. Budget phones with USB 2.0 controllers cap out around 25–35 MB/s. Either way, 20 threads means you're saturating whatever the connection can give.</p>
             </div>
           </details>
 
-          <details class="faq-item" role="listitem">
+          <details class="faq-item">
             <summary class="faq-q">Can I automate it? Run it without prompts?</summary>
             <div class="faq-a">
               <p>Yes. Pass the <code>-NonInteractive</code> flag when calling the script directly. It'll skip the folder picker (uses the saved location from <code>settings.json</code>) and bypass the GUI filter menu, making it suitable for scheduled tasks or scripted automation.</p>
             </div>
           </details>
 
-          <details class="faq-item" role="listitem">
+          <details class="faq-item">
             <summary class="faq-q">What about photos restored to Android not showing in gallery?</summary>
             <div class="faq-a">
               <p>The restore script fires an Android Media Scanner broadcast intent for each restored file immediately after transfer. If they still don't show up, wait a minute or two for the media database to catch up, or reboot the device once.</p>
             </div>
           </details>
 
-          <details class="faq-item" role="listitem">
+          <details class="faq-item">
             <summary class="faq-q">Is this actually free? What's the catch?</summary>
             <div class="faq-a">
               <p>Fully free, MIT licensed, open source on GitHub. No telemetry, no accounts, no cloud syncing your data anywhere. It's a PowerShell script that uses ADB. That's it. The catch is you need Windows and a cable.</p>
@@ -519,7 +519,7 @@
     <div class="container footer-inner">
       <div class="footer-left">
         <a href="#" class="footer-logo" aria-label="Jigar Tools home">
-          <img src="logo.png" alt="Jigar Tools" class="footer-logo-img" />
+          <img src="logo.png" alt="" class="footer-logo-img" />
           <span>Jigar Tools</span>
         </a>
         <p class="footer-tagline">Free and open-source Android backup for Windows.</p>

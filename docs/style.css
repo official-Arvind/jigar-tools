@@ -45,7 +45,7 @@ code {
   --surface-hover: rgba(255,255,255,0.06);
   --text-primary: #f1f3fa;
   --text-secondary: #8892a4;
-  --text-muted: #4b5563;
+  --text-muted: #6b7280;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -909,7 +909,7 @@ code {
   color: var(--text-secondary);
   transition: color var(--transition);
 }
-.footer-nav-col a:hover { color: var(--text-primary); }
+.footer-nav-col a:hover { color: var(--text-primary); text-decoration: underline; text-underline-offset: 4px; }
 
 .footer-bottom-bar {
   border-top: 1px solid var(--border);
@@ -926,6 +926,8 @@ code {
 .footer-bottom-bar a {
   color: var(--text-secondary);
   transition: color var(--transition);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .footer-bottom-bar a:hover { color: var(--text-primary); }
 
