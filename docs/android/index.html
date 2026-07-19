@@ -36,21 +36,21 @@
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "Jigar Tools",
-    "alternateName": ["Jigar Android Phone Backup", "JigarSmartSync", "Android Mobile Backup Tool"],
+    "name": "Jigar Backup",
+    "alternateName": ["Jigar Android Backup App", "DataBackup", "Jigar Mobile Backup"],
     "applicationCategory": "UtilitiesApplication",
     "applicationSubCategory": "Backup Software, Mobile Phone Tools",
-    "operatingSystem": "Windows 10, Windows 11",
+    "operatingSystem": "Android 8.0+",
     "url": "https://official-arvind.github.io/jigar-tools/",
     "downloadUrl": "https://h1.nu/1yQLj",
-    "softwareVersion": "2.0-Gold",
+    "softwareVersion": "1.0",
     "releaseNotes": "https://github.com/official-Arvind/jigar-tools/blob/main/docs/CHANGELOG.md",
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "USD"
     },
-    "description": "Jigar Tools is a free, open-source Android phone backup and restore tool for Windows. It manages your mobile smartphone files using 20 parallel ADB threads for max speed. It easily handles locked files and defeats the Windows MAX_PATH limit.",
+    "description": "Jigar Backup is a free, open-source native Android application to backup and restore apps and data directly on your rooted or non-rooted device.",
     "featureList": [
       "Root parallel ADB file transfers",
       "3-stage fallback: direct pull, sandbox copy, root su mount",
@@ -63,7 +63,7 @@
       "Full restore with media scanner trigger",
       "Free and open source — MIT license"
     ],
-    "softwareRequirements": "Windows 10 or later, ADB (auto-downloaded), USB debugging enabled on Android",
+    "softwareRequirements": "Android 8.0+, Magisk/KernelSU/APatch (optional for App Data)",
     "author": {
       "@type": "Person",
       "name": "Arvind",
@@ -90,7 +90,7 @@
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "Jigar Tools",
+        "name": "Jigar Backup",
         "item": "https://official-arvind.github.io/jigar-tools/"
       }
     ]
@@ -151,7 +151,7 @@
       <a href="#faq" class="mobile-nav-link">FAQ</a>
       <a href="https://github.com/official-Arvind/jigar-tools" class="mobile-nav-link" target="_blank" rel="noopener">GitHub</a>
       <a href="../donate.html" class="mobile-nav-link" style="color:#fbbf24;">❤️ Support the project</a>
-      <a href="https://github.com/official-Arvind/jigar-tools/releases/download/v2.0-Gold/Jigar_Tools_2.0-Gold.zip" class="btn btn-sm w-full" target="_blank" rel="noopener">Download v2.0-Gold (Stable)</a>
+      <a href="https://github.com/official-Arvind/jigar-tools/releases/download/v2.0-Gold/Jigar_Backup_v1.0.apk" class="btn btn-sm w-full" target="_blank" rel="noopener">Download v1.0 (Stable)</a>
     </div>
   </header>
 
@@ -180,7 +180,7 @@
           <div class="stat-item">
           <div class="stat-item">
             <span class="stat-num">0 limits</span>
-            <span class="stat-label">MAX_PATH defeated</span>
+            <span class="stat-label">100% Data Integrity</span>
           </div>
         </div>
 
@@ -194,16 +194,23 @@
             </div>
             <span class="terminal-title-text">Jigar Backup App</span>
           </div>
-          <div class="terminal-body">
-            <div class="t-line"><span class="t-prompt">PS&gt;</span> <span class="t-cmd">.\JigarSmartSync.ps1</span></div>
-            <div class="t-line t-cyan">[SYSTEM] Device Connected &amp; Verified!</div>
-            <div class="t-line t-dim">[SYSTEM] Root Status: Non-Rooted Device</div>
-            <div class="t-line t-dim">[SYSTEM] BusyBox: Found (v1.36.1)</div>
-            <div class="t-line t-green">[SYSTEM] Smart Virtual Drive → Z:\ mapped</div>
-            <div class="t-line t-yellow">[SCAN]   Mapping Android storage... (100,513 files found)</div>
-            <div class="t-line t-dim">[SYNC]   Queued 847 missing files for download</div>
-            <div class="t-line t-violet">[TITAN]  Engaging Root Parallel Streams...</div>
-            <div class="t-line t-green t-blink">▓▓▓▓▓▓▓▓▓░░  [Thread-12] IMG_20240821_174355.jpg → 4.2 MB/s</div>
+          <div class="terminal-body" style="background:#000; padding:20px; font-family:'Inter', sans-serif;">
+            <div class="t-line" style="color:#fff; font-size:18px; font-weight:600; margin-bottom:15px;">Welcome to Jigar Backup</div>
+            <div class="t-line t-dim" style="margin-bottom:10px;">[✔] Environment Detection: Passed</div>
+            <div class="t-line t-dim" style="margin-bottom:10px;">[✔] Root Access (Magisk): Granted</div>
+            <div class="t-line t-cyan" style="margin-bottom:15px; border-left:3px solid #06b6d4; padding-left:10px;">Loading application packages...</div>
+            
+            <div class="t-line" style="display:flex; justify-content:space-between; margin-bottom:5px;">
+              <span style="color:#cbd5e1;">WhatsApp (APK + Data)</span>
+              <span style="color:#f59e0b;">Queued</span>
+            </div>
+            <div class="t-line" style="display:flex; justify-content:space-between; margin-bottom:5px;">
+              <span style="color:#cbd5e1;">Instagram (APK + Data)</span>
+              <span style="color:#f59e0b;">Queued</span>
+            </div>
+            
+            <div class="t-line t-green" style="margin-top:15px; font-weight:600;">[TITAN] Zstandard Compression active</div>
+            <div class="t-line t-green t-blink" style="margin-top:5px;">▓▓▓▓▓▓▓▓▓░░  Compressing data... (85 MB/s)</div>
           </div>
         </div>
       </div>
@@ -282,7 +289,7 @@
       <div class="container">
         <div class="section-header">
           <p class="section-eyebrow">Under the hood</p>
-          <h2 id="hiw-title" class="section-title">From plug-in to done.</h2>
+          <h2 id="hiw-title" class="section-title">From install to done.</h2>
           <p class="section-desc">Four steps. That's all it takes to back up every file on your Android device.</p>
         </div>
 
@@ -299,7 +306,7 @@
             <div class="step-num" aria-hidden="true">02</div>
             <div class="step-content">
               <h3>Phone gets scanned</h3>
-              <p>A single <code>find</code> command maps your entire storage in one ADB call — file paths and sizes. 100,000 files indexed in under 10 seconds depending on your device speed.</p>
+              <p>The app uses native root commands to instantly index your installed packages and internal app data. — file paths and sizes. 100,000 files indexed in under 10 seconds depending on your device speed.</p>
             </div>
           </div>
 
@@ -307,7 +314,7 @@
             <div class="step-num" aria-hidden="true">03</div>
             <div class="step-content">
               <h3>You choose what to sync</h3>
-              <p>The TreeView GUI opens. Every folder from your phone is listed with lazy-loaded children. Check what you want, uncheck what you don't. Or just hit Skip to back up everything.</p>
+              <p>The Material UI lists all your apps, media, and call history. Select the packages you want to protect. with lazy-loaded children. Check what you want, uncheck what you don't. Or just hit Skip to back up everything.</p>
             </div>
           </div>
 
@@ -315,7 +322,7 @@
             <div class="step-num" aria-hidden="true">04</div>
             <div class="step-content">
               <h3>Titan Engine fires up</h3>
-              <p>Twenty parallel runspaces start pulling. A live progress bar shows throughput in MB/s, total progress, and per-file status. When it's done, the drive unmounts, temp files clean themselves up, and you get a log.</p>
+              <p>The native C++ backend fires up. Using Zstandard compression, it rapidly packages your data and streams it directly to your NAS, SMB server, or local storage without using PC cables. A live progress bar shows throughput in MB/s, total progress, and per-file status. When it's done, the drive unmounts, temp files clean themselves up, and you get a log.</p>
             </div>
           </div>
         </div>
@@ -347,8 +354,8 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
             </div>
             <div class="doc-card-content">
-              <h3>Smart Virtual Drive</h3>
-              <p>Why we use <code>subst</code>, how it works, and the safety net around it.</p>
+              <h3>SMB/WebDAV Syncing</h3>
+              <p>How to connect your NAS, Nextcloud, or local SMB server seamlessly.</p>
             </div>
             <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
           </a>
@@ -358,8 +365,8 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
             <div class="doc-card-content">
-              <h3>3-Stage Fallback Architecture</h3>
-              <p>The full breakdown of what happens when direct ADB pull fails.</p>
+              <h3>Root vs Non-Root Data</h3>
+              <p>Understand exactly what app data is accessible based on your root permissions (Magisk/KernelSU).</p>
             </div>
             <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
           </a>
@@ -380,8 +387,8 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
             </div>
             <div class="doc-card-content">
-              <h3>Interactive TreeView Menu</h3>
-              <p>How the GUI works, lazy loading, and the most-specific-ancestor filter logic.</p>
+              <h3>Zstandard Compression Engine</h3>
+              <p>A deep dive into why we use C++ ZSTD for extreme speed on mobile CPUs.</p>
             </div>
             <svg class="doc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
           </a>
@@ -412,42 +419,42 @@
           <details class="faq-item">
             <summary class="faq-q">Do I need to be rooted?</summary>
             <div class="faq-a">
-              <p>No. The tool works on non-rooted devices via standard ADB access. Root unlocks access to <code>/data/media/0</code> and speeds up scanning with native <code>find</code> commands, but it's completely optional. If you're not rooted, the 3-stage fallback handles everything it can.</p>
+              <p>Root is required if you want to backup internal app data (like game saves or logged-in accounts) and Wi-Fi passwords. If you aren't rooted, you can still backup APK files, Call History, and basic storage.</p>
             </div>
           </details>
 
           <details class="faq-item">
-            <summary class="faq-q">There's a Z: drive left in my Explorer. What happened?</summary>
+            <summary class="faq-q">Where are my backups stored?</summary>
             <div class="faq-a">
-              <p>If the terminal was force-closed (like hitting the X button), the cleanup phase was skipped. Fix it manually by running <code>subst Z: /D</code> in any terminal. Starting the tool again will also automatically detect and unmount any leftover drives pointing to your backup folder.</p>
+              <p>By default, backups are safely compressed into archives within your internal storage. However, you can instantly configure Jigar Backup to stream these archives directly to your personal Cloud, WebDAV, or SMB network server to save local storage.</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary class="faq-q">How fast is it actually?</summary>
             <div class="faq-a">
-              <p>That's limited by your USB controller and your phone's storage speed, not by the tool. On USB 3.0 with a mid-range phone you'll typically see 35–50 MB/s average. Budget phones with USB 2.0 controllers cap out around 25–35 MB/s. Either way, 20 threads means you're saturating whatever the connection can give.</p>
+              <p>That's limited by your phone's internal memory speed and your phone's storage speed, not by the tool. With Zstandard compression running via the native C++ engine, modern phones can compress and backup data at hundreds of megabytes per second.. Budget phones with USB 2.0 controllers cap out around 25–35 MB/s. It operates directly on the device, eliminating the bottleneck of a USB cable.</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary class="faq-q">Can I automate it? Run it without prompts?</summary>
             <div class="faq-a">
-              <p>Yes. Pass the <code>-NonInteractive</code> flag when calling the script directly. It'll skip the folder picker (uses the saved location from <code>settings.json</code>) and bypass the GUI filter menu, making it suitable for scheduled tasks or scripted automation.</p>
+              <p>Yes. Yes. Jigar Backup allows you to configure scheduled backups. You can select specific apps and let it run automatically in the background without any manual intervention. It'll skip the folder picker (uses the saved location from <code>settings.json</code>) and bypass the GUI filter menu, making it suitable for scheduled tasks or scripted automation.</p>
             </div>
           </details>
 
           <details class="faq-item">
-            <summary class="faq-q">What about photos restored to Android not showing in gallery?</summary>
+            <summary class="faq-q">Does it support Multi-User or Work Profiles?</summary>
             <div class="faq-a">
-              <p>The restore script fires an Android Media Scanner broadcast intent for each restored file immediately after transfer. If they still don't show up, wait a minute or two for the media database to catch up, or reboot the device once.</p>
+              <p>Yes! Jigar Backup fully supports cross-profile operations. It can detect and backup applications installed in your Secure Folder, Dual Spaces, or Android Work Profiles effortlessly.</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary class="faq-q">Is this actually free? What's the catch?</summary>
             <div class="faq-a">
-              <p>Fully free, MIT licensed, open source on GitHub. No telemetry, no accounts, no cloud syncing your data anywhere. It's a PowerShell script that uses ADB. That's it. The catch is you need Windows and a cable.</p>
+              <p>Fully free, MIT licensed, open source on GitHub. No telemetry, no accounts, no cloud syncing your data anywhere. It's an Android app compiled from open source. No servers, no tracking, no hidden fees.</p>
             </div>
           </details>
         </div>
@@ -460,7 +467,7 @@
       <div class="container container--narrow cta-content">
         <img src="../logo.png" alt="" class="cta-logo" aria-hidden="true" />
         <h2 id="cta-title" class="cta-title">Your phone. Your data. Your call.</h2>
-        <p class="cta-desc">Download Jigar Tools and run your first backup in under five minutes. No installs, no accounts, no excuses.</p>
+        <p class="cta-desc">Download Jigar Backup and run your first backup in under a minute on your phone. No tracking, no accounts, no excuses.</p>
         <div class="cta-actions">
           <div class="dl-dropdown">
             <button class="btn btn-primary btn-lg">
@@ -468,8 +475,8 @@
               Download Free ▼
             </button>
             <div class="dl-menu" style="display: flex; bottom: 100%; top: auto; margin-bottom: 6px;">
-              <a href="https://github.com/official-Arvind/jigar-tools/releases/download/v2.0-Gold/Jigar_Tools_2.0-Gold.zip" class="dl-item dl-stable">v2.0-Gold <span>Stable Release</span></a>
-              <a href="https://github.com/official-Arvind/jigar-tools/releases/download/Beta-V2.0.1/Jigar_Tools_Beta_V2.0.1.zip" class="dl-item dl-beta">Beta-V2.0.1 <span>Latest Features</span></a>
+              <a href="https://github.com/official-Arvind/jigar-tools/releases/download/v2.0-Gold/Jigar_Backup_v1.0.apk" class="dl-item dl-stable">v2.0-Gold <span>Stable Release</span></a>
+              <a href="https://github.com/official-Arvind/jigar-tools/releases/download/v1.0/Jigar_Backup_v1.0.apk" class="dl-item dl-beta">v1.0 <span>Latest Features</span></a>
             </div>
           </div>
           <a href="https://github.com/official-Arvind/jigar-tools" class="btn btn-ghost btn-lg" target="_blank" rel="noopener">View source on GitHub</a>
@@ -487,7 +494,7 @@
           <img src="../logo.png" alt="" class="footer-logo-img" />
           <span>Jigar Tools</span>
         </a>
-        <p class="footer-tagline">Free and open-source Android backup for Windows.</p>
+        <p class="footer-tagline">Free and open-source native Android backup application.</p>
       </div>
 
       <nav class="footer-nav" aria-label="Footer navigation">
@@ -517,7 +524,7 @@
 
     <div class="footer-bottom-bar">
       <div class="container">
-        <p>Built by <a href="https://github.com/official-Arvind" target="_blank" rel="noopener">Arvind</a>. MIT licensed. No tracking. No servers. Just a script and a cable.</p>
+        <p>Built by <a href="https://github.com/official-Arvind" target="_blank" rel="noopener">Arvind</a>. MIT licensed. No tracking. No servers. Just an app and your storage.</p>
       </div>
     </div>
   </footer>
